@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@300;400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#747878",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f9f9fb",
+                        "secondary-container": "#0056fd",
+                        "tertiary-container": "#002108",
+                        "on-primary-fixed": "#1c1b1b",
+                        "surface-tint": "#5f5e5e",
+                        "tertiary-fixed-dim": "#3ce36a",
+                        "surface-variant": "#e2e2e4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#003ab2",
+                        "on-primary-fixed-variant": "#474746",
+                        "surface-container": "#eeeef0",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#b6c4ff",
+                        "on-background": "#1a1c1d",
+                        "primary-fixed": "#e5e2e1",
+                        "outline-variant": "#c4c7c7",
+                        "surface-container-highest": "#e2e2e4",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#c8c6c5",
+                        "secondary-fixed": "#dce1ff",
+                        "primary-container": "#1c1b1b",
+                        "on-primary-container": "#858383",
+                        "inverse-on-surface": "#f0f0f2",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#00983d",
+                        "tertiary": "#000000",
+                        "on-surface-variant": "#444748",
+                        "on-secondary-fixed": "#001550",
+                        "on-tertiary-fixed-variant": "#00531e",
+                        "on-surface": "#1a1c1d",
+                        "surface-bright": "#f9f9fb",
+                        "surface": "#f9f9fb",
+                        "on-tertiary-fixed": "#002108",
+                        "on-primary": "#ffffff",
+                        "secondary": "#0042c7",
+                        "inverse-surface": "#2f3132",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "tertiary-fixed": "#69ff87",
+                        "surface-container-low": "#f3f3f5",
+                        "primary-fixed-dim": "#c8c6c5",
+                        "surface-container-high": "#e8e8ea",
+                        "on-secondary-container": "#e4e7ff",
+                        "surface-dim": "#d9dadc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "unit": "4px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "container-margin": "40px",
+                        "lg": "24px",
+                        "grid-gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "label-mono": ["Space Grotesk"],
+                        "headline-lg": ["Space Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Space Grotesk"],
+                        "label-bold": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-mono": ["13px", { "lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1A1A1A20;
+        }
+    </style>
+</head>
+
+<body class="bg-background font-body-md text-on-surface">
+    <!-- SideNavBar -->
+    <aside
+        class="fixed left-0 top-0 h-full w-64 border-r-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex flex-col justify-between py-8 z-50">
+        <div>
+            <div class="px-6 mb-12">
+                <h1
+                    class="font-bold text-xl tracking-tighter text-[#1A1A1A] dark:text-white uppercase font-['Space_Grotesk']">
+                    ITSM Platform</h1>
+                <p class="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 mt-1">Operational Control</p>
+            </div>
+            <nav class="flex flex-col">
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                    Dashboard
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="badge">badge</span>
+                    Secretary
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="engineering">engineering</span>
+                    Technician
+                </a>
+                <!-- Active Item: Admin -->
+                <a class="bg-zinc-100 dark:bg-zinc-900 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider active:translate-x-1"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="analytics"
+                        style="font-variation-settings: 'FILL' 1;">analytics</span>
+                    Admin
+                </a>
+            </nav>
+        </div>
+        <div class="flex flex-col border-t border-[#1A1A1A]/5 pt-4">
+            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+        </div>
+    </aside>
+    <!-- Main Content Shell -->
+    <div class="ml-64 flex flex-col min-h-screen">
+        <!-- TopAppBar -->
+        <header
+            class="sticky top-0 z-40 w-full border-b-2 border-[#1A1A1A]/10 bg-white flex items-center justify-between px-10 py-4">
+            <div class="flex items-center gap-4">
+                <span class="text-lg font-black tracking-tighter uppercase text-[#1A1A1A] font-['Space_Grotesk']">System
+                    Terminal</span>
+            </div>
+            <div class="flex items-center gap-8">
+                <div
+                    class="relative flex items-center focus-within:border-[#0057FF] border-b border-transparent transition-all">
+                    <span class="material-symbols-outlined text-zinc-400 absolute left-0 text-sm">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-sm font-['Space_Grotesk'] pl-6 py-1 w-48"
+                        placeholder="Global Search..." type="text" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="text-zinc-500 hover:text-[#0057FF] transition-colors">
+                        <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                    </button>
+                    <button class="text-zinc-500 hover:text-[#0057FF] transition-colors">
+                        <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                    </button>
+                    <div class="h-8 w-8 bg-zinc-900 flex items-center justify-center text-white text-[10px] font-bold">
+                        AD
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main Canvas -->
+        <main class="p-10 flex-1">
+            <!-- Page Header -->
+            <div class="mb-12">
+                <h2 class="font-headline-xl text-primary uppercase">Gestión de Usuarios</h2>
+                <div class="h-1 w-24 bg-secondary mt-2"></div>
+            </div>
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-10 gap-grid-gutter items-start ">
+                <!-- Formulario de registro de usuarios -->
+                <section class="col-span-12 lg:col-span-12 bg-white border border-[#1A1A1A]/10 p-8">
+                    <div class="mb-8 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary" data-icon="person_add">person_add</span>
+                        <h3 class="font-label-bold text-primary uppercase tracking-widest">Formulario de Registro</h3>
+                    </div>
+                    <form class="space-y-6" method="POST" action="/usuarios">
+                        <div class="space-y-1">
+                            <label class="font-label-bold text-zinc-500 block">USUARIO (ÚNICO)</label>
+                            <input name="username" required
+                                class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
+                                placeholder="ej. jdoe88" type="text" />
+                        </div>
+                        <div class="space-y-1">
+                            <label class="font-label-bold text-zinc-500 block">CONTRASEÑA</label>
+                            <input name="password" required
+                                class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
+                                placeholder="••••••••" type="password" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="font-label-bold text-zinc-500 block">NOMBRE</label>
+                                <input name="nombre" required
+                                    class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
+                                    placeholder="Juan" type="text" />
+                            </div>
+                            <div class="space-y-1">
+                                <label class="font-label-bold text-zinc-500 block">APELLIDO</label>
+                                <input name="apellido" required
+                                    class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
+                                    placeholder="Pérez" type="text" />
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="font-label-bold text-zinc-500 block">ROL ASIGNADO</label>
+                            <select name="rol_id" required
+                                class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md appearance-none bg-transparent transition-all">
+                                <option value="">Seleccionar rol...</option>
+                                <option value="1">Administrador del Sistema</option>
+                                <option value="2">Técnico Nivel 1</option>
+                                <option value="3">Técnico Nivel 2</option>
+                                <option value="4">Secretaría</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between pt-4">
+                            <span class="font-label-bold text-zinc-500">ESTADO ACTIVO</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input name="activo" checked="" class="sr-only peer" type="checkbox" value="True" />
+                                <div
+                                    class="w-11 h-6 bg-zinc-200 peer-focus:outline-none ring-0 rounded-none peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary">
+                                </div>
+                            </label>
+                        </div>
+                        <button
+                            class="w-full bg-primary text-white font-label-bold uppercase py-4 tracking-widest hover:bg-secondary transition-colors mt-8"
+                            type="submit">
+                            CREAR USUARIO
+                        </button>
+                    </form>
+                </section>
+                <!-- Tabla de  Usuarios-->
+
+                <section class="col-span-12 lg:col-span-12 bg-white border border-[#1A1A1A]/10 overflow-hidden">
+                    <div class="p-8 border-b border-[#1A1A1A]/5 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary" data-icon="group">group</span>
+                            <h3 class="font-label-bold text-primary uppercase tracking-widest">Lista de Usuarios</h3>
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
+                                <span class="material-symbols-outlined text-sm"
+                                    data-icon="filter_list">filter_list</span>
+                            </button>
+                            <button
+                                class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
+                                <span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-zinc-50">
+                                    <th
+                                        class="px-8 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                        ID</th>
+                                    <th
+                                        class="px-8 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                        Usuario</th>
+                                    <th
+                                        class="px-8 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                        Nombre Completo</th>
+                                    <th
+                                        class="px-8 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                        Rol</th>
+                                    <th
+                                        class="px-8 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                        Estado</th>
+                                    <th
+                                        class="px-8 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                        Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#1A1A1A]/5">
+                                {% for u in usuarios %}
+                                <tr class="hover:bg-zinc-50 transition-colors group">
+                                    <td class="px-8 py-5 font-label-mono text-zinc-400">#{{ "%03d" | format(u.id) }}</td>
+                                    <td class="px-8 py-5 font-bold text-primary">{{ u.username }}</td>
+                                    <td class="px-8 py-5 text-zinc-600">{{ u.nombre }} {{ u.apellido }}</td>
+                                    <td class="px-8 py-5">
+                                        {% if u.rol_id == 1 %}
+                                        <span class="bg-primary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Administrador</span>
+                                        {% elif u.rol_id == 2 %}
+                                        <span class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Técnico N1</span>
+                                        {% elif u.rol_id == 3 %}
+                                        <span class="bg-secondary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Técnico N2</span>
+                                        {% elif u.rol_id == 4 %}
+                                        <span class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Secretaría</span>
+                                        {% else %}
+                                        <span class="bg-zinc-200 text-zinc-500 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Rol {{ u.rol_id }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-8 py-5">
+                                        {% if u.activo %}
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 bg-on-tertiary-container/10 text-on-tertiary-container font-label-bold text-[10px] uppercase">
+                                            <span class="w-1.5 h-1.5 bg-on-tertiary-container"></span> ACTIVO
+                                        </span>
+                                        {% else %}
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-200 text-zinc-500 font-label-bold text-[10px] uppercase">
+                                            <span class="w-1.5 h-1.5 bg-zinc-500"></span> INACTIVO
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-8 py-5">
+                                        <button class="text-zinc-400 hover:text-secondary"><span
+                                                class="material-symbols-outlined text-lg">edit</span></button>
+                                        <button class="text-zinc-400 hover:text-error ml-2"><span
+                                                class="material-symbols-outlined text-lg">delete</span></button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="px-8 py-5 text-center text-zinc-500">No hay usuarios registrados.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-6 border-t border-[#1A1A1A]/5 flex items-center justify-between">
+                        <p class="text-xs text-zinc-400 font-label-mono">MOSTRANDO 4 DE 128 USUARIOS</p>
+                        <div class="flex gap-1">
+                            <button
+                                class="w-8 h-8 flex items-center justify-center border border-[#1A1A1A]/10 text-zinc-400 hover:border-primary hover:text-primary transition-all">
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center bg-primary text-white text-xs font-bold">1</button>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center border border-[#1A1A1A]/10 text-zinc-600 text-xs font-bold hover:bg-zinc-50">2</button>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center border border-[#1A1A1A]/10 text-zinc-600 text-xs font-bold hover:bg-zinc-50">3</button>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center border border-[#1A1A1A]/10 text-zinc-400 hover:border-primary hover:text-primary transition-all">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                <!--para separar las estadisticas-->
+                <div class="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-grid-gutter mt-4">
+                    <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
+                        <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Licencias Activas</p>
+                        <h4 class="font-headline-md text-primary">128 / 150</h4>
+                        <div class="w-full bg-zinc-200 h-1 mt-4">
+                            <div class="bg-secondary h-1 w-[85%]"></div>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
+                        <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Roles Definidos</p>
+                        <h4 class="font-headline-md text-primary">6 Tipos</h4>
+                        <div class="flex gap-1 mt-4">
+                            <div class="w-2 h-2 bg-primary"></div>
+                            <div class="w-2 h-2 bg-secondary"></div>
+                            <div class="w-2 h-2 bg-zinc-300"></div>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
+                        <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Última Auditoría</p>
+                        <h4 class="font-headline-md text-primary">Hace 2h</h4>
+                        <p class="text-[10px] font-label-mono text-on-tertiary-container mt-4 uppercase">SISTEMA ESTABLE
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Footer-->
+        <footer class="p-10 border-t border-[#1A1A1A]/10 flex items-center justify-between">
+            <div class="flex gap-8">
+                <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Security Protocol
+                    v4.0.2</span>
+                <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Encrypted
+                    Session</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-on-tertiary-container rounded-full"></div>
+                <span class="text-[10px] font-label-bold text-on-tertiary-container uppercase">Servidores Online</span>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>
