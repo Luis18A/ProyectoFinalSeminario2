@@ -1,0 +1,55 @@
+/* Base typography applied globally */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Material Symbols Default Config */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Custom scrollbar for minimalist look */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+    background: #1A1A1A20; 
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #747878; 
+}
+
+/* Specific overrides to enforce Swiss Style rigid inputs */
+input:focus { 
+    outline: none; 
+    box-shadow: none !important; 
+}
+
+/* Sidebar Transitions & Collapsed State */
+#sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    white-space: nowrap;
+    z-index: 100;
+}
+
+#main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 16rem;
+    width: calc(100% - 16rem);
+    min-height: 100vh;
+}
+
+.sidebar-collapsed #sidebar {
+    transform: translateX(-100%) !important;
+    width: 0 !important;
+}
+
+.sidebar-collapsed #main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+}

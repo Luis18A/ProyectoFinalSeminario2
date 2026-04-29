@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>ITSM Platform - Authentication</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+                rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap"
+                rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+                rel="stylesheet" />
+        <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+</head>
+
+<body
+        class="bg-background text-on-surface flex items-center justify-center min-h-screen p-container-margin antialiased">
+        <!-- Minimalist Bento Card Container -->
+        <main
+                class="w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant p-container-margin relative flex flex-col shadow-[0px_8px_0px_rgba(26,28,29,0.05)]">
+                <!-- Strict geometric anchor -->
+                <div class="absolute top-0 left-0 w-full h-xs bg-primary"></div>
+                <!-- Header -->
+                <header class="mb-xl">
+                        <span
+                                class="font-label-mono text-label-mono uppercase text-on-surface-variant tracking-widest block mb-sm">System
+                                Terminal</span>
+                        <h1 class="font-headline-xl text-headline-xl text-primary">Identify</h1>
+                </header>
+                <!-- Authentication Form -->
+                <form class="flex flex-col gap-lg flex-grow" action="{{ url_for('vistas.login_post') }}" method="POST">
+                        {% if error %}
+                        <div
+                                class="bg-error-container text-on-error-container p-sm rounded text-center font-body-sm mb-sm">
+                                {{ error }}
+                        </div>
+                        {% endif %}
+                        <!-- Operator ID Input -->
+                        <div class="flex flex-col relative group">
+                                <label class="font-label-bold text-label-bold text-primary uppercase tracking-widest mb-sm"
+                                        for="operator-id">Operator ID</label>
+                                <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md"
+                                        id="operator-id" name="operator-id" placeholder="Enter identification string"
+                                        required="" type="text" />
+                        </div>
+                        <!-- Passcode Input -->
+                        <div class="flex flex-col relative group">
+                                <div class="flex justify-between items-end mb-sm">
+                                        <label class="font-label-bold text-label-bold text-primary uppercase tracking-widest"
+                                                for="passcode">Passcode</label>
+                                        <a class="font-label-mono text-label-mono text-secondary hover:text-on-secondary-fixed-variant transition-colors uppercase tracking-widest"
+                                                href="#">Recover</a>
+                                </div>
+                                <div class="relative flex items-center">
+                                        <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 pr-xl focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md tracking-[0.2em]"
+                                                id="passcode" name="passcode" placeholder="••••••••" required=""
+                                                type="password" />
+                                        <button aria-label="Toggle password visibility"
+                                                class="absolute right-0 bottom-sm text-outline hover:text-primary transition-colors flex items-center justify-center focus:outline-none"
+                                                type="button">
+                                                <span
+                                                        class="material-symbols-outlined text-[20px]">visibility_off</span>
+                                        </button>
+                                </div>
+                        </div>
+                        <!-- Action Area -->
+                        <div class="mt-md">
+                                <button class="w-full bg-primary text-on-primary py-md px-lg font-label-bold text-label-bold uppercase tracking-widest hover:bg-inverse-surface transition-colors rounded-none flex justify-between items-center group"
+                                        type="submit">
+                                        <span>Authenticate</span>
+                                        <span class="material-symbols-outlined transform group-hover:translate-x-1 transition-transform"
+                                                style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+                                </button>
+                        </div>
+                </form>
+                <!-- Technical Footer -->
+                <footer class="mt-xl pt-md border-t border-outline-variant flex justify-between items-center">
+                        <div class="flex items-center gap-xs text-outline">
+                                <span class="material-symbols-outlined text-[14px]">lock</span>
+                                <span
+                                        class="font-label-mono text-label-mono uppercase tracking-widest text-[10px]">Encrypted</span>
+                        </div>
+                        <span
+                                class="font-label-mono text-label-mono text-outline uppercase tracking-widest text-[10px]">Build
+                                4.9.2</span>
+                </footer>
+        </main>
+</body>
+
+</html>
