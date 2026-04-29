@@ -6,7 +6,7 @@ vistas_bp = Blueprint('vistas', __name__)
 
 @vistas_bp.route('/')
 def login():
-    return render_template('login_screen.html')
+    return render_template('login.html')
 
 @vistas_bp.route('/login', methods=['POST'])
 def login_post():
@@ -21,7 +21,7 @@ def login_post():
         return redirect(url_for('vistas.dashboard'))
     else:
         # Si falló, mostramos el login de nuevo con un mensaje de error
-        return render_template('login_screen.html', error="Credenciales inválidas")
+        return render_template('login.html', error="Credenciales inválidas")
 
 @vistas_bp.route('/dashboard')
 def dashboard():

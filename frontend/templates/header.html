@@ -1,48 +1,73 @@
-<aside
+<!DOCTYPE html>
+
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@300;400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+</head>
+
+<!-- SideNavBar -->
+<aside id="sidebar"
     class="fixed left-0 top-0 h-full w-64 border-r-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex flex-col justify-between py-8 z-50">
     <div>
-        <!-- Header -->
         <div class="px-6 mb-12">
-            <div class="font-bold text-xl tracking-tighter text-[#1A1A1A] dark:text-white uppercase mb-1">ITSM
-                Platform</div>
-            <div class="font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Operational Control</div>
+            <h1
+                class="font-bold text-xl tracking-tighter text-[#1A1A1A] dark:text-white uppercase font-['Space_Grotesk']">
+                ITSM Platform</h1>
+            <p class="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 mt-1">Operational Control</p>
         </div>
-        <!-- Navigation Tabs -->
-        <nav class="font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider flex flex-col gap-1">
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75"
-                href="#">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">grid_view</span>
+        <nav class="flex flex-col">
+            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                href="{{ url_for('vistas.dashboard') }}">
+                <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
                 Dashboard
             </a>
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75"
-                href="#">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">badge</span>
+            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                href="{{ url_for('vistas.secretary') }}">
+                <span class="material-symbols-outlined" data-icon="badge">badge</span>
                 Secretary
             </a>
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75"
-                href="#">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">engineering</span>
+            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                href="{{ url_for('vistas.technician') }}">
+                <span class="material-symbols-outlined" data-icon="engineering">engineering</span>
                 Technician
             </a>
-            <!-- Active Tab: Admin -->
-            <a class="bg-zinc-100 dark:bg-zinc-900 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
-                href="#">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+            <!-- Active Item: Admin -->
+            <a class="bg-zinc-100 dark:bg-zinc-900 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider active:translate-x-1"
+                href="{{ url_for('vistas.admin') }}">
+                <span class="material-symbols-outlined" data-icon="analytics"
+                    style="font-variation-settings: 'FILL' 1;">analytics</span>
                 Admin
+            </a>
+            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75 active:translate-x-1"
+                href="{{ url_for('usuarios.listar_usuarios') }}">
+                <span class="material-symbols-outlined" data-icon="engineering">engineering</span>
+                Gestión Usuarios
             </a>
         </nav>
     </div>
-    <!-- Footer Tabs -->
-    <div class="font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider flex flex-col gap-1">
-        <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75"
+    <div class="flex flex-col border-t border-[#1A1A1A]/5 pt-4">
+        <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
             href="#">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+            <span class="material-symbols-outlined" data-icon="settings">settings</span>
             Settings
         </a>
-        <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-[#1A1A1A] transition-all duration-75"
-            href="#">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">logout</span>
+        <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
+            href="{{ url_for('vistas.login') }}">
+            <span class="material-symbols-outlined" data-icon="logout">logout</span>
             Logout
         </a>
     </div>
