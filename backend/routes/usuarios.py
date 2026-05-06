@@ -24,3 +24,13 @@ def crear_usuario():
     
     # El router redirige de vuelta a la función listar_usuarios
     return redirect(url_for('usuarios.listar_usuarios'))
+
+@usuarios_bp.post('/usuarios/eliminar/<int:id>')
+def eliminar_usuario(id):
+    UsuarioController.eliminar_usuario(id)
+    return redirect(url_for('usuarios.listar_usuarios'))
+
+@usuarios_bp.post('/usuarios/actualizar/<int:id>')
+def actualizar_usuario(id):
+    UsuarioController.actualizar_usuario(id, request.form)
+    return redirect(url_for('usuarios.listar_usuarios'))

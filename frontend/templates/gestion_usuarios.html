@@ -48,36 +48,37 @@
                         <span class="material-symbols-outlined text-secondary" data-icon="person_add">person_add</span>
                         <h3 class="font-label-bold text-primary uppercase tracking-widest">Formulario de Registro</h3>
                     </div>
-                    <form class="space-y-6" method="POST" action="/usuarios">
+                    <form id="form-usuario" class="space-y-6" method="POST" action="/usuarios">
                         <div class="space-y-1">
                             <label class="font-label-bold text-zinc-500 block">USUARIO (ÚNICO)</label>
-                            <input name="username" required
+                            <input id="input-username" name="username" required
                                 class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
                                 placeholder="ej. jdoe88" type="text" />
                         </div>
                         <div class="space-y-1">
                             <label class="font-label-bold text-zinc-500 block">CONTRASEÑA</label>
-                            <input name="password" required
+                            <input id="input-password" name="password" required
                                 class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
                                 placeholder="••••••••" type="password" />
+                            <p id="password-help" class="text-[10px] text-zinc-400 mt-1 hidden">Dejar en blanco para mantener la actual</p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1">
                                 <label class="font-label-bold text-zinc-500 block">NOMBRE</label>
-                                <input name="nombre" required
+                                <input id="input-nombre" name="nombre" required
                                     class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
                                     placeholder="Juan" type="text" />
                             </div>
                             <div class="space-y-1">
                                 <label class="font-label-bold text-zinc-500 block">APELLIDO</label>
-                                <input name="apellido" required
+                                <input id="input-apellido" name="apellido" required
                                     class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
                                     placeholder="Pérez" type="text" />
                             </div>
                         </div>
                         <div class="space-y-1">
                             <label class="font-label-bold text-zinc-500 block">ROL ASIGNADO</label>
-                            <select name="rol_id" required
+                            <select id="select-rol" name="rol_id" required
                                 class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md appearance-none bg-transparent transition-all">
                                 <option value="">Seleccionar rol...</option>
                                 <option value="1">Administrador del Sistema</option>
@@ -89,17 +90,23 @@
                         <div class="flex items-center justify-between pt-4">
                             <span class="font-label-bold text-zinc-500">ESTADO ACTIVO</span>
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input name="activo" checked="" class="sr-only peer" type="checkbox" value="True" />
+                                <input id="check-activo" name="activo" checked="" class="sr-only peer" type="checkbox" value="True" />
                                 <div
                                     class="w-11 h-6 bg-zinc-200 peer-focus:outline-none ring-0 rounded-none peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary">
                                 </div>
                             </label>
                         </div>
-                        <button
-                            class="w-full bg-primary text-white font-label-bold uppercase py-4 tracking-widest hover:bg-secondary transition-colors mt-8"
-                            type="submit">
-                            CREAR USUARIO
-                        </button>
+                        <div class="flex gap-4">
+                            <button id="btn-submit"
+                                class="flex-1 bg-primary text-white font-label-bold uppercase py-4 tracking-widest hover:bg-secondary transition-colors mt-8"
+                                type="submit">
+                                CREAR USUARIO
+                            </button>
+                            <button id="btn-cancelar" type="button" onclick="cancelarEdicion()"
+                                class="hidden flex-1 border border-[#1A1A1A]/10 font-label-bold uppercase py-4 tracking-widest hover:bg-zinc-50 transition-colors mt-8">
+                                CANCELAR
+                            </button>
+                        </div>
                     </form>
                 </section>
                 <!-- Tabla de  Usuarios-->
@@ -188,10 +195,18 @@
                                         {% endif %}
                                     </td>
                                     <td class="px-8 py-5">
-                                        <button class="text-zinc-400 hover:text-secondary"><span
+                                        <button class="text-zinc-400 hover:text-secondary" data-id="{{ u.id }}"
+                                            data-username="{{ u.username }}" data-nombre="{{ u.nombre }}"
+                                            data-apellido="{{ u.apellido }}" data-rol="{{ u.rol_id }}"
+                                            data-activo="{{ u.activo }}" onclick="abrirModalEditar(this)"><span
                                                 class="material-symbols-outlined text-lg">edit</span></button>
-                                        <button class="text-zinc-400 hover:text-error ml-2"><span
-                                                class="material-symbols-outlined text-lg">delete</span></button>
+                                        <form action="{{ url_for('usuarios.eliminar_usuario', id=u.id) }}" method="POST"
+                                            class="inline">
+                                            <button type="submit" class="text-zinc-400 hover:text-error ml-2"
+                                                onclick="return confirm('¿Estás seguro de eliminar al usuario {{u.username}}?');">
+                                                <span class="material-symbols-outlined text-lg">delete</span>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 {% else %}
@@ -264,6 +279,46 @@
             </div>
         </footer>
     </div>
+    <script>
+        function abrirModalEditar(btn) {
+            // 1. Extraer datos del botón
+            const id = btn.getAttribute('data-id');
+            const username = btn.getAttribute('data-username');
+            const nombre = btn.getAttribute('data-nombre');
+            const apellido = btn.getAttribute('data-apellido');
+            const rol = btn.getAttribute('data-rol');
+            const activo = btn.getAttribute('data-activo') === 'True';
+
+            // 2. Llenar el formulario principal
+            document.getElementById('input-username').value = username;
+            document.getElementById('input-nombre').value = nombre;
+            document.getElementById('input-apellido').value = apellido;
+            document.getElementById('select-rol').value = rol;
+            document.getElementById('check-activo').checked = activo;
+            
+            // 3. Ajustes para edición
+            document.getElementById('input-password').required = false; // Password opcional al editar
+            document.getElementById('password-help').classList.remove('hidden');
+            document.getElementById('form-usuario').action = `/usuarios/actualizar/${id}`;
+            document.getElementById('btn-submit').innerText = 'GUARDAR CAMBIOS';
+            document.getElementById('btn-cancelar').classList.remove('hidden');
+
+            // 4. Scroll suave hacia el formulario
+            document.getElementById('form-usuario').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicion() {
+            // 1. Resetear el formulario
+            document.getElementById('form-usuario').reset();
+            
+            // 2. Revertir cambios visuales
+            document.getElementById('input-password').required = true;
+            document.getElementById('password-help').classList.add('hidden');
+            document.getElementById('form-usuario').action = '/usuarios';
+            document.getElementById('btn-submit').innerText = 'CREAR USUARIO';
+            document.getElementById('btn-cancelar').classList.add('hidden');
+        }
+    </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 
