@@ -1,0 +1,53 @@
+/**
+ * Gestión de Usuarios Styles
+ * Estilos específicos para la administración de cuentas y tablas de datos.
+ */
+
+/* Estilo para las filas de la tabla al pasar el mouse */
+tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+/* Badge de estado ACTIVO con pulso sutil */
+.bg-on-tertiary-container\/10 span {
+    position: relative;
+}
+
+.bg-on-tertiary-container\/10 span::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: inherit;
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(1); opacity: 0.8; }
+    70% { transform: scale(2.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* Efectos en el formulario */
+#form-usuario input, #form-usuario select {
+    border-radius: 0; /* Estilo Suizo rígido */
+}
+
+/* Animación de feedback al cambiar a modo edición */
+#form-usuario {
+    transition: border-color 0.4s ease;
+}
+
+.editing-mode {
+    border-color: #0057FF !important;
+}
+
+/* Estilos de botones de acción en la tabla */
+button .material-symbols-outlined {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+button:hover .material-symbols-outlined {
+    transform: scale(1.1);
+}

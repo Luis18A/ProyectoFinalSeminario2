@@ -10,12 +10,12 @@ class UsuarioController:
         # La lógica de base de datos se queda aquí
         try:
             Usuario.crear(
-            username=datos_formulario.get('username'),
-            password=datos_formulario.get('password'),
-            nombre=datos_formulario.get('nombre'),
-            apellido=datos_formulario.get('apellido'),
-            rol_id=datos_formulario.get('rol_id'),
-            activo=True if datos_formulario.get('activo') else False
+                username=datos_formulario.get('username'),
+                password=datos_formulario.get('password'),
+                nombre=datos_formulario.get('nombre'),
+                apellido=datos_formulario.get('apellido'),
+                rol_id=datos_formulario.get('rol_id'),
+                activo=True if datos_formulario.get('activo') else False
             )
         except Exception as e:
             return False, f"Error al crear el usuario: {str(e)}"

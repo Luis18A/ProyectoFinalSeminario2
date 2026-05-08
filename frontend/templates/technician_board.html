@@ -1,274 +1,110 @@
 {% include 'header.html' %}
 
-<body class="bg-background text-on-background font-body-md min-h-screen">
-
-    <!-- Main Content Area -->
-    <div id="main-content" class="flex flex-col min-h-screen">
-        <!-- TopAppBar (from JSON) -->
-        <header
-            class="sticky top-0 z-40 w-full border-b-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 text-[#1A1A1A] dark:text-zinc-100 font-['Space_Grotesk'] font-bold text-sm flat no-shadows flex items-center justify-between px-10 py-4">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
-                <div class="text-lg font-black tracking-tighter uppercase text-[#1A1A1A] dark:text-white">
-                    System Terminal
-                </div>
+<!-- Main Workspace -->
+<main class="p-4 md:p-6 h-[calc(100vh-62px)] flex flex-col lg:flex-row gap-6 overflow-hidden">
+    <!-- Kanban Board Area -->
+    <section class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+            <div>
+                <h2 class="text-3xl font-black uppercase tracking-tighter text-on-surface">Active Queue</h2>
+                <p class="text-xs text-on-surface-variant mt-1">Manage physical repairs and diagnostics.</p>
             </div>
-            <div class="flex items-center gap-6">
-                <!-- Search Bar on Right -->
-                <div class="relative flex items-center group">
-                    <span
-                        class="material-symbols-outlined absolute left-3 text-zinc-500 group-focus-within:text-[#0057FF]">search</span>
-                    <input
-                        class="pl-10 pr-4 py-2 border-b border-[#1A1A1A]/20 bg-transparent outline-none focus:border-[#0057FF] transition-colors w-64 placeholder:text-zinc-500 font-body-sm text-body-sm"
-                        placeholder="Search ID or Asset..." type="text" />
-                </div>
-                <!-- Trailing Icons -->
-                <button class="text-zinc-500 hover:text-[#0057FF] transition-colors focus:outline-none">
-                    <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-                </button>
-                <button class="text-zinc-500 hover:text-[#0057FF] transition-colors focus:outline-none">
-                    <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
-                </button>
-            </div>
+            <button class="bg-primary text-white px-6 py-2 font-bold uppercase tracking-widest hover:bg-secondary transition-colors flex items-center gap-2 text-xs">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                New Ticket
+            </button>
         </header>
-        <!-- Main Workspace -->
-        <main class="p-container-margin h-[calc(100vh-62px)] flex gap-lg overflow-hidden">
-            <!-- Kanban Board Area -->
-            <section class="flex-1 flex flex-col h-full overflow-hidden">
-                <header class="mb-lg flex justify-between items-end">
-                    <div>
-                        <h2 class="font-headline-lg text-headline-lg text-on-surface">Active Queue</h2>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manage physical repairs and
-                            diagnostics.</p>
-                    </div>
-                    <button
-                        class="bg-[#1A1A1A] text-white px-6 py-2 rounded-none font-label-bold text-label-bold uppercase tracking-widest hover:bg-surface-tint transition-colors flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">add</span>
-                        New Ticket
-                    </button>
-                </header>
-                <!-- Kanban Columns Container -->
-                <div class="flex-1 flex gap-grid-gutter overflow-x-auto overflow-y-hidden kanban-scroll pb-4">
-                    <!-- Column: Pending -->
-                    <div class="w-[320px] min-w-[320px] flex flex-col gap-sm">
-                        <div class="border-b-2 border-primary/10 pb-2 mb-2 flex justify-between items-center">
-                            <h3
-                                class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest">
-                                Pending</h3>
-                            <span
-                                class="font-label-mono text-label-mono bg-surface-variant px-2 py-0.5 rounded-none">3</span>
+
+        <!-- Kanban Columns Container -->
+        <div class="flex-1 flex gap-6 overflow-x-auto overflow-y-hidden pb-4">
+            <!-- Column: Pending -->
+            <div class="w-[300px] min-w-[300px] flex flex-col gap-4">
+                <div class="border-b-2 border-zinc-100 pb-2 mb-2 flex justify-between items-center">
+                    <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Pending</h3>
+                    <span class="font-mono text-[10px] bg-zinc-100 px-2 py-0.5">3</span>
+                </div>
+                <div class="flex-1 overflow-y-auto flex flex-col gap-4 pr-2">
+                    <!-- Card -->
+                    <div class="bg-white border border-zinc-100 p-4 flex flex-col gap-3 hover:border-primary transition-colors cursor-pointer group">
+                        <div class="flex justify-between items-start">
+                            <span class="font-mono text-[10px] text-zinc-400">TK-8902</span>
+                            <span class="bg-zinc-900 text-white px-2 py-0.5 font-bold text-[8px] uppercase">Standard</span>
                         </div>
-                        <div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-sm pr-2">
-                            <!-- Card -->
-                            <div
-                                class="bg-surface-container-lowest border border-primary/10 p-md flex flex-col gap-sm rounded-none hover:border-[#0057FF] transition-colors cursor-pointer group">
-                                <div class="flex justify-between items-start">
-                                    <span class="font-label-mono text-label-mono text-on-surface-variant">TK-8902</span>
-                                    <span
-                                        class="bg-surface-tint text-on-primary px-2 py-0.5 font-label-bold text-[10px] uppercase rounded-none">Standard</span>
-                                </div>
-                                <h4 class="font-headline-md text-[16px] leading-tight text-on-surface">ThinkPad T14
-                                    Battery
-                                    Swelling</h4>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">User reports
-                                    trackpad lifting and poor battery life. Requires physical inspection.</p>
-                                <div
-                                    class="mt-2 pt-2 border-t border-primary/5 flex items-center justify-between text-on-surface-variant">
-                                    <div class="flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px]">devices</span>
-                                        <span class="font-label-mono text-[11px]">LT-442</span>
-                                    </div>
-                                    <span class="font-body-sm text-[12px]">2h ago</span>
-                                </div>
+                        <h4 class="text-sm font-bold leading-tight text-on-surface">ThinkPad T14 Battery Swelling</h4>
+                        <p class="text-xs text-on-surface-variant line-clamp-2">User reports trackpad lifting and poor battery life.</p>
+                        <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center justify-between text-zinc-400">
+                            <div class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">devices</span>
+                                <span class="font-mono text-[10px]">LT-442</span>
                             </div>
+                            <span class="text-[10px]">2h ago</span>
                         </div>
                     </div>
-                    <!-- Column: In Diagnosis -->
-                    <div class="w-[320px] min-w-[320px] flex flex-col gap-sm">
-                        <div class="border-b-2 border-[#0057FF] pb-2 mb-2 flex justify-between items-center">
-                            <h3 class="font-label-bold text-label-bold text-[#0057FF] uppercase tracking-widest">In
-                                Diagnosis</h3>
-                            <span
-                                class="font-label-mono text-label-mono bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 rounded-none">1</span>
+                </div>
+            </div>
+
+            <!-- Column: In Diagnosis -->
+            <div class="w-[300px] min-w-[300px] flex flex-col gap-4">
+                <div class="border-b-2 border-primary pb-2 mb-2 flex justify-between items-center">
+                    <h3 class="text-[10px] font-bold text-primary uppercase tracking-widest">In Diagnosis</h3>
+                    <span class="font-mono text-[10px] bg-primary text-white px-2 py-0.5">1</span>
+                </div>
+                <div class="flex-1 overflow-y-auto flex flex-col gap-4 pr-2">
+                    <!-- Card -->
+                    <div class="bg-white border-2 border-primary p-4 flex flex-col gap-3">
+                        <div class="flex justify-between items-start">
+                            <span class="font-mono text-[10px] text-primary">TK-8895</span>
+                            <span class="bg-error text-white px-2 py-0.5 font-bold text-[8px] uppercase">Critical</span>
                         </div>
-                        <div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-sm pr-2">
-                            <!-- Card -->
-                            <div
-                                class="bg-surface-container-lowest border border-[#0057FF] p-md flex flex-col gap-sm rounded-none shadow-[0_4px_0_rgba(0,87,255,0.1)]">
-                                <div class="flex justify-between items-start">
-                                    <span class="font-label-mono text-label-mono text-[#0057FF]">TK-8895</span>
-                                    <span
-                                        class="bg-error text-on-error px-2 py-0.5 font-label-bold text-[10px] uppercase rounded-none">Critical</span>
-                                </div>
-                                <h4 class="font-headline-md text-[16px] leading-tight text-on-surface">Server Rack
-                                    Switch
-                                    Failure</h4>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Port 1-12
-                                    offline.
-                                    Running diagnostics on backplane.</p>
-                                <div
-                                    class="mt-2 pt-2 border-t border-primary/5 flex items-center justify-between text-on-surface-variant">
-                                    <div class="flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px]">router</span>
-                                        <span class="font-label-mono text-[11px]">SW-CORE-2</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-[#0057FF]">
-                                        <span class="material-symbols-outlined text-[14px]">timer</span>
-                                        <span class="font-label-mono text-[11px]">01:45:00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Column: Quoted -->
-                    <div class="w-[320px] min-w-[320px] flex flex-col gap-sm">
-                        <div class="border-b-2 border-primary/10 pb-2 mb-2 flex justify-between items-center">
-                            <h3
-                                class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest">
-                                Quoted</h3>
-                            <span
-                                class="font-label-mono text-label-mono bg-surface-variant px-2 py-0.5 rounded-none">0</span>
-                        </div>
-                        <div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-sm pr-2">
-                            <div
-                                class="h-24 border border-dashed border-primary/20 flex items-center justify-center text-on-surface-variant font-label-mono text-label-mono">
-                                Drop tickets here
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Column: In Repair -->
-                    <div class="w-[320px] min-w-[320px] flex flex-col gap-sm">
-                        <div class="border-b-2 border-primary/10 pb-2 mb-2 flex justify-between items-center">
-                            <h3
-                                class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest">
-                                In
-                                Repair</h3>
-                            <span
-                                class="font-label-mono text-label-mono bg-surface-variant px-2 py-0.5 rounded-none">2</span>
-                        </div>
-                        <div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-sm pr-2">
-                            <!-- Card -->
-                            <div
-                                class="bg-surface-container-lowest border border-primary/10 p-md flex flex-col gap-sm rounded-none hover:border-[#0057FF] transition-colors group">
-                                <div class="flex justify-between items-start">
-                                    <span class="font-label-mono text-label-mono text-on-surface-variant">TK-8850</span>
-                                    <span
-                                        class="bg-surface-tint text-on-primary px-2 py-0.5 font-label-bold text-[10px] uppercase rounded-none">Standard</span>
-                                </div>
-                                <h4 class="font-headline-md text-[16px] leading-tight text-on-surface">Screen
-                                    Replacement
-                                    XPS 15</h4>
-                                <!-- Progress Tracker -->
-                                <div class="mt-2">
-                                    <div
-                                        class="flex justify-between font-label-mono text-[10px] text-on-surface-variant mb-1 uppercase">
-                                        <span>Parts Arrival</span>
-                                        <span>Assembly</span>
-                                    </div>
-                                    <div class="flex h-1 gap-1">
-                                        <div class="flex-1 bg-[#0057FF]"></div>
-                                        <div class="flex-1 bg-[#0057FF]"></div>
-                                        <div class="flex-1 bg-surface-variant"></div>
-                                    </div>
-                                </div>
+                        <h4 class="text-sm font-bold leading-tight text-on-surface">Server Rack Switch Failure</h4>
+                        <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center justify-between">
+                            <div class="flex items-center gap-1 text-primary">
+                                <span class="material-symbols-outlined text-[14px]">timer</span>
+                                <span class="font-mono text-[10px]">01:45:00</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
-            <!-- Right Sidebar (Pricing & Receipts) -->
-            <aside
-                class="w-[340px] flex flex-col gap-lg border-l border-primary/10 pl-lg overflow-y-auto kanban-scroll pb-4">
-                <!-- Simulated Web Scraper / Parts Pricing -->
-                <section class="bg-[#F5F5F7] border border-primary/10 rounded-none flex flex-col overflow-hidden">
-                    <header
-                        class="bg-surface-container-lowest border-b border-primary/10 p-sm px-md flex justify-between items-center">
-                        <h3
-                            class="font-label-bold text-[11px] uppercase tracking-widest text-on-surface flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[14px]">query_stats</span>
-                            Live Vendor Index
-                        </h3>
-                        <span class="font-label-mono text-[10px] text-on-surface-variant">SYNC: OK</span>
-                    </header>
-                    <div class="p-md font-label-mono text-[11px] leading-relaxed text-on-surface">
-                        <div class="flex justify-between border-b border-primary/5 pb-1 mb-2 text-on-surface-variant">
-                            <span>PART NO.</span>
-                            <span>QTY</span>
-                            <span>PRICE</span>
-                        </div>
-                        <div class="flex justify-between mb-1 hover:bg-white px-1 -mx-1 cursor-crosshair">
-                            <span class="text-[#0057FF]">LEN-BATT-T14</span>
-                            <span>[1]</span>
-                            <span>$85.00</span>
-                        </div>
-                        <div class="flex justify-between mb-1 hover:bg-white px-1 -mx-1 cursor-crosshair">
-                            <span class="text-[#0057FF]">DELL-SCR-XPS</span>
-                            <span>[1]</span>
-                            <span>$210.50</span>
-                        </div>
-                        <div
-                            class="flex justify-between mb-1 text-on-surface-variant hover:bg-white px-1 -mx-1 cursor-crosshair">
-                            <span>CIS-SFP-10G</span>
-                            <span>[4]</span>
-                            <span>$45.00</span>
-                        </div>
-                        <div class="mt-4 pt-2 border-t border-dashed border-primary/20">
-                            <div class="flex justify-between font-bold">
-                                <span>EST. TOTAL</span>
-                                <span>$475.50</span>
-                            </div>
-                            <div class="text-[9px] text-on-surface-variant mt-1 text-right">
-                                SRC: DIST-A, DIST-C | TS: 14:32:01
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <!-- Document Receipts -->
-                <section class="flex flex-col gap-sm">
-                    <h3
-                        class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest border-b border-primary/10 pb-2">
-                        Recent Documents</h3>
-                    <div class="flex flex-col gap-2 mt-2">
-                        <!-- Receipt Link -->
-                        <a class="group bg-surface-container-lowest border border-primary/10 p-sm px-md flex items-center gap-3 rounded-none hover:border-[#0057FF] transition-colors"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-error group-hover:text-[#0057FF] transition-colors">picture_as_pdf</span>
-                            <div class="flex-1 overflow-hidden">
-                                <div class="font-label-mono text-label-mono truncate text-on-surface">INV-2023-1092.pdf
-                                </div>
-                                <div class="font-body-sm text-[10px] text-on-surface-variant">Dell Display Assembly
-                                </div>
-                            </div>
-                            <span
-                                class="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-[#0057FF]">download</span>
-                        </a>
-                        <!-- Receipt Link -->
-                        <a class="group bg-surface-container-lowest border border-primary/10 p-sm px-md flex items-center gap-3 rounded-none hover:border-[#0057FF] transition-colors"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-error group-hover:text-[#0057FF] transition-colors">picture_as_pdf</span>
-                            <div class="flex-1 overflow-hidden">
-                                <div class="font-label-mono text-label-mono truncate text-on-surface">PO-TECH-88.pdf
-                                </div>
-                                <div class="font-body-sm text-[10px] text-on-surface-variant">Bulk Thermal Paste</div>
-                            </div>
-                            <span
-                                class="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-[#0057FF]">download</span>
-                        </a>
-                    </div>
-                </section>
-                <!-- Quick Action -->
-                <button
-                    class="mt-auto border border-[#0057FF] text-[#0057FF] px-4 py-3 rounded-none font-label-bold text-label-bold uppercase tracking-widest hover:bg-[#0057FF] hover:text-white transition-colors w-full text-center">
-                    Generate Quote PDF
-                </button>
-            </aside>
-        </main>
-    </div>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-</body>
+            </div>
+        </div>
+    </section>
 
+    <!-- Right Sidebar (Pricing & Receipts) - Hidden on mobile if space is tight -->
+    <aside class="w-full lg:w-[340px] flex flex-col gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-6 lg:pt-0 lg:pl-6 overflow-y-auto pb-4">
+        <!-- Live Vendor Index -->
+        <section class="bg-zinc-50 border border-zinc-100 flex flex-col overflow-hidden">
+            <header class="bg-white border-b border-zinc-100 p-3 px-4 flex justify-between items-center">
+                <h3 class="text-[10px] font-black uppercase tracking-widest text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">query_stats</span>
+                    Live Vendor Index
+                </h3>
+            </header>
+            <div class="p-4 font-mono text-[10px] text-on-surface">
+                <div class="flex justify-between mb-1">
+                    <span class="text-primary">LEN-BATT-T14</span>
+                    <span>$85.00</span>
+                </div>
+                <div class="flex justify-between mb-1">
+                    <span class="text-primary">DELL-SCR-XPS</span>
+                    <span>$210.50</span>
+                </div>
+                <div class="mt-4 pt-2 border-t border-dashed border-zinc-200">
+                    <div class="flex justify-between font-bold">
+                        <span>EST. TOTAL</span>
+                        <span>$295.50</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Action -->
+        <button class="mt-auto border-2 border-primary text-primary px-4 py-3 font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-colors w-full text-xs">
+            Generate Quote PDF
+        </button>
+    </aside>
+</main>
+
+</div> <!-- Cierre main-content -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
 </html>

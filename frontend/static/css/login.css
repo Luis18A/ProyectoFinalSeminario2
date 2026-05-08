@@ -1,0 +1,56 @@
+/**
+ * Login Page Specific Styles
+ * Estilos para la interfaz de autenticación.
+ */
+
+/* Animación de entrada para la tarjeta de login */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+main {
+    animation: slideUpFade 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* Efecto de foco premium en inputs */
+input:focus {
+    background: rgba(0, 87, 255, 0.02);
+}
+
+/* Estilo para los botones de visibilidad */
+button[aria-label="Toggle password visibility"] {
+    transition: color 0.2s ease;
+}
+
+/* Mejoras en el botón de ingreso */
+button[type="submit"] {
+    position: relative;
+    overflow: hidden;
+}
+
+button[type="submit"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transition: all 0.4s;
+}
+
+button[type="submit"]:hover::before {
+    left: 100%;
+}

@@ -1,10 +1,22 @@
+# Python - Archivos compilados y caché (Lo que causó el error)
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-env/
+
+# Entornos virtuales (Veo que usas uno)
 venv/
+env/
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
+
+# Base de datos (Para que no subas tu DB local de pruebas)
+*.sqlite3
+db.sqlite3
+
+# Configuración de VS Code y Sistema
+.vscode/
+.history/
+.DS_Store
+Thumbs.db
+
+# Archivos de entorno (SEGURIDAD: Si llegas a crear un .env con contraseñas)
+.env

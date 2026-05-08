@@ -1,162 +1,100 @@
 {% include 'header.html' %}
 
-<body class="bg-background text-on-background font-body-md min-h-screen">
-    <!-- Main Content Area -->
-    <div id="main-content" class="flex flex-col min-h-screen">
-        <!-- TopAppBar -->
-        <header
-            class="sticky top-0 z-40 w-full border-b-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex items-center justify-between px-10 py-4">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
-                <div
-                    class="text-lg font-black tracking-tighter uppercase text-[#1A1A1A] dark:text-white font-['Space_Grotesk']">
-                    System Terminal</div>
-            </div>
-            <div class="flex items-center gap-6">
-                <!-- Search -->
-                <div class="relative group">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-[#0057FF] transition-colors">search</span>
-                    <input
-                        class="pl-10 pr-4 py-2 border-b-2 border-transparent bg-zinc-100 dark:bg-zinc-900 focus:outline-none focus:border-[#0057FF] text-[#1A1A1A] dark:text-zinc-100 font-['Space_Grotesk'] font-bold text-sm transition-colors rounded-none placeholder-zinc-500"
-                        placeholder="Search terminal..." type="text" />
-                </div>
-                <!-- Actions -->
-                <button class="text-zinc-500 hover:text-[#0057FF] transition-colors focus:outline-none">
-                    <span class="material-symbols-outlined">notifications</span>
-                </button>
-                <button class="text-zinc-500 hover:text-[#0057FF] transition-colors focus:outline-none">
-                    <span class="material-symbols-outlined">help_outline</span>
-                </button>
-                <!-- Avatar Placeholder -->
-                <div
-                    class="w-8 h-8 bg-zinc-200 dark:bg-zinc-800 rounded-full border border-[#1A1A1A]/10 overflow-hidden">
-                    <img alt="Profile" class="w-full h-full object-cover"
-                        data-alt="Close-up professional headshot of a person looking forward against a neutral background."
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4aVWFYObXS7BJetwySwefmjJ6KxXX56f1V2iEYiUBV8au5IpGjaKgY1-c-sKlYQvH_hKfnWjJZoYsLv540HltH4yDuOOPvax5k0no2oaJJ_DFuzf00ZBbv2X5FJMBB23u30-a7KSJzDYEdnPVnIVzaP48v92ZRs6_UPkxb10YUC_IGGvgx54EVAseKN20_00oJgtqAxsAO79fAgZoBo7dc5Jst7aM1gNz9SPjrlgVJBA8PEiH8boYJPFUKwBRTX20LOOSrPaCMJc" />
-                </div>
-            </div>
-        </header>
-        <!-- Dashboard Canvas -->
-        <main class="flex-1 p-container-margin">
-            <div class="mb-lg">
-                <h2 class="font-headline-lg text-headline-lg text-primary">Overview</h2>
-            </div>
-            <!-- Bento Grid -->
-            <div class="grid grid-cols-12 gap-grid-gutter">
-                <!-- Key Metrics row -->
-                <!-- Active Tickets -->
-                <div
-                    class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
-                    <div class="flex justify-between items-start mb-xl">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Active
-                            Tickets</span>
-                        <span class="material-symbols-outlined text-secondary">confirmation_number</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-primary">142</div>
-                        <div class="flex items-center gap-2 mt-xs text-on-tertiary-container">
-                            <span class="material-symbols-outlined text-sm">arrow_upward</span>
-                            <span class="font-label-mono text-label-mono">12% from yesterday</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Pending Repairs -->
-                <div
-                    class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
-                    <div class="flex justify-between items-start mb-xl">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Pending
-                            Repairs</span>
-                        <span class="material-symbols-outlined text-error">build</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-primary">38</div>
-                        <div class="flex items-center gap-2 mt-xs text-error">
-                            <span class="material-symbols-outlined text-sm">warning</span>
-                            <span class="font-label-mono text-label-mono">5 critical status</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Today's Revenue -->
-                <div
-                    class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
-                    <div class="flex justify-between items-start mb-xl">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Today's
-                            Revenue</span>
-                        <span class="material-symbols-outlined text-on-surface-variant">payments</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-primary">$4,250</div>
-                        <div class="flex items-center gap-2 mt-xs text-on-tertiary-container">
-                            <span class="material-symbols-outlined text-sm">arrow_upward</span>
-                            <span class="font-label-mono text-label-mono">Target met</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Quick Actions & System Status -->
-                <!-- Quick Actions (Spans 8) -->
-                <div
-                    class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col">
-                    <h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase mb-md">Quick Actions
-                    </h3>
-                    <div class="grid grid-cols-3 gap-md flex-1">
-                        <button
-                            class="bg-primary text-on-primary p-lg flex flex-col items-center justify-center gap-sm hover:bg-surface-tint transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2">
-                            <span class="material-symbols-outlined text-[32px]">add_circle</span>
-                            <span class="font-label-mono text-label-mono uppercase">Create Ticket</span>
-                        </button>
-                        <button
-                            class="border border-outline-variant text-primary p-lg flex flex-col items-center justify-center gap-sm hover:bg-surface transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2">
-                            <span class="material-symbols-outlined text-[32px]">inventory_2</span>
-                            <span class="font-label-mono text-label-mono uppercase">Inventory</span>
-                        </button>
-                        <button
-                            class="border border-outline-variant text-primary p-lg flex flex-col items-center justify-center gap-sm hover:bg-surface transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2">
-                            <span class="material-symbols-outlined text-[32px]">bar_chart</span>
-                            <span class="font-label-mono text-label-mono uppercase">Reports</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- System Status (Spans 4) -->
-                <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg">
-                    <h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase mb-md">System Health
-                    </h3>
-                    <div class="space-y-md mt-lg">
-                        <div>
-                            <div class="flex justify-between items-center mb-xs">
-                                <span class="font-label-mono text-label-mono text-primary">Main Server CPU</span>
-                                <span class="font-label-mono text-label-mono text-primary">45%</span>
-                            </div>
-                            <div class="h-[2px] bg-surface-variant w-full">
-                                <div class="h-full bg-secondary w-[45%]"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-xs">
-                                <span class="font-label-mono text-label-mono text-primary">Database Storage</span>
-                                <span class="font-label-mono text-label-mono text-error">88%</span>
-                            </div>
-                            <div class="h-[2px] bg-surface-variant w-full">
-                                <div class="h-full bg-error w-[88%]"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-xs">
-                                <span class="font-label-mono text-label-mono text-primary">Network Load</span>
-                                <span class="font-label-mono text-label-mono text-primary">22%</span>
-                            </div>
-                            <div class="h-[2px] bg-surface-variant w-full">
-                                <div class="h-full bg-secondary w-[22%]"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+<!-- Dashboard Canvas -->
+<main class="flex-1 p-container-margin">
+    <div class="mb-lg">
+        <h2 class="font-headline-lg text-headline-lg text-primary">Overview</h2>
     </div>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-</body>
+    <!-- Bento Grid -->
+    <div class="grid grid-cols-12 gap-grid-gutter">
+        <!-- Key Metrics row -->
+        <div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-xl">
+                <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Active Tickets</span>
+                <span class="material-symbols-outlined text-secondary">confirmation_number</span>
+            </div>
+            <div>
+                <div class="font-headline-xl text-headline-xl text-primary">142</div>
+                <div class="flex items-center gap-2 mt-xs text-on-tertiary-container">
+                    <span class="material-symbols-outlined text-sm">arrow_upward</span>
+                    <span class="font-label-mono text-label-mono">12% from yesterday</span>
+                </div>
+            </div>
+        </div>
+        <!-- Pending Repairs -->
+        <div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-xl">
+                <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Pending Repairs</span>
+                <span class="material-symbols-outlined text-error">build</span>
+            </div>
+            <div>
+                <div class="font-headline-xl text-headline-xl text-primary">38</div>
+                <div class="flex items-center gap-2 mt-xs text-error">
+                    <span class="material-symbols-outlined text-sm">warning</span>
+                    <span class="font-label-mono text-label-mono">5 critical status</span>
+                </div>
+            </div>
+        </div>
+        <!-- Today's Revenue -->
+        <div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-xl">
+                <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Today's Revenue</span>
+                <span class="material-symbols-outlined text-on-surface-variant">payments</span>
+            </div>
+            <div>
+                <div class="font-headline-xl text-headline-xl text-primary">$4,250</div>
+                <div class="flex items-center gap-2 mt-xs text-on-tertiary-container">
+                    <span class="material-symbols-outlined text-sm">arrow_upward</span>
+                    <span class="font-label-mono text-label-mono">Target met</span>
+                </div>
+            </div>
+        </div>
+        <!-- Quick Actions & System Status -->
+        <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col">
+            <h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase mb-md">Quick Actions</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-md flex-1">
+                <button class="bg-primary text-on-primary p-lg flex flex-col items-center justify-center gap-sm hover:bg-surface-tint transition-colors">
+                    <span class="material-symbols-outlined text-[32px]">add_circle</span>
+                    <span class="font-label-mono text-label-mono uppercase">Create Ticket</span>
+                </button>
+                <button class="border border-outline-variant text-primary p-lg flex flex-col items-center justify-center gap-sm hover:bg-surface transition-colors">
+                    <span class="material-symbols-outlined text-[32px]">inventory_2</span>
+                    <span class="font-label-mono text-label-mono uppercase">Inventory</span>
+                </button>
+                <button class="border border-outline-variant text-primary p-lg flex flex-col items-center justify-center gap-sm hover:bg-surface transition-colors">
+                    <span class="material-symbols-outlined text-[32px]">bar_chart</span>
+                    <span class="font-label-mono text-label-mono uppercase">Reports</span>
+                </button>
+            </div>
+        </div>
+        <!-- System Health -->
+        <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg">
+            <h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase mb-md">System Health</h3>
+            <div class="space-y-md mt-lg">
+                <div>
+                    <div class="flex justify-between items-center mb-xs">
+                        <span class="font-label-mono text-label-mono text-primary">Main Server CPU</span>
+                        <span class="font-label-mono text-label-mono text-primary">45%</span>
+                    </div>
+                    <div class="h-[2px] bg-surface-variant w-full">
+                        <div class="h-full bg-secondary w-[45%]"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-xs">
+                        <span class="font-label-mono text-label-mono text-primary">Database Storage</span>
+                        <span class="font-label-mono text-label-mono text-error">88%</span>
+                    </div>
+                    <div class="h-[2px] bg-surface-variant w-full">
+                        <div class="h-full bg-error w-[88%]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 
+</div> <!-- Cierre main-content -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
 </html>

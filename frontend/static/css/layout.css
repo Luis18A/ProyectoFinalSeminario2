@@ -1,0 +1,64 @@
+/**
+ * Layout & Navigation Styles - Responsive Edition
+ * Maneja la estructura fluida para Escritorio, Tablet y Móvil.
+ */
+
+/* Estructura Base del Sidebar */
+#sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: nowrap;
+    z-index: 100;
+    width: 16rem; /* 256px */
+}
+
+/* Contenedor Principal (Escritorio) */
+#main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 16rem;
+    width: calc(100% - 16rem);
+    min-height: 100vh;
+}
+
+/**
+ * RESPONSIVIDAD (Media Queries)
+ */
+
+/* Tablets y Laptops Pequeñas (menor a 1024px) */
+@media (max-width: 1024px) {
+    #sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+    }
+
+    #main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Estado cuando se abre el menú en móvil */
+    .sidebar-open #sidebar {
+        transform: translateX(0) !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    }
+}
+
+/* Estado Colapsado Manual (Escritorio) */
+.sidebar-collapsed #sidebar {
+    transform: translateX(-100%) !important;
+    width: 0 !important;
+}
+
+.sidebar-collapsed #main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+
+/* Ajustes para elementos interactivos */
+nav a {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}

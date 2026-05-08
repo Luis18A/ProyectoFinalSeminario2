@@ -1,377 +1,224 @@
 {% include 'header.html' %}
 
-<body class="bg-background text-on-surface flex min-h-screen">
+<!-- CANVAS (Bento Grid Layout) -->
+<main class="flex-1 p-4 md:p-10 bg-background overflow-x-hidden">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-black text-on-surface uppercase tracking-tighter">Platform Telemetry
+            </h1>
+            <p class="font-body-md text-on-surface-variant max-w-2xl">Global overview of system health, incident
+                velocity, and audit compliance.</p>
+        </div>
+        <div class="flex flex-wrap gap-4 w-full md:w-auto">
+            <button
+                class="flex-1 md:flex-none border border-on-surface/10 bg-surface-container-lowest px-6 py-3 font-label-bold uppercase text-xs hover:bg-zinc-50 transition-colors">Generate
+                Report</button>
+            <button
+                class="flex-1 md:flex-none bg-primary text-white px-6 py-3 font-label-bold uppercase text-xs hover:bg-secondary transition-colors">System
+                Override</button>
+        </div>
+    </div>
 
-    <!-- MAIN CONTENT AREA -->
-    <div id="main-content" class="flex-1 flex flex-col min-h-screen">
-        <!-- TOP APP BAR (Shared Component) -->
-        <header
-            class="sticky top-0 z-40 w-full border-b-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex items-center justify-between px-10 py-4 flat no-shadows">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
-                <div
-                    class="text-lg font-black tracking-tighter uppercase text-[#1A1A1A] dark:text-white font-['Space_Grotesk']">
-                    System Terminal</div>
+    <!-- Bento Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- KPI 1 -->
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Critical
+                    Failures</span>
+                <span class="material-symbols-outlined text-error text-lg">warning</span>
             </div>
-            <div class="flex items-center gap-8">
-                <!-- Search Component logic inferred from JSON "search_bar: on_right" -->
+            <div>
+                <div class="text-4xl font-black text-on-surface">14</div>
+                <div class="font-label-mono text-[10px] text-error mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span> +2.4% vs last week
+                </div>
+            </div>
+        </div>
+        <!-- KPI 2 -->
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Mean Time To
+                    Resolve</span>
+                <span class="material-symbols-outlined text-zinc-400 text-lg">timer</span>
+            </div>
+            <div>
+                <div class="text-4xl font-black text-on-surface">4.2h</div>
+                <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span> -0.8h improvement
+                </div>
+            </div>
+        </div>
+        <!-- KPI 3 -->
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Active
+                    Technicians</span>
+                <span class="material-symbols-outlined text-zinc-400 text-lg">engineering</span>
+            </div>
+            <div>
+                <div class="text-4xl font-black text-on-surface">128</div>
+                <div class="font-label-mono text-[10px] text-zinc-400 mt-2">94% currently engaged</div>
+            </div>
+        </div>
+        <!-- KPI 4 -->
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">System
+                    Integrity</span>
+                <span class="material-symbols-outlined text-primary text-lg">verified_user</span>
+            </div>
+            <div>
+                <div class="text-4xl font-black text-on-surface">99.8%</div>
+                <div class="w-full h-[2px] bg-zinc-100 mt-4 relative">
+                    <div class="absolute left-0 top-0 h-full bg-primary w-[99.8%]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Large Chart area (Failure Trends) -->
+        <div
+            class="col-span-1 sm:col-span-2 lg:col-span-3 bg-white border border-on-surface/10 p-6 min-h-[320px] flex flex-col">
+            <div class="flex justify-between items-center mb-8 border-b border-on-surface/10 pb-4">
+                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Incident Velocity Grid</h2>
+                <div class="hidden sm:flex gap-2 font-label-mono text-[10px] text-zinc-400">
+                    <button
+                        class="px-2 py-1 border border-on-surface/10 hover:border-primary hover:text-primary transition-colors">24H</button>
+                    <button class="px-2 py-1 bg-on-surface text-white">7D</button>
+                    <button
+                        class="px-2 py-1 border border-on-surface/10 hover:border-primary hover:text-primary transition-colors">30D</button>
+                </div>
+            </div>
+            <!-- Contenedor con altura fija para que el % funcione -->
+            <div class="h-64 flex items-end gap-2 relative mt-4 overflow-x-auto pb-4">
+                <!-- Eje Y (Etiquetas de referencia) -->
                 <div
-                    class="flex items-center border-b-2 border-transparent focus-within:border-[#0057FF] transition-colors pb-1">
-                    <span class="material-symbols-outlined text-zinc-500 mr-2 text-sm">search</span>
+                    class="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] font-mono text-zinc-300 pb-8">
+                    <span>100%</span>
+                    <span>50%</span>
+                    <span>0%</span>
+                </div>
+
+                <!-- Área del Gráfico -->
+                <div
+                    class="flex-1 flex justify-between items-end h-full min-w-[400px] z-10 pl-10 pb-8 border-l border-b border-zinc-100 relative">
+                    <!-- Líneas de cuadrícula de fondo -->
+                    <div class="absolute inset-0 pl-10 pb-8 flex flex-col justify-between pointer-events-none">
+                        <div class="border-t border-zinc-50 w-full h-0"></div>
+                        <div class="border-t border-zinc-50 w-full h-0"></div>
+                        <div class="border-t border-zinc-100 w-full h-0"></div>
+                    </div>
+                    <!-- Barra de estado para cada día | el editor no entiende el lenguaje de plantillas Flask dentro de un atributo css-->
+                    {% for h in [80, 35, 55, 90, 65, 45, 20] %}
+                    <div class="w-10 bg-zinc-100 hover:bg-primary transition-all cursor-pointer relative group z-10"
+                        style="height: {{h}}%">
+                        <!-- Tooltip al pasar el mouse -->
+                        <div
+                            class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-mono text-[10px] bg-zinc-900 text-white px-2 py-1 pointer-events-none transition-opacity">
+                            {{h}}%
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Eje X (Días) -->
+                <div
+                    class="absolute bottom-0 left-10 right-0 flex justify-between text-[9px] font-bold text-zinc-400 uppercase tracking-widest px-2">
+                    <span>Lun</span>
+                    <span>Mar</span>
+                    <span>Mié</span>
+                    <span>Jue</span>
+                    <span>Vie</span>
+                    <span>Sáb</span>
+                    <span>Dom</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Chart area -->
+        <div
+            class="col-span-1 sm:col-span-2 lg:col-span-1 bg-white border border-on-surface/10 p-6 min-h-[320px] flex flex-col">
+            <div class="flex justify-between items-center mb-6 border-b border-on-surface/10 pb-4">
+                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Fault Logic</h2>
+            </div>
+            <div class="flex-1 flex flex-col justify-center gap-6">
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
+                        <span>Cisco Networks</span>
+                        <span>42%</span>
+                    </div>
+                    <div class="w-full h-[2px] bg-zinc-100">
+                        <div class="h-full bg-primary w-[42%]"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
+                        <span>Dell Servers</span>
+                        <span>28%</span>
+                    </div>
+                    <div class="w-full h-[2px] bg-zinc-100">
+                        <div class="h-full bg-secondary w-[28%]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Log Table -->
+        <div
+            class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white border border-on-surface/10 overflow-hidden flex flex-col mt-4">
+            <div
+                class="p-6 border-b border-on-surface/10 bg-zinc-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">System Audit Log</h2>
+                <div class="relative w-full sm:w-64">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">search</span>
                     <input
-                        class="bg-transparent border-none outline-none text-[#1A1A1A] dark:text-zinc-100 font-['Space_Grotesk'] font-bold text-sm w-64 placeholder:text-zinc-400 focus:ring-0 p-0"
+                        class="w-full border border-zinc-200 py-2 pl-9 pr-4 font-mono text-xs focus:border-primary focus:outline-none"
                         placeholder="QUERY_SYSTEM..." type="text" />
                 </div>
-                <div class="flex items-center gap-5 text-zinc-500">
-                    <button class="hover:text-[#0057FF] transition-colors"><span class="material-symbols-outlined"
-                            style="font-variation-settings: 'FILL' 0;">notifications</span></button>
-                    <button class="hover:text-[#0057FF] transition-colors"><span class="material-symbols-outlined"
-                            style="font-variation-settings: 'FILL' 0;">help_outline</span></button>
-                </div>
             </div>
-        </header>
-        <!-- CANVAS (Bento Grid Layout) -->
-        <main class="flex-1 p-container-margin bg-background">
-            <!-- Page Header -->
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Platform Telemetry</h1>
-                    <p class="font-body-md text-body-md text-on-surface-variant">Global overview of system health,
-                        incident velocity, and audit compliance.</p>
-                </div>
-                <div class="flex gap-4">
-                    <button
-                        class="border border-on-surface/10 bg-surface-container-lowest px-6 py-3 font-label-bold text-label-bold text-on-surface hover:bg-surface-variant transition-colors uppercase">Generate
-                        Report</button>
-                    <button
-                        class="bg-on-surface px-6 py-3 font-label-bold text-label-bold text-surface-container-lowest hover:bg-surface-tint transition-colors uppercase">System
-                        Override</button>
-                </div>
-            </div>
-            <!-- Bento Grid -->
-            <div class="grid grid-cols-12 gap-grid-gutter">
-                <!-- KPI 1 -->
-                <div
-                    class="col-span-3 bg-surface-container-lowest border border-on-surface/10 p-6 flex flex-col justify-between h-40">
-                    <div class="flex justify-between items-start">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Critical
-                            Failures</span>
-                        <span class="material-symbols-outlined text-error text-lg">warning</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-on-surface">14</div>
-                        <div class="font-label-mono text-label-mono text-error mt-2 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">arrow_upward</span> +2.4% vs last week
-                        </div>
-                    </div>
-                </div>
-                <!-- KPI 2 -->
-                <div
-                    class="col-span-3 bg-surface-container-lowest border border-on-surface/10 p-6 flex flex-col justify-between h-40">
-                    <div class="flex justify-between items-start">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Mean Time To
-                            Resolve</span>
-                        <span class="material-symbols-outlined text-on-surface-variant text-lg">timer</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-on-surface">4.2h</div>
-                        <div class="font-label-mono text-label-mono text-emerald mt-2 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">arrow_downward</span> -0.8h improvement
-                        </div>
-                    </div>
-                </div>
-                <!-- KPI 3 -->
-                <div
-                    class="col-span-3 bg-surface-container-lowest border border-on-surface/10 p-6 flex flex-col justify-between h-40">
-                    <div class="flex justify-between items-start">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Active
-                            Technicians</span>
-                        <span class="material-symbols-outlined text-on-surface-variant text-lg">engineering</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-on-surface">128</div>
-                        <div class="font-label-mono text-label-mono text-on-surface-variant mt-2">
-                            94% currently engaged
-                        </div>
-                    </div>
-                </div>
-                <!-- KPI 4 -->
-                <div
-                    class="col-span-3 bg-surface-container-lowest border border-on-surface/10 p-6 flex flex-col justify-between h-40">
-                    <div class="flex justify-between items-start">
-                        <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">System
-                            Integrity</span>
-                        <span class="material-symbols-outlined text-tech-blue text-lg">verified_user</span>
-                    </div>
-                    <div>
-                        <div class="font-headline-xl text-headline-xl text-on-surface">99.8%</div>
-                        <!-- Progress line -->
-                        <div class="w-full h-[2px] bg-surface-variant mt-4 relative">
-                            <div class="absolute left-0 top-0 h-full bg-tech-blue w-[99.8%]"></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Large Chart area (Failure Trends) -->
-                <div
-                    class="col-span-8 bg-surface-container-lowest border border-on-surface/10 p-6 min-h-[320px] flex flex-col">
-                    <div class="flex justify-between items-center mb-8 border-b border-on-surface/10 pb-4">
-                        <h2 class="font-headline-md text-headline-md text-on-surface">Incident Velocity Grid</h2>
-                        <div class="flex gap-2 font-label-mono text-label-mono text-on-surface-variant">
-                            <button
-                                class="px-2 py-1 bg-surface border border-on-surface/10 hover:border-tech-blue hover:text-tech-blue transition-colors">24H</button>
-                            <button class="px-2 py-1 bg-on-surface text-surface-container-lowest">7D</button>
-                            <button
-                                class="px-2 py-1 bg-surface border border-on-surface/10 hover:border-tech-blue hover:text-tech-blue transition-colors">30D</button>
-                        </div>
-                    </div>
-                    <!-- Structural visual representation of a chart using divs -->
-                    <div class="flex-1 flex items-end gap-2 relative mt-4">
-                        <!-- Y-Axis labels -->
-                        <div
-                            class="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] font-['Space_Grotesk'] text-on-surface-variant pb-6">
-                            <span>100</span>
-                            <span>75</span>
-                            <span>50</span>
-                            <span>25</span>
-                            <span>0</span>
-                        </div>
-                        <!-- Grid lines -->
-                        <div class="absolute left-6 right-0 top-0 h-full flex flex-col justify-between z-0">
-                            <div class="border-t border-on-surface/5 w-full"></div>
-                            <div class="border-t border-on-surface/5 w-full"></div>
-                            <div class="border-t border-on-surface/5 w-full"></div>
-                            <div class="border-t border-on-surface/5 w-full"></div>
-                            <div class="border-t border-on-surface/10 w-full"></div>
-                        </div>
-                        <!-- Bars -->
-                        <div class="flex-1 flex justify-between items-end h-full z-10 pl-8 pb-6">
-                            <div
-                                class="w-8 bg-surface-variant h-[40%] hover:bg-tech-blue transition-colors relative group">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-zinc-50 border-b border-zinc-100">
+                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                Timestamp</th>
+                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Event ID
+                            </th>
+                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Action
+                            </th>
+                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Actor
+                            </th>
+                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs">
+                        <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors cursor-pointer group">
+                            <td class="py-4 px-6 font-mono text-zinc-400">10:42:01Z</td>
+                            <td class="py-4 px-6 font-mono text-primary group-hover:underline">EVT-9021A</td>
+                            <td class="py-4 px-6">Root access granted to Server Rack 04. Configuration modified.</td>
+                            <td class="py-4 px-6 flex items-center gap-2">
                                 <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    42</div>
-                            </div>
-                            <div
-                                class="w-8 bg-surface-variant h-[35%] hover:bg-tech-blue transition-colors relative group">
-                                <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    36</div>
-                            </div>
-                            <div
-                                class="w-8 bg-surface-variant h-[55%] hover:bg-tech-blue transition-colors relative group">
-                                <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    58</div>
-                            </div>
-                            <div
-                                class="w-8 bg-surface-variant h-[80%] hover:bg-tech-blue transition-colors relative group">
-                                <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    84</div>
-                            </div>
-                            <div class="w-8 bg-tech-blue h-[65%] border-b-2 border-on-surface relative group">
-                                <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    68</div>
-                            </div>
-                            <div
-                                class="w-8 bg-surface-variant h-[45%] hover:bg-tech-blue transition-colors relative group">
-                                <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    48</div>
-                            </div>
-                            <div
-                                class="w-8 bg-surface-variant h-[20%] hover:bg-tech-blue transition-colors relative group">
-                                <div
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-label-mono text-[10px] text-on-surface bg-surface border border-on-surface/10 px-1">
-                                    21</div>
-                            </div>
-                        </div>
-                        <!-- X-Axis Labels -->
-                        <div
-                            class="absolute bottom-0 left-8 right-0 flex justify-between text-[10px] font-['Space_Grotesk'] text-on-surface-variant">
-                            <span>MON</span>
-                            <span>TUE</span>
-                            <span>WED</span>
-                            <span>THU</span>
-                            <span class="text-on-surface font-bold border-b border-on-surface">FRI</span>
-                            <span>SAT</span>
-                            <span>SUN</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Secondary Chart area (Recurring Brands/Categories) -->
-                <div
-                    class="col-span-4 bg-surface-container-lowest border border-on-surface/10 p-6 min-h-[320px] flex flex-col">
-                    <div class="flex justify-between items-center mb-6 border-b border-on-surface/10 pb-4">
-                        <h2 class="font-headline-md text-headline-md text-on-surface">Hardware Fault Logic</h2>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-center gap-6">
-                        <!-- Stat row 1 -->
-                        <div>
-                            <div class="flex justify-between font-label-mono text-label-mono mb-2">
-                                <span class="text-on-surface">Cisco Networks</span>
-                                <span class="text-on-surface-variant">42%</span>
-                            </div>
-                            <div class="w-full h-[2px] bg-surface-variant">
-                                <div class="h-full bg-on-surface w-[42%]"></div>
-                            </div>
-                        </div>
-                        <!-- Stat row 2 -->
-                        <div>
-                            <div class="flex justify-between font-label-mono text-label-mono mb-2">
-                                <span class="text-on-surface">Dell Servers</span>
-                                <span class="text-on-surface-variant">28%</span>
-                            </div>
-                            <div class="w-full h-[2px] bg-surface-variant">
-                                <div class="h-full bg-tech-blue w-[28%]"></div>
-                            </div>
-                        </div>
-                        <!-- Stat row 3 -->
-                        <div>
-                            <div class="flex justify-between font-label-mono text-label-mono mb-2">
-                                <span class="text-on-surface">Lenovo Endpoints</span>
-                                <span class="text-on-surface-variant">15%</span>
-                            </div>
-                            <div class="w-full h-[2px] bg-surface-variant">
-                                <div class="h-full bg-outline w-[15%]"></div>
-                            </div>
-                        </div>
-                        <!-- Stat row 4 -->
-                        <div>
-                            <div class="flex justify-between font-label-mono text-label-mono mb-2">
-                                <span class="text-on-surface">Peripheral Msc</span>
-                                <span class="text-on-surface-variant">15%</span>
-                            </div>
-                            <div class="w-full h-[2px] bg-surface-variant">
-                                <div class="h-full bg-surface-tint w-[15%]"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Audit Log Table -->
-                <div
-                    class="col-span-12 bg-surface-container-lowest border border-on-surface/10 overflow-hidden flex flex-col mt-4">
-                    <div class="p-6 border-b border-on-surface/10 bg-surface flex justify-between items-center">
-                        <h2 class="font-headline-md text-headline-md text-on-surface">System Audit Log</h2>
-                        <div class="flex gap-4">
-                            <div class="relative">
+                                    class="w-6 h-6 bg-primary text-white flex items-center justify-center font-bold text-[8px]">
+                                    JD</div>
+                                J. Doe (Admin)
+                            </td>
+                            <td class="py-4 px-6">
                                 <span
-                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">filter_list</span>
-                                <input
-                                    class="border border-on-surface/10 bg-surface-container-lowest py-2 pl-9 pr-4 font-label-mono text-label-mono text-on-surface focus:border-tech-blue focus:outline-none w-64"
-                                    placeholder="Filter ID or User" type="text" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr
-                                    class="border-b border-on-surface/10 bg-surface-bright font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">
-                                    <th class="py-4 px-6 w-32">Timestamp</th>
-                                    <th class="py-4 px-6 w-40">Event ID</th>
-                                    <th class="py-4 px-6">Action / Mutation</th>
-                                    <th class="py-4 px-6 w-48">Actor</th>
-                                    <th class="py-4 px-6 w-32">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="font-body-sm text-body-sm text-on-surface">
-                                <tr
-                                    class="border-b border-on-surface/5 hover:bg-surface-container transition-colors group cursor-pointer">
-                                    <td class="py-4 px-6 font-label-mono text-on-surface-variant">10:42:01Z</td>
-                                    <td class="py-4 px-6 font-label-mono text-tech-blue group-hover:underline">EVT-9021A
-                                    </td>
-                                    <td class="py-4 px-6">Root access granted to Server Rack 04. Configuration modified.
-                                    </td>
-                                    <td class="py-4 px-6 flex items-center gap-2">
-                                        <div
-                                            class="w-6 h-6 bg-on-surface text-surface-container-lowest flex items-center justify-center font-label-bold text-[10px]">
-                                            JD</div>
-                                        J. Doe (Admin)
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <span
-                                            class="inline-block px-2 py-1 bg-emerald/10 text-emerald font-label-bold text-[10px] uppercase border border-emerald/20">Success</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="border-b border-on-surface/5 hover:bg-surface-container transition-colors group cursor-pointer">
-                                    <td class="py-4 px-6 font-label-mono text-on-surface-variant">10:15:33Z</td>
-                                    <td class="py-4 px-6 font-label-mono text-tech-blue group-hover:underline">EVT-9020B
-                                    </td>
-                                    <td class="py-4 px-6">Firewall rule appended: BLK_IP_RNG_77</td>
-                                    <td class="py-4 px-6 flex items-center gap-2">
-                                        <div
-                                            class="w-6 h-6 bg-surface-tint text-surface-container-lowest flex items-center justify-center font-label-bold text-[10px]">
-                                            SYS</div>
-                                        System Automata
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <span
-                                            class="inline-block px-2 py-1 bg-emerald/10 text-emerald font-label-bold text-[10px] uppercase border border-emerald/20">Success</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="border-b border-on-surface/5 hover:bg-surface-container transition-colors group cursor-pointer bg-error/5">
-                                    <td class="py-4 px-6 font-label-mono text-on-surface-variant">09:58:12Z</td>
-                                    <td class="py-4 px-6 font-label-mono text-tech-blue group-hover:underline">EVT-9019F
-                                    </td>
-                                    <td class="py-4 px-6">Failed authentication attempt on DB_Primary. 3rd strike.</td>
-                                    <td class="py-4 px-6 flex items-center gap-2">
-                                        <div
-                                            class="w-6 h-6 bg-surface border border-on-surface/20 flex items-center justify-center font-label-bold text-[10px] text-on-surface">
-                                            ?</div>
-                                        Unknown Origin
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <span
-                                            class="inline-block px-2 py-1 bg-error/10 text-error font-label-bold text-[10px] uppercase border border-error/20">Denied</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="border-b border-on-surface/5 hover:bg-surface-container transition-colors group cursor-pointer">
-                                    <td class="py-4 px-6 font-label-mono text-on-surface-variant">08:30:00Z</td>
-                                    <td class="py-4 px-6 font-label-mono text-tech-blue group-hover:underline">EVT-9018C
-                                    </td>
-                                    <td class="py-4 px-6">Routine backup instantiated for Volume_C.</td>
-                                    <td class="py-4 px-6 flex items-center gap-2">
-                                        <div
-                                            class="w-6 h-6 bg-surface-tint text-surface-container-lowest flex items-center justify-center font-label-bold text-[10px]">
-                                            SYS</div>
-                                        System Automata
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <span
-                                            class="inline-block px-2 py-1 bg-deep-slate text-surface-container-lowest font-label-bold text-[10px] uppercase border border-deep-slate">Pending</span>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-surface-container transition-colors group cursor-pointer">
-                                    <td class="py-4 px-6 font-label-mono text-on-surface-variant">07:12:45Z</td>
-                                    <td class="py-4 px-6 font-label-mono text-tech-blue group-hover:underline">EVT-9017A
-                                    </td>
-                                    <td class="py-4 px-6">Technician status updated to OFFLINE.</td>
-                                    <td class="py-4 px-6 flex items-center gap-2">
-                                        <div
-                                            class="w-6 h-6 bg-surface border border-on-surface/20 flex items-center justify-center font-label-bold text-[10px] text-on-surface">
-                                            MK</div>
-                                        M. Klein (Tech)
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <span
-                                            class="inline-block px-2 py-1 bg-emerald/10 text-emerald font-label-bold text-[10px] uppercase border border-emerald/20">Success</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    class="px-2 py-1 bg-emerald-50 text-emerald-600 font-bold uppercase text-[8px] border border-emerald-100">Success</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </main>
+        </div>
     </div>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</main>
+
+</div> <!-- Cierre main-content -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 
 </html>

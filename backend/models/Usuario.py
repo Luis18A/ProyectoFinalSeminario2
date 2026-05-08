@@ -50,3 +50,28 @@ class Usuario(db.Model):
     def eliminar(self):
         db.session.delete(self)
         db.session.commit()
+
+    @staticmethod
+    def obtener_por_username(username):
+        """Obtiene un usuario por username."""
+        return Usuario.query.filter_by(username=username).first()
+
+    @staticmethod
+    def obtener_por_nombre(nombre):
+        """Obtiene usuarios por nombre."""
+        return Usuario.query.filter(Usuario.nombre.like(f"%{nombre}%")).all()
+
+    @staticmethod
+    def obtener_por_apellido(apellido):
+        """Obtiene usuarios por apellido."""
+        return Usuario.query.filter(Usuario.apellido.like(f"%{apellido}%")).all()
+
+    @staticmethod
+    def obtener_por_rol(rol_id):
+        """Obtiene usuarios por rol."""
+        return Usuario.query.filter_by(rol_id=rol_id).all()
+
+    @staticmethod
+    def obtener_por_activo(activo):
+        """Obtiene usuarios por estado activo/inactivo."""
+        return Usuario.query.filter_by(activo=activo).all()

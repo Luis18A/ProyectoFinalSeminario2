@@ -13,7 +13,7 @@ from backend.models.TipoDispositivo import TipoDispositivo
 
 # Importar los Blueprints de las rutas (ahora dentro de backend)
 from backend.routes.vistas import vistas_bp
-from backend.routes.usuarios import usuarios_bp
+from backend.routes.usuario_route import usuarios_bp
 
 # Configurar Flask para que busque en la carpeta frontend
 app = Flask(__name__, 
