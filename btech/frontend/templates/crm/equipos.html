@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <h3>💻 Parque Tecnológico de: <span class="text-primary">{{ cliente.nombre }} {{ cliente.apellido }}</span></h3>
+    <a href="/clientes" class="btn btn-secondary">⬅️ Volver al Directorio</a>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow border-0">
+            <div class="card-header bg-info text-dark fw-bold">
+                <h5 class="mb-0">➕ Registrar Dispositivo</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('crm.equipos_cliente', cliente_id=cliente.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tipo de Dispositivo *</label>
+                        <select class="form-select" name="tipo" required>
+                            <option value="" selected disabled>Seleccione una opción...</option>
+                            {% for tipo in tipos %}
+                            <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Marca *</label>
+                            <input type="text" class="form-control" name="marca" placeholder="Ej: HP, Epson..."
+                                required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Modelo *</label>
+                            <input type="text" class="form-control" name="modelo" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Número de Serie (S/N) *</label>
+                        <input type="text" class="form-control" name="numero_serie"
+                            placeholder="Fundamental para historial" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción General / Color</label>
+                        <textarea class="form-control" name="descripcion_general" rows="2"
+                            placeholder="Ej: Carcasa gris, con cargador original..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100 fw-bold text-dark">Guardar Equipo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">📋 Dispositivos Registrados</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Marca y Modelo</th>
+                                <th>S/N</th>
+                                <th>Detalles</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for equipo in equipos %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ equipo.tipo_dispositivo }}</span></td>
+                                <td><strong>{{ equipo.marca }}</strong> {{ equipo.modelo }}</td>
+                                <td class="text-muted font-monospace">{{ equipo.numero_serie }}</td>
+                                <td><small>{{ equipo.descripcion_general }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('taller.nuevo_ticket', equipo_id=equipo.id) }}"
+                                        class="btn btn-sm btn-warning fw-bold text-dark">Ingresar al Taller</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Este cliente aún no tiene dispositivos registrados.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

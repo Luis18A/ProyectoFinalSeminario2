@@ -1,0 +1,44 @@
+<!-- SIDEBAR MODULAR -->
+<nav id="sidebar">
+    <div class="sidebar-header">
+        <h4 class="mb-0 fw-bold"><i class="bi bi-cpu text-info"></i> BTech</h4>
+        <small class="text-info opacity-75">Admin Panel</small>
+    </div>
+    
+    <div class="mt-4">
+        <!-- Tablero de Tickets -->
+        <a href="{{ url_for('taller.tickets') }}" 
+           class="nav-link {% if request.endpoint == 'taller.tickets' %}active{% endif %}">
+            <i class="bi bi-kanban"></i> Tablero
+        </a>
+
+        <!-- Dentro de tu _sidebar.html -->
+        <a href="{{ url_for('taller.tickets') }}" class="nav-link {% if request.endpoint == 'taller.tickets' %}active{% endif %}">
+            <i class="bi bi-kanban"></i> Tablero Activo
+        </a>
+
+        <a href="{{ url_for('taller.historial_tickets') }}" class="nav-link {% if request.endpoint == 'taller.historial_tickets' %}active{% endif %}">
+            <i class="bi bi-archive"></i> Historial Global
+        </a>
+
+        <!-- Gestión de Clientes -->
+        <a href="{{ url_for('crm.clientes') }}" 
+           class="nav-link {% if request.endpoint == 'crm.clientes' %}active{% endif %}">
+            <i class="bi bi-people"></i> Clientes
+        </a>
+
+        <div class="px-3 mt-4 mb-2 small text-uppercase opacity-50">Configuración</div>
+        
+        <a href="#" class="nav-link">
+            <i class="bi bi-gear"></i> Ajustes
+        </a>
+
+        <hr class="mx-3 opacity-25">
+
+        <!-- Cerrar Sesión -->
+        <a href="{{ url_for('auth.logout') }}" class="nav-link text-danger">
+            <i class="bi bi-box-arrow-left"></i> Salir
+        </a>
+    </div>
+</nav>
+

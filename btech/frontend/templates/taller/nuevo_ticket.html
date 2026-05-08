@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">🛠️ Generar Orden de Ingreso</h5>
+                <span class="badge bg-dark text-white">Estado Inicial: PENDIENTE</span>
+            </div>
+            <div class="card-body">
+
+                <div class="alert alert-secondary border-secondary shadow-sm">
+                    <div class="row">
+                        <div class="col-sm-6 border-end border-secondary">
+                            <p class="mb-1"><strong>👤 Cliente:</strong> {{ equipo.cliente.apellido }}, {{
+                                equipo.cliente.nombre }}</p>
+                            <p class="mb-0"><strong>📞 Teléfono:</strong> {{ equipo.cliente.telefono }}</p>
+                        </div>
+                        <div class="col-sm-6 ps-3">
+                            <!-- Corregimos equipo.tipo_dispositivo por equipo.categoria.nombre -->
+                            <p class="mb-1"><strong>💻 Equipo:</strong> {{ equipo.tipo_dispositivo }} {{ equipo.marca }}
+                                {{ equipo.modelo }}</p>
+                            <p class="mb-0"><strong>🏷️ S/N:</strong> <span class="font-monospace">{{
+                                    equipo.numero_serie }}</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('taller.nuevo_ticket', equipo_id=equipo.id) }}">
+                    <div class="mb-3 mt-4">
+                        <label class="form-label fw-bold">Falla Reportada por el Cliente *</label>
+                        <textarea class="form-control" name="falla" rows="4"
+                            placeholder="Describa el problema con el mayor nivel de detalle posible (Ej: La impresora mancha la hoja del lado derecho, la notebook enciende pero no da video...)"
+                            required></textarea>
+                        <div class="form-text text-muted">Este campo es vital para guiar el diagnóstico inicial en la
+                            mesa de trabajo.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Accesorios Adjuntos</label>
+                        <textarea class="form-control" name="accesorios" rows="2"
+                            placeholder="Ej: Cargador original, funda protectora, cartuchos alternativos, cable USB..."></textarea>
+                        <div class="form-text text-danger"><small><i class="bi bi-exclamation-triangle"></i> Todo lo que
+                                no se registre explícitamente aquí, se asume que no ingresó al local.</small></div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <!-- Corregimos el url_for agregando 'crm.' y usando 'equipo.cliente.id' -->
+                        <a href="{{ url_for('crm.equipos_cliente', cliente_id=equipo.cliente.id) }}"
+                            class="btn btn-outline-secondary fw-bold px-4">Cancelar</a>
+                        <button type="submit" class="btn btn-warning fw-bold text-dark px-4 shadow-sm">Generar Ticket de
+                            Ingreso</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

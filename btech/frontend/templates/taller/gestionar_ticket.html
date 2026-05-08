@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% import "macros/_components.html" as ui %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('taller.tickets') }}"
+                        class="text-decoration-none">Tablero</a></li>
+                <li class="breadcrumb-item active">Ficha de Ticket</li>
+            </ol>
+        </nav>
+        <h3 class="fw-bold mb-0">🔧 Gestión de Ticket <span class="text-muted">#{{ orden.id }}</span></h3>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('taller.comprobante_ticket', orden_id=orden.id) }}" target="_blank"
+            class="btn btn-primary d-flex align-items-center gap-2">
+            <i class="bi bi-printer"></i> Comprobante
+        </a>
+        <a href="{{ url_for('taller.tickets') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-3">Datos del Cliente</h6>
+                        <p class="mb-1 fw-bold"><i class="bi bi-person me-2 text-primary"></i>{{
+                            orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</p>
+                        <p class="mb-1 small"><i class="bi bi-telephone me-2 text-muted"></i>{{
+                            orden.equipo.cliente.telefono }}</p>
+                        <p class="mb-0 small"><i class="bi bi-calendar-event me-2 text-muted"></i>Ingreso: {{
+                            orden.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</p>
+                    </div>
+                    <div class="col-md-6 ps-md-4">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-3">Detalle del Equipo</h6>
+                        <p class="mb-1 fw-bold"><i class="bi bi-laptop me-2 text-primary"></i>{{
+                            orden.equipo.tipo_dispositivo }} {{ orden.equipo.marca }}</p>
+                        <p class="mb-1 small text-secondary"><strong>Modelo:</strong> {{ orden.equipo.modelo }}</p>
+                        <p class="mb-0 small text-secondary"><strong>S/N:</strong> <span
+                                class="font-monospace text-dark">{{ orden.equipo.numero_serie }}</span></p>
+                    </div>
+                </div>
+                <hr class="my-4 opacity-25">
+                <div class="bg-light p-3 rounded border-start border-4 border-warning">
+                    <label class="fw-bold small text-uppercase text-warning mb-1">Falla Reportada</label>
+                    <p class="mb-0 small">{{ orden.falla_reportada }}</p>
+                    {% if orden.accesorios %}
+                    <div class="mt-2 pt-2 border-top small text-muted">
+                        <strong>Accesorios:</strong> {{ orden.accesorios }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Actualizar Estado y
+                    Diagnóstico</h6>
+            </div>
+            <div class="card-body bg-light bg-opacity-50 p-4">
+                <form method="POST" action="{{ url_for('taller.gestionar_ticket', orden_id=orden.id) }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Nuevo Estado</label>
+                            <select class="form-select border-0 shadow-sm" name="estado">
+                                {% for estado in estados %}
+                                <option value="{{ estado.id }}" {% if orden.estado and orden.estado.name==estado.id
+                                    %}selected{% endif %}>
+                                    {{ estado.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Costo de Reparación ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-0 bg-white">$</span>
+                                <input type="number" step="0.01" class="form-control border-0 shadow-sm"
+                                    name="costo_total" value="{{ orden.costo_total if orden.costo_total else '' }}"
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Observación Técnica / Diagnóstico</label>
+                        <textarea class="form-control border-0 shadow-sm" name="observacion_tecnica" rows="4"
+                            placeholder="Describe el trabajo realizado..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                        <i class="bi bi-save me-2"></i> Guardar Cambios
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Movimientos
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="timeline">
+                    {% for item in orden.historial_estados %}
+                    <div class="position-relative ps-4 pb-4 border-start border-2 border-light">
+                        <div class="position-absolute start-0 top-0 translate-middle-x bg-white"
+                            style="margin-left: -1px;">
+                            <i class="bi bi-record-circle-fill text-primary"></i>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-dark rounded-pill" style="font-size: 0.7rem;">{{ item.estado_nuevo
+                                }}</span>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{ item.fecha_cambio.strftime('%d/%m
+                                %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1 small"><strong>Usuario:</strong> {{ item.usuario.nombre }}</p>
+
+                        {% if item.observacion_tecnica %}
+                        <div class="p-2 bg-light rounded small mt-2 italic">
+                            <i class="bi bi-chat-left-dots text-muted me-2"></i>"{{ item.observacion_tecnica }}"
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted small text-center">No hay movimientos registrados.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilo para que la última línea del historial no quede colgando */
+    .timeline .border-start:last-child {
+        border-left-color: transparent !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante #{{ orden.id }} - BTech</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background-color: white;
+                font-size: 14pt;
+            }
+
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0;
+            }
+
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+
+        .btech-header {
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+
+<body class="bg-light pt-5">
+
+    <div class="container" style="max-width: 800px;">
+        <div class="text-end mb-4 no-print">
+            <button onclick="window.print()" class="btn btn-primary btn-lg fw-bold shadow-sm">🖨️ Imprimir / Guardar
+                PDF</button>
+            <button onclick="window.close()" class="btn btn-outline-secondary btn-lg ms-2">Cerrar</button>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-body p-5">
+
+                <div class="row btech-header align-items-center">
+                    <div class="col-sm-6">
+                        <h2 class="fw-bold text-primary mb-0">BTech</h2>
+                        <p class="text-muted mb-0 letter-spacing">SERVICIO TÉCNICO INFORMÁTICO</p>
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <h4 class="text-secondary mb-1">Orden de Trabajo #{{ orden.id }}</h4>
+                        <p class="mb-0"><strong>Fecha:</strong> {{ orden.fecha_ingreso.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-sm-12">
+                        <h6 class="text-uppercase text-muted fw-bold mb-2">Datos del Cliente</h6>
+                        <div class="p-3 bg-light border rounded">
+                            <p class="mb-1"><strong>Nombre:</strong> {{ orden.equipo.cliente.apellido }}, {{
+                                orden.equipo.cliente.nombre }}</p>
+                            <p class="mb-1"><strong>DNI/CUIL:</strong> {{ orden.equipo.cliente.dni_cuil }}</p>
+                            <p class="mb-0"><strong>Teléfono:</strong> {{ orden.equipo.cliente.telefono }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-sm-12">
+                        <h6 class="text-uppercase text-muted fw-bold mb-2">Detalle del Equipo</h6>
+                        <table class="table table-bordered mb-4">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Dispositivo</th>
+                                    <th>Marca / Modelo</th>
+                                    <th>S/N (Número de Serie)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ orden.equipo.tipo_dispositivo }}</td>
+                                    <td>{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</td>
+                                    <td class="font-monospace">{{ orden.equipo.numero_serie }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="mb-3">
+                            <p class="mb-1 fw-bold">Motivo de Ingreso:</p>
+                            <p class="text-muted border-bottom pb-2">{{ orden.falla_reportada }}</p>
+                        </div>
+                        {% if orden.accesorios %}
+                        <div class="mb-3">
+                            <p class="mb-1 fw-bold">Accesorios Recibidos:</p>
+                            <p class="text-muted border-bottom pb-2">{{ orden.accesorios }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-5">
+                    <div class="col-sm-12">
+                        <h6 class="text-uppercase text-muted fw-bold mb-2">Resolución Técnica</h6>
+                        <div class="p-4 border border-2 border-primary rounded mb-3 bg-light">
+                            {% set ultimo_historial =
+                            orden.historial_estados|selectattr('observacion_tecnica')|list|last %}
+                            <p class="mb-0">
+                                {% if ultimo_historial and ultimo_historial.observacion_tecnica %}
+                                {{ ultimo_historial.observacion_tecnica }}
+                                {% else %}
+                                <em>Diagnóstico técnico detallado en el sistema interno.</em>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <div class="text-end" style="width: 300px;">
+                                <h5 class="fw-bold d-flex justify-content-between border-bottom pb-2">
+                                    <span>Total Servicio:</span>
+                                    <span>${{ "%.2f"|format(orden.costo_total if orden.costo_total else 0) }}</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-5 pt-4">
+                    <div class="col-sm-6 text-center">
+                        <hr class="w-75 mx-auto border-dark">
+                        <p class="mb-0 fw-bold">Técnico Responsable</p>
+                        <small class="text-muted">Firma y Aclaración</small>
+                    </div>
+                    <div class="col-sm-6 text-center">
+                        <hr class="w-75 mx-auto border-dark">
+                        <p class="mb-0 fw-bold">Conformidad del Cliente</p>
+                        <small class="text-muted">Firma y Aclaración</small>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <small class="text-muted">Este documento es válido como comprobante de servicio técnico. La garantía
+                        de reparación es de 30 días sobre la falla especificada.</small>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "macros/_components.html" as ui %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <h3>📋 Tablero de Control de Tickets</h3>
+    <div class="btn-group">
+        <a href="{{ url_for('crm.clientes') }}" class="btn btn-primary">➕ Nuevo Ingreso</a>
+        <button class="btn btn-outline-secondary" onclick="location.reload()">🔄 Actualizar</button>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">{{ ui.render_widget("Pendientes", resumen.pendientes, "clock-history", "danger") }}</div>
+    <div class="col-md-4">{{ ui.render_widget("En Mesa", resumen.en_reparacion, "tools", "primary") }}</div>
+    <div class="col-md-4">{{ ui.render_widget("Para Retirar", resumen.listos, "check2-circle", "success") }}</div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card bg-light border-0 shadow-sm">
+            <div class="card-header bg-danger text-white fw-bold text-center">📥 INGRESADOS</div>
+            <div class="card-body p-2" style="min-height: 400px; max-height: 70vh; overflow-y: auto;">
+                {% for orden in ordenes if orden.estado and orden.estado.value in ['Pendiente', 'Diagnostico'] %}
+                {{ ui.render_ticket_card(orden, "danger", mostrar_falla=True) }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light border-0 shadow-sm">
+            <div class="card-header bg-primary text-white fw-bold text-center">🛠️ EN TRABAJO</div>
+            <div class="card-body p-2" style="min-height: 400px; max-height: 70vh; overflow-y: auto;">
+                {% for orden in ordenes if orden.estado and orden.estado.value in ['Presupuestado', 'Reparacion'] %}
+                {{ ui.render_ticket_card(orden, "primary") }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light border-0 shadow-sm">
+            <div class="card-header bg-success text-white fw-bold text-center">✅ LISTOS</div>
+            <div class="card-body p-2" style="min-height: 400px; max-height: 70vh; overflow-y: auto;">
+                {% for orden in ordenes if orden.estado and orden.estado.value in ['Listo', 'Entregado'] %}
+                {{ ui.render_ticket_card(orden, "success", es_finalizado=True) }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
