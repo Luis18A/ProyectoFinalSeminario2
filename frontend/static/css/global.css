@@ -1,13 +1,33 @@
 /* 
  * TechFlow Service Hub - Global Core Styles
- * Contiene definiciones de tipografía, iconos y elementos base compartidos.
+ * Contiene definiciones de tipografía, iconos, elementos base y sistema de diseño suizo.
  */
+
+:root {
+    --primary: #1A1A1A;
+    --accent: #0057FF;
+    --background: #f9f9fb;
+    --surface: #FFFFFF;
+    --border: rgba(26, 26, 26, 0.1);
+}
 
 /* Tipografía base de la plataforma */
 body {
     font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+}
+
+h1, h2, h3, h4, .font-swiss {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Strict Swiss Geometry - Force 0px radius everywhere */
+* {
+    border-radius: 0 !important;
 }
 
 /* Configuración de Material Symbols */
@@ -29,7 +49,6 @@ body {
 
 ::-webkit-scrollbar-thumb {
     background: rgba(26, 26, 26, 0.1);
-    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -42,7 +61,122 @@ input:focus, select:focus, textarea:focus {
     box-shadow: none !important; 
 }
 
-/* Utilidades generales */
-.transition-standard {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Bento Card System */
+.bento-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.bento-card:hover {
+    border-color: var(--accent);
+}
+
+/* Table Design */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    background: white;
+}
+
+.table-swiss {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-swiss th {
+    background: #F1F1F3;
+    text-align: left;
+    padding: 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+}
+
+.table-swiss td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+
+.table-swiss tr:hover {
+    background-color: #F9F9FB;
+}
+
+/* Swiss Inputs */
+.input-swiss {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    padding: 0.75rem 0;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.input-swiss:focus {
+    border-bottom: 2px solid var(--accent);
+}
+
+/* Buttons */
+.btn-swiss {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #333;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Print Styles for Comprobantes */
+@media print {
+    body {
+        background-color: white !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .print-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .bento-card {
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+    }
 }

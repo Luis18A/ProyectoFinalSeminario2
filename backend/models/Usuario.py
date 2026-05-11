@@ -11,6 +11,14 @@ class Usuario(db.Model):
     rol_id = db.Column(db.ForeignKey('rol.id'), nullable=False)
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
+    def __init__(self, username, password, nombre, apellido, rol_id, activo=True):
+        self.username = username
+        self.password = generate_password_hash(password)
+        self.nombre = nombre
+        self.apellido = apellido
+        self.rol_id = rol_id
+        self.activo = activo
+
     @classmethod
     def crear(cls, username, password, nombre, apellido, rol_id, activo=True):
         nuevo_usuario = cls(

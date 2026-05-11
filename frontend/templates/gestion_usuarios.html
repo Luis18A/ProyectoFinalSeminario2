@@ -8,7 +8,21 @@
         <h2 class="text-3xl md:text-4xl font-black text-primary uppercase tracking-tighter">Gestión de Usuarios</h2>
         <div class="h-1 w-24 bg-secondary mt-2"></div>
     </div>
-    
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-3 mb-8">
+        {% for category, message in messages %}
+          <div class="p-4 {% if category == 'success' %}bg-green-100 text-green-700 border-l-4 border-green-500{% else %}bg-red-100 text-red-700 border-l-4 border-red-500{% endif %} font-label-bold text-xs uppercase tracking-widest flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">{% if category == 'success' %}check_circle{% else %}error{% endif %}</span>
+            {{ message }}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <div class="space-y-8">
         <!-- Formulario de registro de usuarios -->
         <section class="bg-white border border-[#1A1A1A]/10 p-6 md:p-8">
@@ -29,10 +43,11 @@
                         <input id="input-password" name="password" required
                             class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
                             placeholder="••••••••" type="password" />
-                        <p id="password-help" class="text-[10px] text-zinc-400 mt-1 hidden">Dejar en blanco para mantener la actual</p>
+                        <p id="password-help" class="text-[10px] text-zinc-400 mt-1 hidden">Dejar en blanco para
+                            mantener la actual</p>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1">
                         <label class="font-label-bold text-zinc-500 block">NOMBRE</label>
@@ -54,16 +69,17 @@
                         <select id="select-rol" name="rol_id" required
                             class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md appearance-none bg-transparent transition-all">
                             <option value="">Seleccionar rol...</option>
-                            <option value="1">Administrador del Sistema</option>
-                            <option value="2">Técnico Nivel 1</option>
-                            <option value="3">Técnico Nivel 2</option>
-                            <option value="4">Secretaría</option>
+                            <option value="1">Administrador</option>
+                            <option value="2">Técnico Notebook</option>
+                            <option value="3">Técnico Impresora</option>
+                            <option value="4">Secretario</option>
                         </select>
                     </div>
                     <div class="flex items-center justify-between pt-4">
                         <span class="font-label-bold text-zinc-500">ESTADO ACTIVO</span>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="check-activo" name="activo" checked="" class="sr-only peer" type="checkbox" value="True" />
+                            <input id="check-activo" name="activo" checked="" class="sr-only peer" type="checkbox"
+                                value="True" />
                             <div
                                 class="w-11 h-6 bg-zinc-200 peer-focus:outline-none ring-0 rounded-none peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary">
                             </div>
@@ -87,16 +103,19 @@
 
         <!-- Tabla de Usuarios -->
         <section class="bg-white border border-[#1A1A1A]/10 overflow-hidden">
-            <div class="p-6 md:p-8 border-b border-[#1A1A1A]/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div
+                class="p-6 md:p-8 border-b border-[#1A1A1A]/5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-secondary">group</span>
                     <h3 class="font-label-bold text-primary uppercase tracking-widest">Lista de Usuarios</h3>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto justify-end">
-                    <button class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
+                    <button
+                        class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
                         <span class="material-symbols-outlined text-sm">filter_list</span>
                     </button>
-                    <button class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
+                    <button
+                        class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
                         <span class="material-symbols-outlined text-sm">download</span>
                     </button>
                 </div>
@@ -105,40 +124,61 @@
                 <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr class="bg-zinc-50">
-                            <th class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">ID</th>
-                            <th class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">Usuario</th>
-                            <th class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">Nombre Completo</th>
-                            <th class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">Rol</th>
-                            <th class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">Estado</th>
-                            <th class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">Acciones</th>
+                            <th
+                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                ID</th>
+                            <th
+                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                Usuario</th>
+                            <th
+                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                Nombre Completo</th>
+                            <th
+                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                Rol</th>
+                            <th
+                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                Estado</th>
+                            <th
+                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
+                                Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#1A1A1A]/5">
                         {% for u in usuarios %}
                         <tr class="hover:bg-zinc-50 transition-colors group">
-                            <td class="px-6 py-5 font-label-mono text-zinc-400 text-xs">#{{ "%03d" | format(u.id) }}</td>
+                            <td class="px-6 py-5 font-label-mono text-zinc-400 text-xs">#{{ "%03d" | format(u.id) }}
+                            </td>
                             <td class="px-6 py-5 font-bold text-primary">{{ u.username }}</td>
                             <td class="px-6 py-5 text-zinc-600">{{ u.nombre }} {{ u.apellido }}</td>
                             <td class="px-6 py-5">
                                 {% if u.rol_id == 1 %}
-                                <span class="bg-primary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Administrador</span>
+                                <span
+                                    class="bg-primary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Administrador</span>
                                 {% elif u.rol_id == 2 %}
-                                <span class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Técnico N1</span>
+                                <span
+                                    class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Técnico Notebook</span>
                                 {% elif u.rol_id == 3 %}
-                                <span class="bg-secondary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Técnico N2</span>
+                                <span
+                                    class="bg-secondary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Técnico Impresora</span>
                                 {% elif u.rol_id == 4 %}
-                                <span class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Secretaría</span>
+                                <span
+                                    class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Secretario</span>
                                 {% else %}
-                                <span class="bg-zinc-200 text-zinc-500 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Rol {{ u.rol_id }}</span>
+                                <span
+                                    class="bg-zinc-200 text-zinc-500 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">Rol
+                                    {{ u.rol_id }}</span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-5">
                                 {% if u.activo %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-on-tertiary-container/10 text-on-tertiary-container font-label-bold text-[10px] uppercase">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-on-tertiary-container/10 text-on-tertiary-container font-label-bold text-[10px] uppercase">
                                     <span class="w-1.5 h-1.5 bg-on-tertiary-container"></span> ACTIVO
                                 </span>
                                 {% else %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-200 text-zinc-500 font-label-bold text-[10px] uppercase">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-200 text-zinc-500 font-label-bold text-[10px] uppercase">
                                     <span class="w-1.5 h-1.5 bg-zinc-500"></span> INACTIVO
                                 </span>
                                 {% endif %}
@@ -151,7 +191,8 @@
                                         data-activo="{{ u.activo }}" onclick="abrirModalEditar(this)">
                                         <span class="material-symbols-outlined text-lg">edit</span>
                                     </button>
-                                    <form action="{{ url_for('usuarios.eliminar_usuario', id=u.id) }}" method="POST" class="inline">
+                                    <form action="{{ url_for('usuarios.eliminar_usuario', id=u.id) }}" method="POST"
+                                        class="inline">
                                         <button type="submit" class="text-zinc-400 hover:text-error"
                                             onclick="return confirm('¿Estás seguro de eliminar al usuario {{u.username}}?');">
                                             <span class="material-symbols-outlined text-lg">delete</span>
@@ -162,7 +203,9 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-zinc-500 font-label-mono text-xs uppercase tracking-widest">No hay usuarios registrados.</td>
+                            <td colspan="6"
+                                class="px-6 py-10 text-center text-zinc-500 font-label-mono text-xs uppercase tracking-widest">
+                                No hay usuarios registrados.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -200,7 +243,8 @@
 <!-- Footer Responsivo -->
 <footer class="p-6 md:p-10 border-t border-[#1A1A1A]/10 flex flex-col md:flex-row items-center justify-between gap-6">
     <div class="flex flex-col sm:flex-row gap-4 md:gap-8 items-center text-center">
-        <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Security Protocol v4.0.2</span>
+        <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Security Protocol
+            v4.0.2</span>
         <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Encrypted Session</span>
     </div>
     <div class="flex items-center gap-2">
@@ -211,6 +255,7 @@
 
 </div> <!-- Cierre de #main-content (abierto en header.html) -->
 <script src="{{ url_for('static', filename='js/gestion_usuarios.js') }}"></script>
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
 </body>
+
 </html>

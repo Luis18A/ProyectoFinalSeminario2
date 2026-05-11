@@ -7,11 +7,16 @@ class EquipoController:
     @staticmethod
     def crear_equipo(datos_formulario):
         try:
+            equipo_existente = Equipo.obtener_por_numero_serie(datos_formulario.get('numero_serie'))
+            if equipo_existente:
+                return False, f"El número de serie {datos_formulario.get('numero_serie')} ya existe."
             Equipo.crear(
-                nombre=datos_formulario.get('nombre'),
+                cliente_id=int(datos_formulario.get('cliente_id')),
                 tipo_dispositivo_id=int(datos_formulario.get('tipo_dispositivo_id')),
-                usuario_id=int(datos_formulario.get('usuario_id')),
-                activo=True if datos_formulario.get('activo') else False
+                marca=datos_formulario.get('marca'),
+                modelo=datos_formulario.get('modelo'),
+                numero_serie=datos_formulario.get('numero_serie'),
+                descripcion=datos_formulario.get('descripcion'),
             )
         except Exception as e:
             return False, f"Error al crear el equipo: {str(e)}"
@@ -56,3 +61,15 @@ class EquipoController:
     @staticmethod
     def obtener_por_usuario(usuario_id):
         return Equipo.obtener_por_usuario(usuario_id)
+
+    @staticmethod
+    def buscar_equipos(termino):
+        """Busca equipos por marca, modelo o número de serie."""
+        return Equipo.query.filter(
+            (Equipo.marca.ilike(f"%{termino}%")) | 
+            (Equipo.modelo.ilike(f"%{termino}%")) | 
+            (Equipo.numero_serie.ilike(f"%{termino}%"))
+        ).all()
+    
+    #def obtener_equipos_cliente(cliente_id):
+    #   return Equipo.query.filter_by(cliente_id=cliente_id).all()

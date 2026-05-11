@@ -7,17 +7,18 @@ class UsuarioController:
         """
         Recibe los datos del formulario (request.form) y crea el usuario en la BD.
         """
-        # La lógica de base de datos se queda aquí
         try:
             Usuario.crear(
                 username=datos_formulario.get('username'),
                 password=datos_formulario.get('password'),
                 nombre=datos_formulario.get('nombre'),
                 apellido=datos_formulario.get('apellido'),
-                rol_id=datos_formulario.get('rol_id'),
+                rol_id=int(datos_formulario.get('rol_id')),
                 activo=True if datos_formulario.get('activo') else False
             )
+            return True, "Usuario creado correctamente."
         except Exception as e:
+            db.session.rollback()
             return False, f"Error al crear el usuario: {str(e)}"
 
     @staticmethod

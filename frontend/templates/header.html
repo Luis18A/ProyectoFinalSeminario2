@@ -5,53 +5,87 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
 </head>
 
-<!-- SideNavBar -->
-<aside id="sidebar" class="fixed left-0 top-0 h-full w-64 border-r-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex flex-col justify-between py-8 z-50">
-    <div>
-        <div class="px-6 mb-12">
-            <h1 class="font-bold text-xl tracking-tighter text-[#1A1A1A] dark:text-white uppercase font-['Space_Grotesk']">ITSM Platform</h1>
-            <p class="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 mt-1">Operational Control</p>
-        </div>
-        <nav class="flex flex-col">
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all" href="{{ url_for('vistas.dashboard') }}">
-                <span class="material-symbols-outlined">grid_view</span> Dashboard
-            </a>
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all" href="{{ url_for('vistas.secretary') }}">
-                <span class="material-symbols-outlined">badge</span> Secretary
-            </a>
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all" href="{{ url_for('vistas.technician') }}">
-                <span class="material-symbols-outlined">engineering</span> Technician
-            </a>
-            <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all" href="{{ url_for('vistas.admin') }}">
-                <span class="material-symbols-outlined">analytics</span> Admin
-            </a>
-            <a class="bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider" href="{{ url_for('usuarios.listar_usuarios') }}">
-                <span class="material-symbols-outlined">group</span> Gestión Usuarios
-            </a>
-        </nav>
-    </div>
-    <div class="flex flex-col border-t border-[#1A1A1A]/5 pt-4">
-        <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all" href="#">
-            <span class="material-symbols-outlined">settings</span> Settings
-        </a>
-        <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all" href="{{ url_for('vistas.login') }}">
-            <span class="material-symbols-outlined">logout</span> Logout
-        </a>
-    </div>
-</aside>
-
 <body class="bg-background font-body-md text-on-surface">
+    <!-- SideNavBar -->
+    <aside id="sidebar"
+        class="fixed left-0 top-0 h-full w-64 border-r-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex flex-col justify-between py-8 z-50">
+        <div>
+            <div class="px-6 mb-12">
+                <h1
+                    class="font-bold text-xl tracking-tighter text-[#1A1A1A] dark:text-white uppercase font-['Space_Grotesk']">
+                    ITSM Platform</h1>
+                <p class="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 mt-1">Operational Control</p>
+            </div>
+            <nav class="flex flex-col">
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.dashboard') }}">
+                    <span class="material-symbols-outlined">grid_view</span> Dashboard
+                </a>
+                <!-- Nuevas Secciones -->
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.gestion_cliente') }}">
+                    <span class="material-symbols-outlined">person</span> Clientes
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.gestion_equipos') }}">
+                    <span class="material-symbols-outlined">devices</span> Equipos
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.tickets') }}">
+                    <span class="material-symbols-outlined">assignment</span> Tablero Tickets
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.historial_tickets') }}">
+                    <span class="material-symbols-outlined">history</span> Historial Global
+                </a>
+                <!-- Secciones Existentes -->
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.secretary') }}">
+                    <span class="material-symbols-outlined">badge</span> Secretary
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.technician') }}">
+                    <span class="material-symbols-outlined">engineering</span> Technician
+                </a>
+                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                    href="{{ url_for('vistas.admin') }}">
+                    <span class="material-symbols-outlined">analytics</span> Admin
+                </a>
+                <a class="bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider"
+                    href="{{ url_for('usuarios.listar_usuarios') }}">
+                    <span class="material-symbols-outlined">group</span> Gestión Usuarios
+                </a>
+            </nav>
+        </div>
+        <div class="flex flex-col border-t border-[#1A1A1A]/5 pt-4">
+            <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
+                href="#">
+                <span class="material-symbols-outlined">settings</span> Settings
+            </a>
+            <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
+                href="{{ url_for('vistas.login') }}">
+                <span class="material-symbols-outlined">logout</span> Logout
+            </a>
+        </div>
+    </aside>
+
     <!-- Main Content Shell -->
     <div id="main-content" class="flex flex-col min-h-screen">
         <!-- TopAppBar (Compartido) -->
-        <header class="sticky top-0 z-40 w-full border-b-2 border-[#1A1A1A]/10 bg-white flex items-center justify-between px-6 md:px-10 py-4">
+        <header
+            class="sticky top-0 z-40 w-full border-b-2 border-[#1A1A1A]/10 bg-white flex items-center justify-between px-6 md:px-10 py-4">
             <div class="flex items-center gap-4">
                 <button id="sidebar-toggle" class="p-2 hover:bg-zinc-100 transition-colors">
                     <span class="material-symbols-outlined">menu</span>
@@ -62,15 +96,19 @@
             </div>
             <div class="flex items-center gap-4 md:gap-8">
                 <!-- Search (Oculto en móviles muy pequeños) -->
-                <div class="hidden sm:flex relative items-center focus-within:border-[#0057FF] border-b border-transparent transition-all">
+                <div
+                    class="hidden sm:flex relative items-center focus-within:border-[#0057FF] border-b border-transparent transition-all">
                     <span class="material-symbols-outlined text-zinc-400 absolute left-0 text-sm">search</span>
-                    <input class="bg-transparent border-none focus:ring-0 text-sm font-['Space_Grotesk'] pl-6 py-1 w-32 md:w-48" placeholder="Global Search..." type="text" />
+                    <input
+                        class="bg-transparent border-none focus:ring-0 text-sm font-['Space_Grotesk'] pl-6 py-1 w-32 md:w-48"
+                        placeholder="Global Search..." type="text" />
                 </div>
                 <div class="flex items-center gap-2 md:gap-4">
                     <button class="text-zinc-500 hover:text-[#0057FF] transition-colors">
                         <span class="material-symbols-outlined">notifications</span>
                     </button>
-                    <div class="h-8 w-8 bg-zinc-900 flex items-center justify-center text-white text-[10px] font-bold">AD</div>
+                    <div class="h-8 w-8 bg-zinc-900 flex items-center justify-center text-white text-[10px] font-bold">
+                        AD</div>
                 </div>
             </div>
         </header>

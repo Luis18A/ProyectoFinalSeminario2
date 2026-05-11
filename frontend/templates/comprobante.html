@@ -1,0 +1,132 @@
+{% include 'header.html' %}
+
+<!-- Actions Bar (Non-printing) -->
+<div class="no-print sticky top-0 z-50 bg-white border-b-2 border-primary/10 px-container-margin py-md flex justify-between items-center shadow-sm">
+    <a href="{{ url_for('vistas.dashboard') }}" class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="font-label-mono uppercase text-xs">Volver al sistema</span>
+    </a>
+    <div class="flex gap-md">
+        <button class="btn-swiss btn-outline">
+            <span class="material-symbols-outlined text-sm">download</span>
+            PDF
+        </button>
+        <button onclick="window.print()" class="btn-swiss btn-primary">
+            <span class="material-symbols-outlined text-sm">print</span>
+            IMPRIMIR
+        </button>
+    </div>
+</div>
+
+<!-- Main Document Container -->
+<main class="py-xl flex justify-center">
+    <div class="print-container w-full max-w-4xl bg-white p-container-margin border border-primary/10 mx-container-margin shadow-sm">
+        <!-- Header -->
+        <header class="flex justify-between items-start border-b-2 border-primary pb-xl mb-xl">
+            <div>
+                <h1 class="font-headline-lg text-primary uppercase tracking-tighter mb-unit">TechFlow</h1>
+                <p class="font-label-mono text-on-surface-variant tracking-widest uppercase text-xs">Servicio Técnico Informático</p>
+            </div>
+            <div class="text-right">
+                <div class="font-label-mono text-on-surface-variant mb-unit text-xs uppercase">Orden de Trabajo</div>
+                <div class="font-headline-md text-accent">#1024</div>
+                <div class="font-body-sm text-on-surface-variant mt-sm">Fecha: 24/10/2023</div>
+            </div>
+        </header>
+
+        <!-- Customer Data Bento -->
+        <section class="grid grid-cols-12 gap-grid-gutter mb-xl bento-card bg-background">
+            <div class="col-span-12 font-label-bold text-primary uppercase border-b border-primary/10 pb-sm mb-sm text-xs">Datos del Cliente</div>
+            <div class="col-span-12 md:col-span-4">
+                <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">Nombre y Apellido</span>
+                <span class="font-body-md text-primary">Pérez, Juan</span>
+            </div>
+            <div class="col-span-12 md:col-span-4">
+                <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">DNI/CUIL</span>
+                <span class="font-body-md text-primary">20-34567890-1</span>
+            </div>
+            <div class="col-span-12 md:col-span-4">
+                <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">Teléfono</span>
+                <span class="font-body-md text-primary">+54 11 4567-8901</span>
+            </div>
+        </section>
+
+        <!-- Equipment Data -->
+        <section class="mb-xl">
+            <h2 class="font-label-bold text-primary uppercase mb-sm text-xs">Detalles del Equipo</h2>
+            <div class="table-container">
+                <table class="table-swiss">
+                    <thead>
+                        <tr>
+                            <th class="w-1/3">Tipo de Dispositivo</th>
+                            <th class="w-1/3">Marca / Modelo</th>
+                            <th>Número de Serie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Laptop</td>
+                            <td>Dell Latitude 5420</td>
+                            <td class="font-label-mono text-on-surface-variant">CN-0G1234</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Technical Info -->
+        <section class="grid grid-cols-12 gap-grid-gutter mb-xl">
+            <div class="col-span-12 md:col-span-6 bento-card bg-background">
+                <h3 class="font-label-bold text-primary uppercase mb-sm border-b border-primary/10 pb-sm text-xs">Falla Reportada</h3>
+                <p class="font-body-md text-on-surface-variant">Batería hinchada y sobrecalentamiento del equipo durante uso normal.</p>
+            </div>
+            <div class="col-span-12 md:col-span-6 bento-card bg-background">
+                <h3 class="font-label-bold text-primary uppercase mb-sm border-b border-primary/10 pb-sm text-xs">Accesorios Recibidos</h3>
+                <p class="font-body-md text-on-surface-variant">Cargador original (Dell 65W Type-C).</p>
+            </div>
+        </section>
+
+        <!-- Technical Resolution Box -->
+        <section class="mb-xl border-2 border-accent p-lg bg-background">
+            <div class="flex items-center gap-sm mb-md border-b-2 border-accent/20 pb-sm">
+                <span class="material-symbols-outlined text-accent" style="font-variation-settings: 'FILL' 1;">build</span>
+                <h2 class="font-headline-md text-primary">Diagnóstico y Resolución Técnica</h2>
+            </div>
+            <p class="font-body-md text-primary leading-relaxed">
+                Se constata daño físico en la batería interna (hinchazón). Se procede al reemplazo por repuesto original Dell (Part #GJKNX). Se realiza limpieza interna de disipadores y cambio de pasta térmica para mitigar problemas de sobrecalentamiento. Pruebas de estrés superadas con éxito. Temperaturas operativas normales.
+            </p>
+            <div class="mt-md inline-flex items-center px-sm py-1 bg-green-100 text-green-800 font-label-bold uppercase text-[10px]">
+                Reparado
+            </div>
+        </section>
+
+        <!-- Financials & Signatures Area -->
+        <div class="grid grid-cols-12 gap-xl mb-xl">
+            <!-- Signatures -->
+            <div class="col-span-12 md:col-span-8 flex justify-between pt-xl mt-xl border-t border-primary/10">
+                <div class="w-2/5 text-center">
+                    <div class="border-b border-primary mb-sm pt-xl"></div>
+                    <span class="font-label-bold text-on-surface-variant uppercase text-[10px]">Firma Técnico Responsable</span>
+                </div>
+                <div class="w-2/5 text-center">
+                    <div class="border-b border-primary mb-sm pt-xl"></div>
+                    <span class="font-label-bold text-on-surface-variant uppercase text-[10px]">Firma Conformidad del Cliente</span>
+                </div>
+            </div>
+            <!-- Financials -->
+            <div class="col-span-12 md:col-span-4 bento-card bg-background flex flex-col justify-end">
+                <div class="font-label-bold text-on-surface-variant uppercase mb-unit text-[10px]">Costo Total del Servicio</div>
+                <div class="font-headline-xl text-primary">$450.00</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="border-t-2 border-primary/10 pt-md text-center">
+            <p class="font-label-mono text-on-surface-variant text-[10px] uppercase">Garantía del servicio: 30 días a partir de la fecha de entrega. No cubre daños por mal uso, golpes o derrame de líquidos.</p>
+        </footer>
+    </div>
+</main>
+
+</div> <!-- Cierre de #main-content (abierto en header.html) -->
+</body>
+</html>

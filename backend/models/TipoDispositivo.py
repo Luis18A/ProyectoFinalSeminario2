@@ -5,6 +5,9 @@ class TipoDispositivo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(80), unique=True, nullable=False)
 
+    def __init__(self, descripcion:str):
+        self.descripcion = descripcion
+
     @classmethod
     def obtener_todos(cls):
         return cls.query.all()
@@ -19,6 +22,12 @@ class TipoDispositivo(db.Model):
     @classmethod
     def obtener_por_id(cls, id):
         return cls.query.get(id)
+
+    @classmethod
+    def get_por_descripcion(cls, termino):
+        return cls.query.filter(
+            (cls.descripcion.like(f"%{termino}%"))
+        ).all()
 
     @classmethod
     def actualizar(cls, id, descripcion):

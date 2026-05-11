@@ -8,5 +8,5 @@ class Rol(db.Model):
     # Relación con Usuario
     usuarios = db.relationship('Usuario', backref='rol', lazy=True)
 
-   # def __init__(self, descripcion):
-    #    self.descripcion = descripcion
+    def __init__(self, descripcion:str):
+        self.descripcion = descripcion

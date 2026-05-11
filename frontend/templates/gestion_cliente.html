@@ -1,0 +1,162 @@
+{% include 'header.html' %}
+
+<!-- Canvas Area -->
+<main class="flex-1 p-container-margin overflow-y-auto">
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="space-y-3 mb-8">
+        {% for category, message in messages %}
+        <div
+            class="p-4 {% if category == 'success' %}bg-green-100 text-green-700 border-l-4 border-green-500{% else %}bg-red-100 text-red-700 border-l-4 border-red-500{% endif %} font-label-bold text-xs uppercase tracking-widest flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">{% if category == 'success' %}check_circle{% else %}error{%
+                endif %}</span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page Header -->
+    <div class="flex items-end justify-between mb-lg">
+        <div class="flex flex-col gap-xs">
+            <h1 class="font-headline-lg text-primary tracking-tight">Gestión de Clientes</h1>
+            <p class="font-body-md text-on-surface-variant">Administrá tu cartera de clientes y sus equipos.</p>
+        </div>
+        <button class="btn-swiss btn-primary">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Nuevo Cliente
+        </button>
+    </div>
+
+    <!-- Bento Grid Structure -->
+    <div class="grid grid-cols-12 gap-grid-gutter">
+        <!-- Main Search Bar -->
+        <div class="col-span-12 bento-card">
+            <div class="flex items-center gap-sm">
+                <span class="material-symbols-outlined text-on-surface-variant">search</span>
+                <input class="input-swiss flex-1" placeholder="Buscar por nombre, apellido o DNI..." type="text" />
+                <button class="btn-swiss text-accent hover:underline uppercase tracking-widest p-0">Buscar</button>
+            </div>
+        </div>
+
+        <!-- Data Table Container -->
+        <div class="col-span-8 bento-card p-0 flex flex-col min-h-[500px] overflow-hidden">
+            <div class="table-container border-none h-full">
+                <table class="table-swiss">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Contacto</th>
+                            <th>Documento</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if clientes %}
+                        {% for c in clientes %}
+                        <tr class="hover:bg-background transition-colors">
+                            <td>
+                                <div class="font-bold">{{ c.nombre }} {{ c.apellido }}</div>
+                                <div class="text-[10px] text-on-surface-variant font-label-mono uppercase">ID: #{{
+                                    "%03d" | format(c.id) }}</div>
+                            </td>
+                            <td>
+                                <div class="text-sm">{{ c.telefono }}</div>
+                                <div class="text-[11px] text-on-surface-variant">{{ c.email }}</div>
+                            </td>
+                            <td class="font-label-mono text-xs">{{ c.dni_cuil }}</td>
+                            <td class="text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ url_for('vistas.gestion_equipos') }}"
+                                        class="p-2 text-on-surface-variant hover:text-accent transition-colors"
+                                        title="Ver Equipos">
+                                        <span class="material-symbols-outlined text-[18px]">devices</span>
+                                    </a>
+                                    <button class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                        title="Editar">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <!-- Empty State -->
+                        <tr>
+                            <td colspan="4" class="p-xl text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <span class="material-symbols-outlined text-6xl text-zinc-200 mb-4">group</span>
+                                    <h3 class="font-headline-md text-primary mb-2">No hay clientes registrados aún</h3>
+                                    <p class="font-body-sm text-on-surface-variant max-w-sm">Utilizá el formulario para
+                                        registrar el primer cliente en el sistema.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="col-span-4 bento-card flex flex-col h-full">
+            <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
+                <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nuevo Cliente</h2>
+                <span class="material-symbols-outlined text-on-surface-variant text-sm">person_add</span>
+            </div>
+            <form class="flex flex-col gap-6 flex-1" method="post" action="/clientes">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">DNI / CUIL</label>
+                    <input id="dni" name="dni" class="input-swiss" placeholder="Ingresar documento" type="text"
+                        required />
+                </div>
+                <div class="grid grid-cols-2 gap-md">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Nombre</label>
+                        <input id="nombre" name="nombre" class="input-swiss" placeholder="Nombre" type="text"
+                            required />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Apellido</label>
+                        <input id="apellido" name="apellido" class="input-swiss" placeholder="Apellido" type="text"
+                            required />
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Teléfono</label>
+                    <input id="telefono" name="telefono" class="input-swiss" placeholder="+54 9 11 0000-0000" type="tel"
+                        required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Email</label>
+                    <input id="email" name="email" class="input-swiss" placeholder="correo@ejemplo.com" type="email" />
+                </div>
+                <div class="grid grid-cols-2 gap-md">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Domicilio</label>
+                        <input id="domicilio" name="domicilio" class="input-swiss" placeholder="Calle y número"
+                            type="text" required />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Localidad</label>
+                        <input id="localidad" name="localidad" class="input-swiss" placeholder="Ciudad" type="text"
+                            required />
+                    </div>
+                </div>
+                <div class="mt-auto pt-lg">
+                    <button class="btn-swiss btn-primary w-full justify-center" type="submit">
+                        <span class="material-symbols-outlined text-sm">save</span>
+                        Guardar Registro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+</div> <!-- Cierre de #main-content (abierto en header.html) -->
+</body>
+
+</html>

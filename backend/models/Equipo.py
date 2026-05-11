@@ -10,7 +10,7 @@ class Equipo(db.Model):
     tipo_id = db.Column(db.ForeignKey('tipo_dispositivo.id'), nullable=False)
     descripcion = db.Column(db.String(500), nullable=True)
 
-    # Definimos las relaciones explícitas
+    # Relaciones
     cliente = db.relationship('Cliente', back_populates='equipos', foreign_keys=[cliente_id])
     tipo = db.relationship('TipoDispositivo', foreign_keys=[tipo_id])
 
@@ -22,7 +22,7 @@ class Equipo(db.Model):
         self.tipo_id = tipo_id
         self.descripcion = descripcion
 
-    # Métodos estáticos para CRUD completo
+    # Métodos CRUD (Active Record Pattern)
 
     @staticmethod
     def get_all():
@@ -32,47 +32,27 @@ class Equipo(db.Model):
     def get_by_id(id):
         return Equipo.query.get(id)
 
-    @staticmethod
-    def create(data):
-        nueva = Equipo(**data)
-        db.session.add(nueva)
+    @classmethod
+    def create(cls, **data):
+        nuevo = cls(**data)
+        db.session.add(nuevo)
         db.session.commit()
-        return nueva
+        return nuevo
 
-    @staticmethod
-    def update(equipo, data):
-        equipo.update(data)
+    def update_data(self, **data):
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
         db.session.commit()
-        return equipo
 
-    @staticmethod
-    def delete(equipo):
-        db.session.delete(equipo)
+    def delete(self):
+        db.session.delete(self)
         db.session.commit()
 
     @staticmethod
     def get_por_cliente(cliente_id):
-        """Obtiene todos los equipos de un cliente específico."""
         return Equipo.query.filter_by(cliente_id=cliente_id).all()
 
     @staticmethod
-    def get_por_tipo(tipo_id):
-        """Obtiene todos los equipos de un tipo específico."""
-        return Equipo.query.filter_by(tipo_id=tipo_id).all()
-
-    @staticmethod
-    def get_por_marca(marca):
-        """Obtiene todos los equipos de una marca específica."""
-        return Equipo.query.filter_by(marca=marca).all()
-
-    @staticmethod
-    def get_por_modelo(modelo):
-        """Obtiene todos los equipos de un modelo específico."""
-        return Equipo.query.filter_by(modelo=modelo).all()
-
-    @staticmethod
     def get_por_numero_serie(numero_serie):
-        """Obtiene todos los equipos con un número de serie específico."""
-        return Equipo.query.filter_by(numero_serie=numero_serie).all()
-
-    
+        return Equipo.query.filter_by(numero_serie=numero_serie).first()

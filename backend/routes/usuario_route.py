@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from backend.controller.usuario_controller import UsuarioController
 
 # Creamos el Blueprint para los usuarios
@@ -19,18 +19,29 @@ def listar_usuarios():
 
 @usuarios_bp.post('/usuarios')
 def crear_usuario():
-    # Le delegamos la lógica de negocio al controlador, enviando el request.form
-    UsuarioController.crear_usuario(request.form)
+    # Le delegamos la lógica de negocio al controlador
+    success, message = UsuarioController.crear_usuario(request.form)
+    
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'error')
     
     # El router redirige de vuelta a la función listar_usuarios
     return redirect(url_for('usuarios.listar_usuarios'))
 
 @usuarios_bp.post('/usuarios/eliminar/<int:id>')
 def eliminar_usuario(id):
-    UsuarioController.eliminar_usuario(id)
+    if UsuarioController.eliminar_usuario(id):
+        flash("Usuario eliminado correctamente.", "success")
+    else:
+        flash("Error al eliminar el usuario.", "error")
     return redirect(url_for('usuarios.listar_usuarios'))
 
 @usuarios_bp.post('/usuarios/actualizar/<int:id>')
 def actualizar_usuario(id):
-    UsuarioController.actualizar_usuario(id, request.form)
+    if UsuarioController.actualizar_usuario(id, request.form):
+        flash("Usuario actualizado correctamente.", "success")
+    else:
+        flash("Error al actualizar el usuario.", "error")
     return redirect(url_for('usuarios.listar_usuarios'))
