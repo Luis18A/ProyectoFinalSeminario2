@@ -33,7 +33,7 @@ class Equipo(db.Model):
         return Equipo.query.get(id)
 
     @classmethod
-    def create(cls, **data):
+    def crear(cls, **data):
         nuevo = cls(**data)
         db.session.add(nuevo)
         db.session.commit()

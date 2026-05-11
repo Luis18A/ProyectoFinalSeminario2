@@ -5,7 +5,7 @@
     <!-- Page Header -->
     <div class="flex justify-between items-end mb-10">
         <div>
-            <h1 class="font-headline-xl text-primary mb-2">Parque Tecnológico de: Juan Pérez</h1>
+            <h1 class="font-headline-xl text-primary mb-2">Parque Tecnológico de: {{ cliente.nombre ~ ' ' ~ cliente.apellido if cliente else 'Cliente General' }}</h1>
             <p class="font-body-md text-on-surface-variant">Gestión de activos y registro de equipos vinculados.</p>
         </div>
         <a href="{{ url_for('vistas.gestion_cliente') }}" class="btn-swiss btn-outline">
@@ -20,41 +20,43 @@
         <div class="col-span-12 md:col-span-4 flex flex-col gap-grid-gutter">
             <div class="bento-card p-6 h-full flex flex-col">
                 <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Registrar Dispositivo</h2>
-                <form class="flex flex-col gap-6 flex-1">
+                <form class="flex flex-col gap-6 flex-1" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Tipo de
                             Equipo</label>
-                        <select class="input-swiss appearance-none bg-transparent">
+                        {% if cliente %}
+                        <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+                        {% endif %}
+                        <select name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent">
                             <option disabled selected value="">Seleccionar tipo</option>
-                            <option value="laptop">Laptop</option>
-                            <option value="desktop">Desktop</option>
-                            <option value="impresora">Impresora</option>
-                            <option value="monitor">Monitor</option>
-                            <option value="otro">Otro</option>
+                            {% for tipo in tipo_dispositivos %}
+                            <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1">
                             <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Marca</label>
-                            <input class="input-swiss" placeholder="Ej. HP, Dell" type="text" />
+                            <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" />
                         </div>
                         <div class="flex flex-col gap-1">
                             <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Modelo</label>
-                            <input class="input-swiss" placeholder="Ej. Latitude 5420" type="text" />
+                            <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text" />
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Número de Serie
                             (S/N)</label>
-                        <input class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX" type="text" />
+                        <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX"
+                            type="text" />
                     </div>
                     <div class="flex flex-col gap-1 flex-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Descripción
                             General</label>
-                        <textarea class="input-swiss resize-none flex-1"
+                        <textarea name="descripcion" class="input-swiss resize-none flex-1"
                             placeholder="Detalles de estado, color, accesorios..." rows="3"></textarea>
                     </div>
-                    <button class="btn-swiss btn-primary w-full justify-center py-4 mt-auto" type="button">
+                    <button class="btn-swiss btn-primary w-full justify-center py-4 mt-auto" type="submit">
                         Guardar Equipo
                     </button>
                 </form>
@@ -80,30 +82,43 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% if equipos %}
+                            {% for equipo in equipos %}
                             <tr class="hover:bg-background transition-colors">
                                 <td>
                                     <div class="flex items-center gap-2">
-                                        <span
-                                            class="material-symbols-outlined text-zinc-400 text-[18px]">laptop_mac</span>
-                                        Laptop
+                                        <span class="material-symbols-outlined text-zinc-400 text-[18px]">
+                                            {% if 'laptop' in equipo.tipo.descripcion.lower() %}laptop_mac
+                                            {% elif 'pc' in equipo.tipo.descripcion.lower() or 'desktop' in equipo.tipo.descripcion.lower() %}desktop_windows
+                                            {% elif 'impresora' in equipo.tipo.descripcion.lower() %}print
+                                            {% else %}devices{% endif %}
+                                        </span>
+                                        {{ equipo.tipo.descripcion }} - {{ equipo.marca }}
                                     </div>
                                 </td>
-                                <td class="font-label-mono text-[11px] text-on-surface-variant">CN-0G1234</td>
-                                <td class="text-on-surface-variant text-xs">Silver casing, 16GB RAM</td>
+                                <td class="font-label-mono text-[11px] text-on-surface-variant">{{ equipo.numero_serie }}</td>
+                                <td class="text-on-surface-variant text-xs">{{ equipo.descripcion }}</td>
                                 <td class="text-right">
-                                    <button
-                                        class="px-3 py-1 bg-amber-100 text-amber-700 border border-amber-200 font-label-bold text-[10px] uppercase tracking-wider flex items-center gap-1 ml-auto">
+                                    <button class="px-3 py-1 bg-amber-100 text-amber-700 border border-amber-200 font-label-bold text-[10px] uppercase tracking-wider flex items-center gap-1 ml-auto">
                                         <span class="material-symbols-outlined text-[14px]">build</span>
                                         Taller
                                     </button>
                                 </td>
                             </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="p-8 text-center text-on-surface-variant">
+                                    No hay equipos registrados para este cliente.
+                                </td>
+                            </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
                 <div
                     class="p-4 bg-zinc-50 flex justify-between items-center text-[10px] text-on-surface-variant font-label-mono uppercase">
-                    <span>Mostrando 1 dispositivo</span>
+                    <span>Mostrando {{ equipos|length }} dispositivo(s)</span>
                 </div>
             </div>
         </div>
@@ -112,6 +127,9 @@
                 <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Nuevo Tipo de Equipo</h2>
                 <form class="flex flex-col gap-6 flex-1"
                     action="{{ url_for('tipoDispositivo.crear_tipo_dispositivo') }}" method="POST">
+                    {% if cliente %}
+                    <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+                    {% endif %}
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Dispositivo</label>
                         <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->

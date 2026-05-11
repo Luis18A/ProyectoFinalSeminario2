@@ -40,6 +40,7 @@ def secretary():
     return render_template('secretary_view.html')
 
 from backend.controller.cliente_controller import ClienteController
+from backend.controller.tipoDispositivo_controller import TipoDispositivoController
 
 @vistas_bp.route('/clientes')
 def gestion_cliente():
@@ -47,8 +48,23 @@ def gestion_cliente():
     return render_template('gestion_cliente.html', clientes=clientes)
 
 @vistas_bp.route('/equipos')
-def gestion_equipos():
-    return render_template('gestion_equipos.html')
+@vistas_bp.route('/equipos/<int:cliente_id>')
+def gestion_equipos(cliente_id=None):
+    tipo_dispositivos = TipoDispositivoController.obtener_todos()
+    cliente = None
+    equipos = []
+    
+    if cliente_id:
+        from backend.models.Cliente import Cliente
+        cliente = Cliente.query.get(cliente_id)
+        if cliente:
+            from backend.models.Equipo import Equipo
+            equipos = Equipo.get_por_cliente(cliente_id)
+            
+    return render_template('gestion_equipos.html', 
+                           tipo_dispositivos=tipo_dispositivos, 
+                           cliente=cliente, 
+                           equipos=equipos)
 
 @vistas_bp.route('/tablero-tickets')
 def tickets():

@@ -7,23 +7,24 @@ class EquipoController:
     @staticmethod
     def crear_equipo(datos_formulario):
         try:
-            equipo_existente = Equipo.obtener_por_numero_serie(datos_formulario.get('numero_serie'))
+            equipo_existente = Equipo.get_por_numero_serie(datos_formulario.get('numero_serie'))
             if equipo_existente:
                 return False, f"El número de serie {datos_formulario.get('numero_serie')} ya existe."
             Equipo.crear(
                 cliente_id=int(datos_formulario.get('cliente_id')),
-                tipo_dispositivo_id=int(datos_formulario.get('tipo_dispositivo_id')),
+                tipo_id=int(datos_formulario.get('tipo_dispositivo_id')),
                 marca=datos_formulario.get('marca'),
                 modelo=datos_formulario.get('modelo'),
                 numero_serie=datos_formulario.get('numero_serie'),
                 descripcion=datos_formulario.get('descripcion'),
             )
+            return True, "Equipo creado exitosamente."
         except Exception as e:
             return False, f"Error al crear el equipo: {str(e)}"
 
     @staticmethod
     def obtener_todos():
-        return Equipo.obtener_todos()
+        return Equipo.get_all()
 
     @staticmethod
     def toggle_estado(equipo_id):
@@ -56,7 +57,7 @@ class EquipoController:
 
     @staticmethod
     def obtener_por_id(equipo_id):
-        return Equipo.obtener_por_id(equipo_id)
+        return Equipo.get_by_id(equipo_id)
 
     @staticmethod
     def obtener_por_usuario(usuario_id):

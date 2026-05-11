@@ -27,4 +27,5 @@ def crear_tipo_dispositivo():
         flash(message, 'error')
     
     # 3. Redirigimos a la vista que elijas (ej: gestión de equipos)
-    return redirect(url_for('vistas.gestion_equipos'))
+    cliente_id = request.form.get('cliente_id')
+    return redirect(url_for('vistas.gestion_equipos', cliente_id=cliente_id))

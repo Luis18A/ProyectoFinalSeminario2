@@ -16,6 +16,7 @@ from backend.routes.vistas import vistas_bp
 from backend.routes.usuario_route import usuarios_bp
 from backend.routes.cliente_route import cliente_bp
 from backend.routes.tipoDispositivo_route import tipoDispositivo_bp
+from backend.routes.equipo_route import equipo_bp
 
 # Configurar Flask para que busque en la carpeta frontend
 app = Flask(__name__, 
@@ -35,6 +36,7 @@ app.register_blueprint(vistas_bp)
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(cliente_bp)
 app.register_blueprint(tipoDispositivo_bp)
+app.register_blueprint(equipo_bp)
 
 with app.app_context():
     db.create_all()
