@@ -20,3 +20,7 @@ Thumbs.db
 
 # Archivos de entorno (SEGURIDAD: Si llegas a crear un .env con contraseñas)
 .env
+__pycache__/ 
+__pycache__/
+*.py[cod]
+*$py.class
