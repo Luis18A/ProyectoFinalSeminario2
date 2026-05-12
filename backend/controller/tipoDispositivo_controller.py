@@ -2,16 +2,6 @@ from database import db
 from backend.models.TipoDispositivo import TipoDispositivo
 
 class TipoDispositivoController:
-    '''@staticmethod
-    def crear_tipoDispositivo(datos_formulario):
-        try:
-            TipoDispositivo.crear(
-                descripcion=datos_formulario.get('descripcion'),
-            )
-            return True, "Tipo de dispositivo creado exitosamente."
-        except Exception as e:
-            db.session.rollback()
-            return False, f"Error al crear el tipo de dispositivo: {str(e)}"'''
     @staticmethod
     def crear_tipoDispositivo(datos_formulario):
         # 1. Extraer y limpiar datos

@@ -6,10 +6,19 @@ from backend.models.Usuario import Usuario
 class EquipoController:
     @staticmethod
     def crear_equipo(datos_formulario):
+        equipo_existente = Equipo.get_por_numero_serie(datos_formulario.get('numero_serie'))
+        # Validaciones de negocio
+        if not datos_formulario.get('numero_serie'):
+            return False, "El número de serie no puede estar vacío."
+        if not datos_formulario.get('marca'):
+            return False, "La marca no puede estar vacía."
+        if not datos_formulario.get('modelo'):
+            return False, "El modelo no puede estar vacío."
+        #si existe el equipo con el numero de serie, no se puede crear
+        if equipo_existente:
+            return False, f"El número de serie {datos_formulario.get('numero_serie')} ya existe."
+       #creamos el equipo
         try:
-            equipo_existente = Equipo.get_por_numero_serie(datos_formulario.get('numero_serie'))
-            if equipo_existente:
-                return False, f"El número de serie {datos_formulario.get('numero_serie')} ya existe."
             Equipo.crear(
                 cliente_id=int(datos_formulario.get('cliente_id')),
                 tipo_id=int(datos_formulario.get('tipo_dispositivo_id')),
