@@ -17,6 +17,7 @@ from backend.routes.usuario_route import usuarios_bp
 from backend.routes.cliente_route import cliente_bp
 from backend.routes.tipoDispositivo_route import tipoDispositivo_bp
 from backend.routes.equipo_route import equipo_bp
+from backend.routes.ordenServicio_route import ordenServicio_bp
 
 # Configurar Flask para que busque en la carpeta frontend
 app = Flask(__name__, 
@@ -37,6 +38,20 @@ app.register_blueprint(usuarios_bp)
 app.register_blueprint(cliente_bp)
 app.register_blueprint(tipoDispositivo_bp)
 app.register_blueprint(equipo_bp)
+app.register_blueprint(ordenServicio_bp)
+
+# MANEJO GLOBAL DE ERRORES (Navegación manual no permitida o inexistente)
+@app.errorhandler(404)
+def pagina_no_encontrada(e):
+    from flask import flash, redirect, url_for
+    flash("La dirección ingresada no existe o no está permitida.", "error")
+    return redirect(url_for('vistas.dashboard'))
+
+@app.errorhandler(403)
+def acceso_prohibido(e):
+    from flask import flash, redirect, url_for
+    flash("No tienes permisos suficientes para acceder a esta dirección.", "error")
+    return redirect(url_for('vistas.dashboard'))
 
 with app.app_context():
     db.create_all()

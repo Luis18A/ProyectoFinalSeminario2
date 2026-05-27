@@ -11,9 +11,10 @@
                 velocity, and audit compliance.</p>
         </div>
         <div class="flex flex-wrap gap-4 w-full md:w-auto">
-            <button
-                class="flex-1 md:flex-none border border-on-surface/10 bg-surface-container-lowest px-6 py-3 font-label-bold uppercase text-xs hover:bg-zinc-50 transition-colors">Generate
-                Report</button>
+            <a href="{{ url_for('usuarios.download_backup') }}"
+                class="flex-1 md:flex-none flex items-center justify-center gap-2 border border-emerald-500/20 bg-emerald-50/20 text-emerald-700 px-6 py-3 font-label-bold uppercase text-xs hover:bg-emerald-50 transition-all shadow-sm rounded-none">
+                <span class="material-symbols-outlined text-sm">download</span> Descargar Backup
+            </a>
             <button
                 class="flex-1 md:flex-none bg-primary text-white px-6 py-3 font-label-bold uppercase text-xs hover:bg-secondary transition-colors">System
                 Override</button>
@@ -22,57 +23,106 @@
 
     <!-- Bento Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- KPI 1 -->
+        <!-- KPI 1: Active Tickets -->
         <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Critical
-                    Failures</span>
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Active Tickets</span>
+                <span class="material-symbols-outlined text-[#0057FF] text-lg">confirmation_number</span>
+            </div>
+            <div>
+                <div class="text-4xl font-black text-on-surface">{{ active_tickets_count }}</div>
+                <div class="font-label-mono text-[10px] text-[#0057FF] mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">insights</span> En curso / activos
+                </div>
+            </div>
+        </div>
+        <!-- KPI 2: Critical Failures -->
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Critical Failures</span>
                 <span class="material-symbols-outlined text-error text-lg">warning</span>
             </div>
             <div>
-                <div class="text-4xl font-black text-on-surface">14</div>
+                <div class="text-4xl font-black text-on-surface">{{ critical_failures }}</div>
                 <div class="font-label-mono text-[10px] text-error mt-2 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span> +2.4% vs last week
+                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span> No completados
                 </div>
             </div>
         </div>
-        <!-- KPI 2 -->
+        <!-- KPI 3: Active Technicians -->
         <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Mean Time To
-                    Resolve</span>
-                <span class="material-symbols-outlined text-zinc-400 text-lg">timer</span>
-            </div>
-            <div>
-                <div class="text-4xl font-black text-on-surface">4.2h</div>
-                <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span> -0.8h improvement
-                </div>
-            </div>
-        </div>
-        <!-- KPI 3 -->
-        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
-            <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Active
-                    Technicians</span>
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Active Technicians</span>
                 <span class="material-symbols-outlined text-zinc-400 text-lg">engineering</span>
             </div>
             <div>
-                <div class="text-4xl font-black text-on-surface">128</div>
-                <div class="font-label-mono text-[10px] text-zinc-400 mt-2">94% currently engaged</div>
+                <div class="text-4xl font-black text-on-surface">{{ active_tecnicos_count }}</div>
+                <div class="font-label-mono text-[10px] text-zinc-400 mt-2">100% currently engaged</div>
             </div>
         </div>
-        <!-- KPI 4 -->
+        <!-- KPI 4: System Integrity -->
         <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">System
-                    Integrity</span>
-                <span class="material-symbols-outlined text-primary text-lg">verified_user</span>
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">System Integrity</span>
+                <span class="material-symbols-outlined text-[#0057FF] text-lg">verified_user</span>
             </div>
             <div>
-                <div class="text-4xl font-black text-on-surface">99.8%</div>
+                <div class="text-4xl font-black text-on-surface">{{ system_integrity }}</div>
                 <div class="w-full h-[2px] bg-zinc-100 mt-4 relative">
-                    <div class="absolute left-0 top-0 h-full bg-primary w-[99.8%]"></div>
+                    <div class="absolute left-0 top-0 h-full bg-[#0057FF] w-[{{ system_integrity }}]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 5: Total Revenue (Ingresos) -->
+        <div class="bg-emerald-50/30 border border-emerald-500/20 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-emerald-600 uppercase tracking-widest">Ingresos Totales</span>
+                <span class="material-symbols-outlined text-emerald-600 text-lg font-bold">payments</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-emerald-700">${{ "{:,.2f}".format(total_revenue) }}</div>
+                <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span> Órdenes facturadas
+                </div>
+            </div>
+        </div>
+        <!-- KPI 6: Total Expenses (Egresos) -->
+        <div class="bg-rose-50/30 border border-rose-500/20 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-rose-500 uppercase tracking-widest">Egresos Estimados</span>
+                <span class="material-symbols-outlined text-rose-500 text-lg">shopping_cart</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-rose-700">-${{ "{:,.2f}".format(total_expenses) }}</div>
+                <div class="font-label-mono text-[10px] text-rose-500 mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span> Repuestos e insumos (35%)
+                </div>
+            </div>
+        </div>
+        <!-- KPI 7: Net Profit (Beneficio Neto) -->
+        <div class="bg-blue-50/30 border border-blue-500/20 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-blue-600 uppercase tracking-widest">Beneficio Neto</span>
+                <span class="material-symbols-outlined text-blue-600 text-lg">trending_up</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-blue-700">${{ "{:,.2f}".format(net_profit) }}</div>
+                <div class="font-label-mono text-[10px] text-blue-600 mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">verified</span> Margen operativo neto
+                </div>
+            </div>
+        </div>
+        <!-- KPI 8: MTTR -->
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+            <div class="flex justify-between items-start">
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Mean Time To Resolve</span>
+                <span class="material-symbols-outlined text-zinc-400 text-lg">timer</span>
+            </div>
+            <div>
+                <div class="text-4xl font-black text-on-surface">{{ mttr }}</div>
+                <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span> Promedio de atención
                 </div>
             </div>
         </div>
@@ -109,8 +159,8 @@
                         <div class="border-t border-zinc-50 w-full h-0"></div>
                         <div class="border-t border-zinc-100 w-full h-0"></div>
                     </div>
-                    <!-- Barra de estado para cada día | el editor no entiende el lenguaje de plantillas Flask dentro de un atributo css-->
-                    {% for h in [80, 35, 55, 90, 65, 45, 20] %}
+                    <!-- Barra de estado para cada día -->
+                    {% for h in weekday_percentages %}
                     <div class="w-10 bg-zinc-100 hover:bg-primary transition-all cursor-pointer relative group z-10"
                         style="height: {{h}}%">
                         <!-- Tooltip al pasar el mouse -->
@@ -143,24 +193,112 @@
                 <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Fault Logic</h2>
             </div>
             <div class="flex-1 flex flex-col justify-center gap-6">
+                {% for f in fault_logic %}
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
-                        <span>Cisco Networks</span>
-                        <span>42%</span>
+                     <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
+                         <span>{{ f.nombre }}</span>
+                         <span>{{ f.porcentaje }}%</span>
+                     </div>
+                     <div class="w-full h-[2px] bg-zinc-100">
+                         <div class="h-full bg-primary" style="width: {{ f.porcentaje }}%"></div>
+                     </div>
+                </div>
+                {% else %}
+                <p class="text-xs text-on-surface-variant font-label-mono">Sin datos disponibles.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- K-Means Client Segmentation Bento Box -->
+        <div class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white border border-on-surface/10 overflow-hidden flex flex-col mt-6">
+            <div class="p-6 border-b border-on-surface/10 bg-zinc-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">analytics</span>
+                        Data Mining: K-Means Client Segmentation
+                    </h2>
+                    <p class="text-xs text-on-surface-variant font-label-mono mt-1">Advanced machine learning classification based on service frequency and billing contributions.</p>
+                </div>
+                <div class="flex gap-2">
+                    <span class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold uppercase text-[9px] border border-emerald-100 flex items-center gap-1 rounded-none">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> K-Means Active
+                    </span>
+                    <span class="px-2 py-1 bg-zinc-100 text-zinc-600 font-bold uppercase text-[9px] border border-zinc-200 rounded-none">
+                        Clusters: K=3
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Summary Stats of Clusters -->
+            <div class="grid grid-cols-1 md:grid-cols-3 border-b border-zinc-100 bg-zinc-50/50">
+                <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
+                    <div>
+                        <span class="font-label-bold text-[9px] text-emerald-600 uppercase tracking-widest block">Segmento Platinum</span>
+                        <span class="text-2xl font-black text-emerald-700 mt-2 block">{{ kmeans_stats.Platinum.count }} Clientes</span>
                     </div>
-                    <div class="w-full h-[2px] bg-zinc-100">
-                        <div class="h-full bg-primary w-[42%]"></div>
+                    <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
+                        Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(kmeans_stats.Platinum.total_gasto) }}</span><br/>
+                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{ kmeans_stats.Platinum.avg_frecuencia }} reparaciones</span>
                     </div>
                 </div>
-                <div>
-                    <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
-                        <span>Dell Servers</span>
-                        <span>28%</span>
+                <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
+                    <div>
+                        <span class="font-label-bold text-[9px] text-blue-600 uppercase tracking-widest block">Segmento Activo</span>
+                        <span class="text-2xl font-black text-blue-700 mt-2 block">{{ kmeans_stats.Activo.count }} Clientes</span>
                     </div>
-                    <div class="w-full h-[2px] bg-zinc-100">
-                        <div class="h-full bg-secondary w-[28%]"></div>
+                    <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
+                        Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(kmeans_stats.Activo.total_gasto) }}</span><br/>
+                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{ kmeans_stats.Activo.avg_frecuencia }} reparaciones</span>
                     </div>
                 </div>
+                <div class="p-6 flex flex-col justify-between">
+                    <div>
+                        <span class="font-label-bold text-[9px] text-zinc-500 uppercase tracking-widest block">Segmento Casual / Nuevo</span>
+                        <span class="text-2xl font-black text-zinc-600 mt-2 block">{{ kmeans_stats.Casual.count }} Clientes</span>
+                    </div>
+                    <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
+                        Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(kmeans_stats.Casual.total_gasto) }}</span><br/>
+                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{ kmeans_stats.Casual.avg_frecuencia }} reparaciones</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table of Assignments -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-zinc-50 border-b border-zinc-100">
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Cliente</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">DNI/CUIL</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Frecuencia</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Aporte Facturación</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Segmento Asignado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs">
+                        {% for sc in segmented_clients %}
+                        <tr class="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
+                            <td class="py-3 px-6 font-bold text-on-surface">
+                                {{ sc.nombre_completo }}
+                            </td>
+                            <td class="py-3 px-6 font-mono text-zinc-500">
+                                {{ sc.dni_cuil }}
+                            </td>
+                            <td class="py-3 px-6 font-mono text-on-surface">
+                                {{ sc.frecuencia }} ordenes
+                            </td>
+                            <td class="py-3 px-6 font-mono font-bold text-emerald-700">
+                                ${{ "{:,.2f}".format(sc.gasto) }}
+                            </td>
+                            <td class="py-3 px-6">
+                                <span class="px-2 py-1 {{ sc.cluster_color }} font-bold uppercase text-[8px] border">
+                                    {{ sc.cluster_label }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -195,21 +333,39 @@
                         </tr>
                     </thead>
                     <tbody class="text-xs">
+                        {% for h in recent_history %}
                         <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors cursor-pointer group">
-                            <td class="py-4 px-6 font-mono text-zinc-400">10:42:01Z</td>
-                            <td class="py-4 px-6 font-mono text-primary group-hover:underline">EVT-9021A</td>
-                            <td class="py-4 px-6">Root access granted to Server Rack 04. Configuration modified.</td>
-                            <td class="py-4 px-6 flex items-center gap-2">
-                                <div
-                                    class="w-6 h-6 bg-primary text-white flex items-center justify-center font-bold text-[8px]">
-                                    JD</div>
-                                J. Doe (Admin)
-                            </td>
-                            <td class="py-4 px-6">
-                                <span
-                                    class="px-2 py-1 bg-emerald-50 text-emerald-600 font-bold uppercase text-[8px] border border-emerald-100">Success</span>
-                            </td>
+                             <td class="py-4 px-6 font-mono text-zinc-400">
+                                 {{ h.fecha_cambio.strftime('%d/%m/%Y %H:%M:%S') if h.fecha_cambio else '—' }}
+                             </td>
+                             <td class="py-4 px-6 font-mono text-primary group-hover:underline">
+                                 EVT-{{ "%04d" | format(h.id) }}
+                             </td>
+                             <td class="py-4 px-6">
+                                 Cambio de estado en ticket #{{ h.orden_id }} de 
+                                 <span class="font-bold text-zinc-600">"{{ h.estado_anterior if h.estado_anterior else '—' }}"</span> 
+                                 a 
+                                 <span class="font-bold text-primary">"{{ h.estado_nuevo if h.estado_nuevo else '—' }}"</span>.
+                             </td>
+                             <td class="py-4 px-6 flex items-center gap-2">
+                                 <div class="w-6 h-6 rounded-full bg-zinc-950 text-white flex items-center justify-center font-bold text-[8px] uppercase">
+                                     {{ h.usuario.username[:2] if h.usuario else 'SY' }}
+                                 </div>
+                                 {{ h.usuario.username if h.usuario else 'Sistema' }}
+                             </td>
+                             <td class="py-4 px-6">
+                                 <span class="px-2 py-1 bg-emerald-50 text-emerald-600 font-bold uppercase text-[8px] border border-emerald-100">
+                                     Completado
+                                 </span>
+                             </td>
                         </tr>
+                        {% else %}
+                        <tr>
+                             <td colspan="5" class="py-8 px-6 text-center text-zinc-400 font-mono">
+                                 Sin logs de auditoría registrados.
+                             </td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

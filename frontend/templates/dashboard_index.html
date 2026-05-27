@@ -14,10 +14,10 @@
                 <span class="material-symbols-outlined text-secondary">confirmation_number</span>
             </div>
             <div>
-                <div class="font-headline-xl text-headline-xl text-primary">142</div>
+                <div class="font-headline-xl text-headline-xl text-primary">{{ active_tickets }}</div>
                 <div class="flex items-center gap-2 mt-xs text-on-tertiary-container">
                     <span class="material-symbols-outlined text-sm">arrow_upward</span>
-                    <span class="font-label-mono text-label-mono">12% from yesterday</span>
+                    <span class="font-label-mono text-label-mono">En tiempo real</span>
                 </div>
             </div>
         </div>
@@ -28,24 +28,24 @@
                 <span class="material-symbols-outlined text-error">build</span>
             </div>
             <div>
-                <div class="font-headline-xl text-headline-xl text-primary">38</div>
+                <div class="font-headline-xl text-headline-xl text-primary">{{ pending_repairs }}</div>
                 <div class="flex items-center gap-2 mt-xs text-error">
                     <span class="material-symbols-outlined text-sm">warning</span>
-                    <span class="font-label-mono text-label-mono">5 critical status</span>
+                    <span class="font-label-mono text-label-mono">Requieren diagnóstico / reparación</span>
                 </div>
             </div>
         </div>
         <!-- Today's Revenue -->
         <div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between">
             <div class="flex justify-between items-start mb-xl">
-                <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Today's Revenue</span>
+                <span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Total Revenue</span>
                 <span class="material-symbols-outlined text-on-surface-variant">payments</span>
             </div>
             <div>
-                <div class="font-headline-xl text-headline-xl text-primary">$4,250</div>
+                <div class="font-headline-xl text-headline-xl text-primary">${{ "{:,.2f}".format(revenue) }}</div>
                 <div class="flex items-center gap-2 mt-xs text-on-tertiary-container">
                     <span class="material-symbols-outlined text-sm">arrow_upward</span>
-                    <span class="font-label-mono text-label-mono">Target met</span>
+                    <span class="font-label-mono text-label-mono">Órdenes facturadas</span>
                 </div>
             </div>
         </div>

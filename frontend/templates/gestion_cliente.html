@@ -2,21 +2,7 @@
 
 <!-- Canvas Area -->
 <main class="flex-1 p-container-margin overflow-y-auto">
-    <!-- Mensajes Flash -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="space-y-3 mb-8">
-        {% for category, message in messages %}
-        <div
-            class="p-4 {% if category == 'success' %}bg-green-100 text-green-700 border-l-4 border-green-500{% else %}bg-red-100 text-red-700 border-l-4 border-red-500{% endif %} font-label-bold text-xs uppercase tracking-widest flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">{% if category == 'success' %}check_circle{% else %}error{%
-                endif %}</span>
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
+
 
     <!-- Page Header -->
     <div class="flex items-end justify-between mb-lg">
@@ -36,7 +22,8 @@
         <div class="col-span-12 bento-card">
             <div class="flex items-center gap-sm">
                 <span class="material-symbols-outlined text-on-surface-variant">search</span>
-                <input class="input-swiss flex-1" placeholder="Buscar por nombre, apellido o DNI..." type="text" />
+                <input id="search-input" class="input-swiss flex-1" placeholder="Buscar por nombre, apellido o DNI..."
+                    type="text" />
                 <button class="btn-swiss text-accent hover:underline uppercase tracking-widest p-0">Buscar</button>
             </div>
         </div>
@@ -53,7 +40,7 @@
                             <th class="text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="clientes-table-body">
                         {% if clientes %}
                         {% for c in clientes %}
                         <tr class="hover:bg-background transition-colors">
@@ -69,12 +56,14 @@
                             <td class="font-label-mono text-xs">{{ c.dni_cuil }}</td>
                             <td class="text-right">
                                 <div class="flex justify-end gap-2">
-                                    <a href="{{ url_for('vistas.gestion_equipos', cliente_id=c.id) }}"
+                                    <a href="{{ url_for('equipo.gestion_equipos', cliente_id=c.id) }}"
                                         class="p-2 text-on-surface-variant hover:text-accent transition-colors"
                                         title="Ver Equipos">
                                         <span class="material-symbols-outlined text-[18px]">devices</span>
                                     </a>
-                                    <button class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                    <button
+                                        onclick="abrirEditar('{{ c.id }}', '{{ c.dni_cuil }}', '{{ c.nombre }}', '{{ c.apellido }}', '{{ c.telefono }}', '{{ c.email }}', '{{ c.domicilio }}', '{{ c.localidad }}')"
+                                        class="p-2 text-on-surface-variant hover:text-primary transition-colors"
                                         title="Editar">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                     </button>
@@ -155,6 +144,61 @@
         </div>
     </div>
 </main>
+
+<!-- Modal Editar Cliente -->
+<div id="modal-editar"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div
+        class="bg-white dark:bg-zinc-950 w-full max-w-md bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/50">
+            <h2 class="font-headline-md text-primary tracking-tight">Editar Cliente</h2>
+            <button onclick="cerrarModal()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-editar" class="p-8 flex flex-col gap-6" method="post">
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">DNI / CUIL</label>
+                <input id="edit-dni" class="input-swiss bg-zinc-50" type="text" readonly disabled />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Nombre</label>
+                    <input id="edit-nombre" name="nombre" class="input-swiss" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Apellido</label>
+                    <input id="edit-apellido" name="apellido" class="input-swiss" type="text" required />
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Teléfono</label>
+                <input id="edit-telefono" name="telefono" class="input-swiss" type="tel" required />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Email</label>
+                <input id="edit-email" name="email" class="input-swiss" type="email" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Domicilio</label>
+                    <input id="edit-domicilio" name="domicilio" class="input-swiss" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Localidad</label>
+                    <input id="edit-localidad" name="localidad" class="input-swiss" type="text" required />
+                </div>
+            </div>
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModal()"
+                    class="btn-swiss flex-1 justify-center border border-border hover:bg-zinc-100 transition-colors">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/gestion_cliente.js') }}"></script>
 
 </div> <!-- Cierre de #main-content (abierto en header.html) -->
 </body>

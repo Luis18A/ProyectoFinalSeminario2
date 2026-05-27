@@ -16,13 +16,14 @@ class OrdenServicio(db.Model):
     fecha_entrega = db.Column(db.DateTime, nullable=True)
     costo = db.Column(db.Float, nullable=True)
     observaciones = db.Column(db.String(500), nullable=True)
+    repuestos = db.Column(db.JSON, nullable=True, default=list)
 
     # Definimos las relaciones explícitas
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id])
     equipo = db.relationship('Equipo', foreign_keys=[equipo_id])
     historial = db.relationship('HistorialEstado', backref='orden', lazy=True)
 
-    def __init__(self, usuario_id, equipo_id, falla_reportada, accesorios, fecha_recepcion=None, estado=EstadoOrden.PENDIENTE, estado_diagnostico=None, fecha_entrega=None, costo=None, observaciones=None):
+    def __init__(self, usuario_id, equipo_id, falla_reportada, accesorios, fecha_recepcion=None, estado=EstadoOrden.PENDIENTE, estado_diagnostico=None, fecha_entrega=None, costo=None, observaciones=None, repuestos=None):
         self.usuario_id = usuario_id
         self.equipo_id = equipo_id
         self.falla_reportada = falla_reportada
@@ -33,6 +34,7 @@ class OrdenServicio(db.Model):
         self.fecha_entrega = fecha_entrega
         self.costo = costo
         self.observaciones = observaciones
+        self.repuestos = repuestos or []
         
     # Métodos de negocio (Domain Logic)
 

@@ -40,25 +40,37 @@
                                 {{ error }}
                         </div>
                         {% endif %}
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="space-y-2 mb-sm">
+                                {% for category, message in messages %}
+                                <div class="p-sm text-center font-body-sm {% if category == 'success' %}bg-emerald-100 text-emerald-800{% else %}bg-error-container text-on-error-container{% endif %}">
+                                        {{ message }}
+                                </div>
+                                {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
                         <!-- Operator ID Input -->
                         <div class="flex flex-col relative group">
                                 <label class="font-label-bold text-label-bold text-primary uppercase tracking-widest mb-sm"
-                                        for="operator-id">Usuario</label>
+                                        for="username">Usuario</label>
                                 <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md"
-                                        id="operator-id" name="operator-id" placeholder="Ingrese usuario" required=""
+                                        id="username" name="username" placeholder="Ingrese usuario" required=""
                                         type="text" />
                         </div>
                         <!-- Passcode Input -->
                         <div class="flex flex-col relative group">
                                 <div class="flex justify-between items-end mb-sm">
                                         <label class="font-label-bold text-label-bold text-primary uppercase tracking-widest"
-                                                for="passcode">Constraseña</label>
+                                                for="password" name="password">Constraseña</label>
                                         <a class="font-label-mono text-label-mono text-secondary hover:text-on-secondary-fixed-variant transition-colors uppercase tracking-widest"
                                                 href="#">Recuperar</a>
                                 </div>
                                 <div class="relative flex items-center">
                                         <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 pr-xl focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md tracking-[0.2em]"
-                                                id="passcode" name="passcode" placeholder="••••••••" required=""
+                                                id="password" name="password" placeholder="••••••••" required=""
                                                 type="password" />
                                         <button aria-label="Toggle password visibility"
                                                 class="absolute right-0 bottom-sm text-outline hover:text-primary transition-colors flex items-center justify-center focus:outline-none"

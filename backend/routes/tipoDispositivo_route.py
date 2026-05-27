@@ -1,20 +1,11 @@
-from backend.models.TipoDispositivo import TipoDispositivo
 from backend.controller.tipoDispositivo_controller import TipoDispositivoController
 from flask import Blueprint, request, render_template, request, url_for, flash, redirect
+from backend.utils.decorators import login_required
+
 tipoDispositivo_bp = Blueprint('tipoDispositivo', __name__)
 
-'''@tipoDispositivo_bp.route('/tipoDispositivo', methods=['POST'])
-def crear_tipo_dispositivo():
-    datos = request.get_json()
-    dispositivo = datos.get('dispositivo')
-    if TipoDispositivo.get_por_descripcion(dispositivo):
-        flash('El tipo de dispositivo ya existe', 'error')
-    else:
-        TipoDispositivo.crear(dispositivo)
-        flash('Tipo de dispositivo creado exitosamente', 'success')
-    return redirect(url_for('vistas.gestion_equipos'))'''
-
 @tipoDispositivo_bp.route('/tipoDispositivo', methods=['POST'])
+@login_required
 def crear_tipo_dispositivo():
     # 1. Delegamos TODA la lógica al controlador
     # Le pasamos el request.form completo
@@ -28,4 +19,4 @@ def crear_tipo_dispositivo():
     
     # 3. Redirigimos a la vista que elijas (ej: gestión de equipos)
     cliente_id = request.form.get('cliente_id')
-    return redirect(url_for('vistas.gestion_equipos', cliente_id=cliente_id))
+    return redirect(url_for('equipo.gestion_equipos', cliente_id=cliente_id))

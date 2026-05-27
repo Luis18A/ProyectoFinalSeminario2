@@ -27,7 +27,7 @@
             </div>
             <div class="flex-1">
                 <p class="font-label-bold text-on-surface-variant uppercase text-[10px]">Pendientes</p>
-                <p class="font-headline-md mt-xs">12</p>
+                <p class="font-headline-md mt-xs">{{ pendientes | length }}</p>
             </div>
         </div>
         <!-- En Mesa -->
@@ -37,8 +37,8 @@
                 <span class="material-symbols-outlined text-lg">construction</span>
             </div>
             <div class="flex-1">
-                <p class="font-label-bold text-on-surface-variant uppercase text-[10px]">En Mesa</p>
-                <p class="font-headline-md mt-xs">8</p>
+                <p class="font-label-bold text-on-surface-variant uppercase text-[10px]">En Trabajo</p>
+                <p class="font-headline-md mt-xs">{{ en_trabajo | length }}</p>
             </div>
         </div>
         <!-- Para Retirar -->
@@ -48,70 +48,86 @@
                 <span class="material-symbols-outlined text-lg">check_circle</span>
             </div>
             <div class="flex-1">
-                <p class="font-label-bold text-on-surface-variant uppercase text-[10px]">Para Retirar</p>
-                <p class="font-headline-md mt-xs">24</p>
+                <p class="font-label-bold text-on-surface-variant uppercase text-[10px]">Listos / Entregados</p>
+                <p class="font-headline-md mt-xs">{{ listos | length }}</p>
             </div>
         </div>
     </div>
 
     <!-- Kanban Board -->
     <div class="flex gap-grid-gutter h-[calc(100vh-350px)] min-h-[500px] overflow-x-auto">
-        <!-- Column 1: INGRESADOS -->
+        <!-- Column 1: PENDIENTES -->
         <div class="flex-1 flex flex-col min-w-[300px] border border-border bg-white">
             <div class="bg-error text-white p-3 font-label-mono uppercase flex justify-between items-center">
-                <span>Ingresados</span>
-                <span class="bg-white/20 px-2 py-0.5 text-[10px]">12</span>
+                <span>Pendientes / Presupuestados</span>
+                <span class="bg-white/20 px-2 py-0.5 text-[10px]">{{ pendientes | length }}</span>
             </div>
             <div class="flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
-                <!-- Ticket Card -->
-                <div class="bg-white border border-border p-3 hover:border-accent transition-colors cursor-pointer group">
+                {% for orden in pendientes %}
+                <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    class="block bg-white border border-border p-3 hover:border-accent transition-colors cursor-pointer group">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-mono text-accent font-bold">#1024</span>
-                        <span class="text-[9px] font-label-bold bg-background px-1.5 py-0.5 border border-border">PENDIENTE</span>
+                        <span class="font-label-mono text-accent font-bold">#{{ orden.id }}</span>
+                        <span class="text-[9px] font-label-bold bg-background px-1.5 py-0.5 border border-border uppercase">{{ orden.estado.value }}</span>
                     </div>
-                    <h4 class="font-bold text-sm mb-1">Carlos Mendoza</h4>
-                    <p class="text-xs text-on-surface-variant mb-2">Dell XPS 15</p>
+                    <h4 class="font-bold text-sm mb-1">{{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}</h4>
+                    <p class="text-xs text-on-surface-variant mb-2">{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</p>
                     <div class="border-t border-border pt-2">
                         <p class="text-[9px] font-bold text-on-surface-variant uppercase mb-1">Falla Reportada</p>
-                        <p class="text-[11px] leading-tight">No enciende, pitidos continuos al presionar power.</p>
+                        <p class="text-[11px] leading-tight truncate">{{ orden.falla_reportada }}</p>
                     </div>
-                </div>
+                </a>
+                {% else %}
+                <p class="text-xs text-center text-on-surface-variant pt-6">Sin órdenes pendientes.</p>
+                {% endfor %}
             </div>
         </div>
         <!-- Column 2: EN TRABAJO -->
         <div class="flex-1 flex flex-col min-w-[300px] border border-border bg-white">
             <div class="bg-accent text-white p-3 font-label-mono uppercase flex justify-between items-center">
                 <span>En Trabajo</span>
-                <span class="bg-white/20 px-2 py-0.5 text-[10px]">8</span>
+                <span class="bg-white/20 px-2 py-0.5 text-[10px]">{{ en_trabajo | length }}</span>
             </div>
             <div class="flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
-                <!-- Ticket Card -->
-                <div class="bg-white border border-border p-3 hover:border-accent transition-colors cursor-pointer border-l-4 border-l-accent">
+                {% for orden in en_trabajo %}
+                <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    class="block bg-white border border-border p-3 hover:border-accent transition-colors cursor-pointer border-l-4 border-l-accent">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-mono text-accent font-bold">#1018</span>
-                        <span class="text-[9px] font-label-bold bg-blue-50 text-accent px-1.5 py-0.5 border border-accent/20">REPARACION</span>
+                        <span class="font-label-mono text-accent font-bold">#{{ orden.id }}</span>
+                        <span class="text-[9px] font-label-bold bg-blue-50 text-accent px-1.5 py-0.5 border border-accent/20 uppercase">{{ orden.estado.value }}</span>
                     </div>
-                    <h4 class="font-bold text-sm mb-1">Empresa XYZ</h4>
-                    <p class="text-xs text-on-surface-variant mb-2">HP ProDesk 400</p>
-                </div>
+                    <h4 class="font-bold text-sm mb-1">{{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}</h4>
+                    <p class="text-xs text-on-surface-variant mb-2">{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</p>
+                    <div class="border-t border-border pt-2">
+                        <p class="text-[9px] font-bold text-on-surface-variant uppercase mb-1">Falla Reportada</p>
+                        <p class="text-[11px] leading-tight truncate">{{ orden.falla_reportada }}</p>
+                    </div>
+                </a>
+                {% else %}
+                <p class="text-xs text-center text-on-surface-variant pt-6">Sin órdenes en trabajo.</p>
+                {% endfor %}
             </div>
         </div>
-        <!-- Column 3: LISTOS -->
+        <!-- Column 3: LISTOS / ENTREGADOS -->
         <div class="flex-1 flex flex-col min-w-[300px] border border-border bg-white">
             <div class="bg-[#00983D] text-white p-3 font-label-mono uppercase flex justify-between items-center">
-                <span>Listos</span>
-                <span class="bg-white/20 px-2 py-0.5 text-[10px]">24</span>
+                <span>Listos / Entregados</span>
+                <span class="bg-white/20 px-2 py-0.5 text-[10px]">{{ listos | length }}</span>
             </div>
             <div class="flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
-                <!-- Ticket Card -->
-                <div class="bg-white border border-border p-3 hover:border-accent transition-colors cursor-pointer border-l-4 border-l-green-600">
+                {% for orden in listos %}
+                <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    class="block bg-white border border-border p-3 hover:border-accent transition-colors cursor-pointer border-l-4 border-l-green-600">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-mono text-accent font-bold">#1005</span>
-                        <span class="text-[9px] font-label-bold bg-green-50 text-green-700 px-1.5 py-0.5 border border-green-200">LISTO</span>
+                        <span class="font-label-mono text-accent font-bold">#{{ orden.id }}</span>
+                        <span class="text-[9px] font-label-bold bg-green-50 text-green-700 px-1.5 py-0.5 border border-green-200 uppercase">{{ orden.estado.value }}</span>
                     </div>
-                    <h4 class="font-bold text-sm mb-1">María Gomez</h4>
-                    <p class="text-xs text-on-surface-variant mb-2">Impresora Epson L3150</p>
-                </div>
+                    <h4 class="font-bold text-sm mb-1">{{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}</h4>
+                    <p class="text-xs text-on-surface-variant mb-2">{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</p>
+                </a>
+                {% else %}
+                <p class="text-xs text-center text-on-surface-variant pt-6">Sin órdenes listas.</p>
+                {% endfor %}
             </div>
         </div>
     </div>

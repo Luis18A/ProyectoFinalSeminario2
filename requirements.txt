@@ -1,3 +1,10 @@
 Flask==3.0.0
 flask-sqlalchemy
 psycopg2-binary
+fastapi
+uvicorn
+scrapling
+playwright
+patchright
+curl_cffi
+browserforge

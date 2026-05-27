@@ -5,10 +5,11 @@
     <!-- Page Header -->
     <div class="flex justify-between items-end mb-10">
         <div>
-            <h1 class="font-headline-xl text-primary mb-2">Parque Tecnológico de: {{ cliente.nombre ~ ' ' ~ cliente.apellido if cliente else 'Cliente General' }}</h1>
+            <h1 class="font-headline-xl text-primary mb-2">Parque Tecnológico de: {{ cliente.nombre ~ ' ' ~
+                cliente.apellido if cliente else 'Cliente General' }}</h1>
             <p class="font-body-md text-on-surface-variant">Gestión de activos y registro de equipos vinculados.</p>
         </div>
-        <a href="{{ url_for('vistas.gestion_cliente') }}" class="btn-swiss btn-outline">
+        <a href="{{ url_for('clientes.gestion_cliente') }}" class="btn-swiss btn-outline">
             <span class="material-symbols-outlined text-sm">arrow_back</span>
             Volver a Clientes
         </a>
@@ -78,7 +79,8 @@
                                 <th>Equipo</th>
                                 <th>S/N</th>
                                 <th>Descripción</th>
-                                <th class="text-right">Estado</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,20 +91,37 @@
                                     <div class="flex items-center gap-2">
                                         <span class="material-symbols-outlined text-zinc-400 text-[18px]">
                                             {% if 'laptop' in equipo.tipo.descripcion.lower() %}laptop_mac
-                                            {% elif 'pc' in equipo.tipo.descripcion.lower() or 'desktop' in equipo.tipo.descripcion.lower() %}desktop_windows
+                                            {% elif 'pc' in equipo.tipo.descripcion.lower() or 'desktop' in
+                                            equipo.tipo.descripcion.lower() %}desktop_windows
                                             {% elif 'impresora' in equipo.tipo.descripcion.lower() %}print
                                             {% else %}devices{% endif %}
                                         </span>
                                         {{ equipo.tipo.descripcion }} - {{ equipo.marca }}
                                     </div>
                                 </td>
-                                <td class="font-label-mono text-[11px] text-on-surface-variant">{{ equipo.numero_serie }}</td>
+                                <td class="font-label-mono text-[11px] text-on-surface-variant">{{ equipo.numero_serie
+                                    }}</td>
                                 <td class="text-on-surface-variant text-xs">{{ equipo.descripcion }}</td>
-                                <td class="text-right">
-                                    <button class="px-3 py-1 bg-amber-100 text-amber-700 border border-amber-200 font-label-bold text-[10px] uppercase tracking-wider flex items-center gap-1 ml-auto">
+                                <td class="text-center">
+                                    <button
+                                        class="px-3 py-1 bg-amber-100 text-amber-700 border border-amber-200 font-label-bold text-[10px] uppercase tracking-wider flex items-center gap-1 mx-auto">
                                         <span class="material-symbols-outlined text-[14px]">build</span>
                                         Taller
                                     </button>
+                                </td>
+                                <td class="text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button
+                                            class="px-3 py-1 border border-border text-on-surface-variant font-label-bold text-[10px] uppercase tracking-wider hover:bg-zinc-50 transition-colors">
+                                            Cambiar Estado
+                                        </button>
+                                        <button
+                                            onclick="abrirEditar('{{ equipo.id }}', '{{ equipo.tipo_id }}', '{{ equipo.marca }}', '{{ equipo.modelo }}', '{{ equipo.numero_serie }}', '{{ equipo.descripcion }}')"
+                                            class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                            title="Editar">
+                                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -143,8 +162,116 @@
                 </form>
             </div>
         </div>
+        <!-- Buscador de Repuestos (MercadoLibre y Megatone) -->
+        <div class="col-span-12 flex flex-col gap-grid-gutter mt-8">
+            <div class="bento-card p-6">
+                <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined">search</span>
+                    Buscador de Repuestos
+                </h2>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="flex-1 relative">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                        <input id="ml-search-input" class="input-swiss w-full pl-10"
+                            placeholder="Buscar repuestos, pantallas, baterías..." type="text" />
+                    </div>
+                    <button id="ml-search-btn" type="button" class="btn-swiss btn-primary px-8">
+                        Buscar Ofertas
+                    </button>
+                </div>
+
+                <!-- Estado de Carga -->
+                <div id="ml-loading"
+                    class="hidden py-8 flex flex-col items-center justify-center text-on-surface-variant">
+                    <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">sync</span>
+                    <p class="font-label-mono uppercase text-xs tracking-widest">Buscando en múltiples tiendas...</p>
+                </div>
+
+                <!-- Tabla de Resultados -->
+                <div id="ml-results-container" class="hidden table-container border-none">
+                    <table class="table-swiss">
+                        <thead>
+                            <tr>
+                                <th>Tienda</th>
+                                <th>Producto</th>
+                                <th>Condición</th>
+                                <th class="text-right">Precio</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ml-results-body">
+                            <!-- Los resultados se insertarán aquí por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mensaje sin resultados -->
+                <div id="ml-no-results" class="hidden py-8 text-center text-on-surface-variant">
+                    No se encontraron repuestos para tu búsqueda.
+                </div>
+            </div>
+        </div>
     </div>
 </main>
+
+
+<!-- Modal Editar Equipo -->
+<div id="modal-editar-equipo"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div
+        class="bg-white dark:bg-zinc-950 w-full max-w-md bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/50">
+            <h2 class="font-headline-md text-primary tracking-tight">Editar Equipo</h2>
+            <button onclick="cerrarModal()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-editar-equipo" class="p-8 flex flex-col gap-6" method="post">
+            {% if cliente %}
+            <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+            {% endif %}
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Tipo de Equipo</label>
+                <select id="edit-tipo" name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent"
+                    required>
+                    <option disabled value="">Seleccionar tipo</option>
+                    {% for tipo in tipo_dispositivos %}
+                    <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Marca</label>
+                    <input id="edit-marca" name="marca" class="input-swiss" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Modelo</label>
+                    <input id="edit-modelo" name="modelo" class="input-swiss" type="text" required />
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Número de Serie
+                    (S/N)</label>
+                <input id="edit-serie" name="numero_serie" class="input-swiss font-label-mono uppercase" type="text"
+                    required />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Descripción</label>
+                <textarea id="edit-descripcion" name="descripcion" class="input-swiss resize-none" rows="3"></textarea>
+            </div>
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModal()"
+                    class="btn-swiss flex-1 justify-center border border-border hover:bg-zinc-100 transition-colors">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/gestion_equipos.js') }}"></script>
 
 </div> <!-- Cierre de #main-content (abierto en header.html) -->
 </body>

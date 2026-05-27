@@ -50,17 +50,45 @@ class ClienteController:
             (Cliente.dni_cuil.ilike(f"%{termino}%"))
         ).all()
 
-    def actualizar_cliente(cliente_id, datos_formulario):
-        cliente = Cliente.get_by_id(cliente_id)
-        if cliente:
+    @staticmethod
+    def buscar_clientes_json(termino):
+        """Busca clientes y retorna una lista de diccionarios JSON listos para responder en la ruta."""
+        if not termino:
+            return []
+        clientes = ClienteController.buscar_clientes(termino)
+        resultados = []
+        for c in clientes:
+            resultados.append({
+                'id': c.id,
+                'nombre': c.nombre,
+                'apellido': c.apellido,
+                'dni_cuil': c.dni_cuil,
+                'telefono': c.telefono,
+                'email': c.email,
+                'domicilio': c.domicilio,
+                'localidad': c.localidad
+            })
+        return resultados
+
+    @staticmethod
+    def editar_cliente(cliente_id, datos_formulario):
+        try:
+            cliente = Cliente.get_by_id(cliente_id)
+            if not cliente:
+                return False, "Cliente no encontrado."
+                
             cliente.nombre = datos_formulario.get('nombre')
             cliente.apellido = datos_formulario.get('apellido')
             cliente.telefono = datos_formulario.get('telefono')
             cliente.email = datos_formulario.get('email')
-            cliente.direccion = datos_formulario.get('direccion')
+            cliente.domicilio = datos_formulario.get('domicilio')
+            cliente.localidad = datos_formulario.get('localidad')
+            
             db.session.commit()
-            return True
-        return False
+            return True, "Cliente actualizado exitosamente."
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error al actualizar el cliente: {str(e)}"
 
     def eliminar_cliente(cliente_id):
         cliente = Cliente.get_by_id(cliente_id)

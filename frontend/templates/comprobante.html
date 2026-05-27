@@ -2,12 +2,12 @@
 
 <!-- Actions Bar (Non-printing) -->
 <div class="no-print sticky top-0 z-50 bg-white border-b-2 border-primary/10 px-container-margin py-md flex justify-between items-center shadow-sm">
-    <a href="{{ url_for('vistas.dashboard') }}" class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors">
+    <a href="{{ url_for('ordenServicio.tickets') }}" class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors">
         <span class="material-symbols-outlined">arrow_back</span>
         <span class="font-label-mono uppercase text-xs">Volver al sistema</span>
     </a>
     <div class="flex gap-md">
-        <button class="btn-swiss btn-outline">
+        <button onclick="window.print()" class="btn-swiss btn-outline">
             <span class="material-symbols-outlined text-sm">download</span>
             PDF
         </button>
@@ -29,8 +29,8 @@
             </div>
             <div class="text-right">
                 <div class="font-label-mono text-on-surface-variant mb-unit text-xs uppercase">Orden de Trabajo</div>
-                <div class="font-headline-md text-accent">#1024</div>
-                <div class="font-body-sm text-on-surface-variant mt-sm">Fecha: 24/10/2023</div>
+                <div class="font-headline-md text-accent">#{{ orden.id }}</div>
+                <div class="font-body-sm text-on-surface-variant mt-sm">Fecha: {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}</div>
             </div>
         </header>
 
@@ -39,15 +39,15 @@
             <div class="col-span-12 font-label-bold text-primary uppercase border-b border-primary/10 pb-sm mb-sm text-xs">Datos del Cliente</div>
             <div class="col-span-12 md:col-span-4">
                 <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">Nombre y Apellido</span>
-                <span class="font-body-md text-primary">Pérez, Juan</span>
+                <span class="font-body-md text-primary">{{ orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</span>
             </div>
             <div class="col-span-12 md:col-span-4">
                 <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">DNI/CUIL</span>
-                <span class="font-body-md text-primary">20-34567890-1</span>
+                <span class="font-body-md text-primary">{{ orden.equipo.cliente.dni_cuil }}</span>
             </div>
             <div class="col-span-12 md:col-span-4">
                 <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">Teléfono</span>
-                <span class="font-body-md text-primary">+54 11 4567-8901</span>
+                <span class="font-body-md text-primary">{{ orden.equipo.cliente.telefono or '—' }}</span>
             </div>
         </section>
 
@@ -65,9 +65,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Laptop</td>
-                            <td>Dell Latitude 5420</td>
-                            <td class="font-label-mono text-on-surface-variant">CN-0G1234</td>
+                            <td>{{ orden.equipo.tipo.descripcion if orden.equipo.tipo else 'Dispositivo' }}</td>
+                            <td>{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</td>
+                            <td class="font-label-mono text-on-surface-variant uppercase">{{ orden.equipo.numero_serie }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -78,11 +78,11 @@
         <section class="grid grid-cols-12 gap-grid-gutter mb-xl">
             <div class="col-span-12 md:col-span-6 bento-card bg-background">
                 <h3 class="font-label-bold text-primary uppercase mb-sm border-b border-primary/10 pb-sm text-xs">Falla Reportada</h3>
-                <p class="font-body-md text-on-surface-variant">Batería hinchada y sobrecalentamiento del equipo durante uso normal.</p>
+                <p class="font-body-md text-on-surface-variant">{{ orden.falla_reportada }}</p>
             </div>
             <div class="col-span-12 md:col-span-6 bento-card bg-background">
                 <h3 class="font-label-bold text-primary uppercase mb-sm border-b border-primary/10 pb-sm text-xs">Accesorios Recibidos</h3>
-                <p class="font-body-md text-on-surface-variant">Cargador original (Dell 65W Type-C).</p>
+                <p class="font-body-md text-on-surface-variant">{{ orden.accesorios or 'Ninguno' }}</p>
             </div>
         </section>
 
@@ -93,10 +93,10 @@
                 <h2 class="font-headline-md text-primary">Diagnóstico y Resolución Técnica</h2>
             </div>
             <p class="font-body-md text-primary leading-relaxed">
-                Se constata daño físico en la batería interna (hinchazón). Se procede al reemplazo por repuesto original Dell (Part #GJKNX). Se realiza limpieza interna de disipadores y cambio de pasta térmica para mitigar problemas de sobrecalentamiento. Pruebas de estrés superadas con éxito. Temperaturas operativas normales.
+                {{ orden.estado_diagnostico if orden.estado_diagnostico else 'Sin diagnóstico cargado aún en el sistema.' }}
             </p>
-            <div class="mt-md inline-flex items-center px-sm py-1 bg-green-100 text-green-800 font-label-bold uppercase text-[10px]">
-                Reparado
+            <div class="mt-md inline-flex items-center px-sm py-1 {% if orden.estado.value in ['Listo', 'Entregado'] %}bg-green-100 text-green-800 border border-green-200{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %} font-label-bold uppercase text-[10px]">
+                {{ orden.estado.value }}
             </div>
         </section>
 
@@ -116,7 +116,13 @@
             <!-- Financials -->
             <div class="col-span-12 md:col-span-4 bento-card bg-background flex flex-col justify-end">
                 <div class="font-label-bold text-on-surface-variant uppercase mb-unit text-[10px]">Costo Total del Servicio</div>
-                <div class="font-headline-xl text-primary">$450.00</div>
+                <div class="font-headline-xl text-primary">
+                    {% if orden.costo is not none %}
+                        ${{ "%.2f"|format(orden.costo) }}
+                    {% else %}
+                        Pendiente
+                    {% endif %}
+                </div>
             </div>
         </div>
 

@@ -10,24 +10,28 @@ class Usuario(db.Model):
     apellido = db.Column(db.String(80), nullable=False)
     rol_id = db.Column(db.ForeignKey('rol.id'), nullable=False)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+    intentos_fallidos = db.Column(db.Integer, nullable=False, default=0)
 
-    def __init__(self, username, password, nombre, apellido, rol_id, activo=True):
+    def __init__(self, username, password, nombre, apellido, rol_id, activo=True, intentos_fallidos=0):
         self.username = username
         self.password = generate_password_hash(password)
         self.nombre = nombre
         self.apellido = apellido
         self.rol_id = rol_id
         self.activo = activo
+        self.intentos_fallidos = intentos_fallidos
 
     @classmethod
-    def crear(cls, username, password, nombre, apellido, rol_id, activo=True):
+    def crear(cls, username, password, nombre, apellido, rol_id, activo=True, intentos_fallidos=0):
+        # IMPORTANTE: NO hashear aquí, el __init__ ya lo hace con generate_password_hash
         nuevo_usuario = cls(
             username=username,
-            password=generate_password_hash(password), # Hasheamos al crear
+            password=password,  # el __init__ aplica el hash automáticamente
             nombre=nombre,
             apellido=apellido,
             rol_id=rol_id,
-            activo=activo
+            activo=activo,
+            intentos_fallidos=intentos_fallidos
         )
         db.session.add(nuevo_usuario)
         db.session.commit()

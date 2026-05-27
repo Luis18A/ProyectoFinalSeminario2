@@ -11,6 +11,9 @@ class HistorialEstado(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     observacion_tecnica = db.Column(db.Text)
 
+    # Relación para poder acceder al nombre del usuario desde el template
+    usuario = db.relationship('Usuario', foreign_keys=[usuario_id])
+
     def __init__(self, orden_id: int, estado_anterior: str, estado_nuevo: str, usuario_id: int, observacion_tecnica: str=None):
         self.orden_id = orden_id
         self.estado_anterior = estado_anterior

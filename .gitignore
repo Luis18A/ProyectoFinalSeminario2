@@ -1,9 +1,9 @@
-# Python - Archivos compilados y caché (Lo que causó el error)
+# Python - Archivos compilados y caché
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Entornos virtuales (Veo que usas uno)
+# Entornos virtuales
 venv/
 env/
 .venv/
@@ -20,7 +20,9 @@ Thumbs.db
 
 # Archivos de entorno (SEGURIDAD: Si llegas a crear un .env con contraseñas)
 .env
-__pycache__/ 
-__pycache__/
-*.py[cod]
-*$py.class
+
+# Carpetas de desarrollo y archivos temporales
+scratch/
+
+# Documentos a ignorar
+PROYECTO SEMINARIO 2.pdf
