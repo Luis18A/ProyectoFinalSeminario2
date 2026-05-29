@@ -1,5 +1,22 @@
 {% include 'header.html' %}
 
+<style>
+    @keyframes grow-horizontal {
+        from { width: 0%; }
+        to { width: var(--target-width); }
+    }
+    @keyframes grow-vertical {
+        from { height: 0%; }
+        to { height: var(--target-height); }
+    }
+    .animate-grow {
+        animation: grow-horizontal 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .animate-grow-v {
+        animation: grow-vertical 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+</style>
+
 <!-- CANVAS (Bento Grid Layout) -->
 <main class="flex-1 p-4 md:p-10 bg-background overflow-x-hidden">
     <!-- Page Header -->
@@ -69,58 +86,82 @@
             <div>
                 <div class="text-4xl font-black text-on-surface">{{ system_integrity }}</div>
                 <div class="w-full h-[2px] bg-zinc-100 mt-4 relative">
-                    <div class="absolute left-0 top-0 h-full bg-[#0057FF] w-[{{ system_integrity }}]"></div>
+                    <div class="absolute left-0 top-0 h-full bg-[#0057FF] animate-grow" style="--target-width: {{ system_integrity }}; width: 0%;"></div>
                 </div>
             </div>
         </div>
 
         <!-- KPI 5: Total Revenue (Ingresos) -->
-        <div class="bg-emerald-50/30 border border-emerald-500/20 p-6 flex flex-col justify-between h-40">
+        <div class="bg-emerald-50/30 border border-emerald-500/20 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
                 <span class="font-label-bold text-[10px] text-emerald-600 uppercase tracking-widest">Ingresos Totales</span>
                 <span class="material-symbols-outlined text-emerald-600 text-lg font-bold">payments</span>
             </div>
             <div>
                 <div class="text-3xl font-black text-emerald-700">${{ "{:,.2f}".format(total_revenue) }}</div>
+                <!-- Sparkline SVG -->
+                <div class="h-6 w-full mt-2 opacity-80 text-emerald-500">
+                    <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0,18 Q15,4 30,12 T60,8 T85,15 T100,2" fill="none" stroke="currentColor" stroke-width="2"></path>
+                    </svg>
+                </div>
                 <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">arrow_upward</span> Órdenes facturadas
                 </div>
             </div>
         </div>
         <!-- KPI 6: Total Expenses (Egresos) -->
-        <div class="bg-rose-50/30 border border-rose-500/20 p-6 flex flex-col justify-between h-40">
+        <div class="bg-rose-50/30 border border-rose-500/20 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
                 <span class="font-label-bold text-[10px] text-rose-500 uppercase tracking-widest">Egresos Estimados</span>
                 <span class="material-symbols-outlined text-rose-500 text-lg">shopping_cart</span>
             </div>
             <div>
                 <div class="text-3xl font-black text-rose-700">-${{ "{:,.2f}".format(total_expenses) }}</div>
+                <!-- Sparkline SVG -->
+                <div class="h-6 w-full mt-2 opacity-80 text-rose-500">
+                    <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0,5 Q10,12 30,4 T60,18 T85,10 T100,15" fill="none" stroke="currentColor" stroke-width="2"></path>
+                    </svg>
+                </div>
                 <div class="font-label-mono text-[10px] text-rose-500 mt-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">arrow_downward</span> Repuestos e insumos (35%)
                 </div>
             </div>
         </div>
         <!-- KPI 7: Net Profit (Beneficio Neto) -->
-        <div class="bg-blue-50/30 border border-blue-500/20 p-6 flex flex-col justify-between h-40">
+        <div class="bg-blue-50/30 border border-blue-500/20 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
                 <span class="font-label-bold text-[10px] text-blue-600 uppercase tracking-widest">Beneficio Neto</span>
                 <span class="material-symbols-outlined text-blue-600 text-lg">trending_up</span>
             </div>
             <div>
                 <div class="text-3xl font-black text-blue-700">${{ "{:,.2f}".format(net_profit) }}</div>
+                <!-- Sparkline SVG -->
+                <div class="h-6 w-full mt-2 opacity-80 text-blue-500">
+                    <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0,18 Q20,16 40,12 T70,5 T100,1" fill="none" stroke="currentColor" stroke-width="2"></path>
+                    </svg>
+                </div>
                 <div class="font-label-mono text-[10px] text-blue-600 mt-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">verified</span> Margen operativo neto
                 </div>
             </div>
         </div>
         <!-- KPI 8: MTTR -->
-        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
+        <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
                 <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Mean Time To Resolve</span>
                 <span class="material-symbols-outlined text-zinc-400 text-lg">timer</span>
             </div>
             <div>
                 <div class="text-4xl font-black text-on-surface">{{ mttr }}</div>
+                <!-- Sparkline SVG -->
+                <div class="h-6 w-full mt-2 opacity-80 text-zinc-300">
+                    <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0,5 Q20,10 40,18 T70,12 T100,2" fill="none" stroke="currentColor" stroke-width="2"></path>
+                    </svg>
+                </div>
                 <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">arrow_downward</span> Promedio de atención
                 </div>
@@ -161,8 +202,8 @@
                     </div>
                     <!-- Barra de estado para cada día -->
                     {% for h in weekday_percentages %}
-                    <div class="w-10 bg-zinc-100 hover:bg-primary transition-all cursor-pointer relative group z-10"
-                        style="height: {{h}}%">
+                    <div class="w-10 bg-zinc-100 hover:bg-primary transition-all cursor-pointer relative group z-10 animate-grow-v"
+                        style="--target-height: {{h}}%; height: 0%;">
                         <!-- Tooltip al pasar el mouse -->
                         <div
                             class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 font-mono text-[10px] bg-zinc-900 text-white px-2 py-1 pointer-events-none transition-opacity">
@@ -200,7 +241,7 @@
                          <span>{{ f.porcentaje }}%</span>
                      </div>
                      <div class="w-full h-[2px] bg-zinc-100">
-                         <div class="h-full bg-primary" style="width: {{ f.porcentaje }}%"></div>
+                         <div class="h-full bg-primary animate-grow" style="--target-width: {{ f.porcentaje }}%; width: 0%;"></div>
                      </div>
                 </div>
                 {% else %}

@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td class="font-label-mono text-xs">${c.dni_cuil}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-2">
-                        <a href="/equipos?cliente_id=${c.id}" class="p-2 text-on-surface-variant hover:text-accent transition-colors" title="Ver Equipos">
+                        <a href="/equipos/${c.id}" class="p-2 text-on-surface-variant hover:text-accent transition-colors" title="Ver Equipos">
                             <span class="material-symbols-outlined text-[18px]">devices</span>
                         </a>
                         <button onclick="abrirEditar('${c.id}', '${c.dni_cuil}', '${c.nombre}', '${c.apellido}', '${c.telefono}', '${emailStr}', '${domicilioStr}', '${localidadStr}')" class="p-2 text-on-surface-variant hover:text-primary transition-colors" title="Editar">

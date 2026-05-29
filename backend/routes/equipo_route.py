@@ -1,7 +1,7 @@
 from backend.controller.equipo_controller import EquipoController
 from backend.models.Equipo import Equipo
 from flask import Blueprint, request, render_template, url_for, flash, redirect, jsonify
-from backend.utils.decorators import login_required
+from backend.utils.decorators import login_required, role_required
 
 equipo_bp = Blueprint('equipo', __name__)
 
@@ -27,11 +27,14 @@ def editar_equipo(id):
     cliente_id = request.form.get('cliente_id')
     return redirect(url_for('equipo.gestion_equipos', cliente_id=cliente_id))
 
-@equipo_bp.route('/equipos')
 @equipo_bp.route('/equipos/<int:cliente_id>')
 @login_required
-def gestion_equipos(cliente_id=None):
+@role_required('Administrador', 'Administrdor', 'Secretario', 'Secretaria')
+def gestion_equipos(cliente_id):
     tipo_dispositivos, cliente, equipos = EquipoController.obtener_datos_gestion(cliente_id)
+    if not cliente:
+        flash("Cliente no encontrado para gestionar sus equipos.", "error")
+        return redirect(url_for('clientes.gestion_cliente'))
     return render_template('gestion_equipos.html',
                            tipo_dispositivos=tipo_dispositivos,
                            cliente=cliente,

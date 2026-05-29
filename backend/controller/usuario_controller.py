@@ -192,13 +192,3 @@ class UsuarioController:
         ordenes  = OrdenServicio.get_all()
         return clientes, usuarios, ordenes
 
-    @staticmethod
-    def obtener_datos_tecnico():
-        """Obtiene y agrupa las ordenes activas por estado para el tablero de técnicos."""
-        from backend.models.OrdenServicio import OrdenServicio
-        from backend.models.EstadoOrden import EstadoOrden
-        ordenes = OrdenServicio.get_all()
-        pendientes = [o for o in ordenes if o.estado in (EstadoOrden.PENDIENTE, EstadoOrden.PRESUPUESTADO)]
-        en_trabajo = [o for o in ordenes if o.estado in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION)]
-        listos     = [o for o in ordenes if o.estado == EstadoOrden.LISTO]
-        return pendientes, en_trabajo, listos

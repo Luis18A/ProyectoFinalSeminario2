@@ -11,29 +11,34 @@
 
     <!-- Search & Filter Bar -->
     <div class="bento-card mb-md">
-        <div class="flex flex-col md:flex-row gap-md items-end">
+        <form method="GET" action="{{ url_for('ordenServicio.historial') }}" class="flex flex-col md:flex-row gap-md items-end">
             <div class="flex-1 w-full relative">
                 <label class="font-label-bold text-on-surface-variant uppercase mb-xs block">Ticket #</label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                    <input class="input-swiss pl-8" placeholder="Ej. TK-8942" type="text" />
+                    <input name="ticket_id" value="{{ request.args.get('ticket_id', '') }}" class="input-swiss pl-8" placeholder="Ej. TK-8942" type="text" />
                 </div>
             </div>
             <div class="flex-1 w-full relative">
                 <label class="font-label-bold text-on-surface-variant uppercase mb-xs block">Cliente</label>
-                <input class="input-swiss" placeholder="Nombre o Teléfono" type="text" />
+                <input name="cliente" value="{{ request.args.get('cliente', '') }}" class="input-swiss" placeholder="Nombre o Teléfono" type="text" />
             </div>
             <div class="flex-1 w-full relative">
                 <label class="font-label-bold text-on-surface-variant uppercase mb-xs block">Equipo</label>
-                <input class="input-swiss" placeholder="Tipo o Marca" type="text" />
+                <input name="equipo" value="{{ request.args.get('equipo', '') }}" class="input-swiss" placeholder="Tipo o Marca" type="text" />
             </div>
-            <div class="w-full md:w-auto">
-                <button class="btn-swiss btn-primary w-full flex items-center justify-center gap-sm h-[40px]">
+            <div class="w-full md:w-auto flex gap-sm">
+                <button type="submit" class="btn-swiss btn-primary flex-1 md:flex-none flex items-center justify-center gap-sm h-[40px] px-6">
                     <span class="material-symbols-outlined text-sm">filter_list</span>
                     Filtrar
                 </button>
+                <a href="{{ url_for('ordenServicio.exportar_csv', ticket_id=request.args.get('ticket_id', ''), cliente=request.args.get('cliente', ''), equipo=request.args.get('equipo', '')) }}" 
+                   class="btn-swiss btn-outline flex-1 md:flex-none flex items-center justify-center gap-sm h-[40px] px-6 text-xs font-bold uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                    Exportar
+                </a>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Data Table -->

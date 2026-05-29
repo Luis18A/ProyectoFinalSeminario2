@@ -20,58 +20,54 @@
 <body class="bg-background font-body-md text-on-surface">
     <!-- SideNavBar -->
     <aside id="sidebar"
-        class="fixed left-0 top-0 h-full w-64 border-r-2 border-[#1A1A1A]/10 dark:border-white/10 bg-white dark:bg-zinc-950 flex flex-col justify-between py-8 z-50">
+        class="fixed left-0 top-0 h-full w-64 border-r-2 border-[#1A1A1A]/10 bg-white flex flex-col justify-between py-8 z-50">
         <div>
             <div class="px-6 mb-12">
-                <h1
-                    class="font-bold text-xl tracking-tighter text-[#1A1A1A] dark:text-white uppercase font-['Space_Grotesk']">
+                <h1 class="font-bold text-xl tracking-tighter text-[#1A1A1A] uppercase font-['Space_Grotesk']">
                     ITSM Platform</h1>
                 <p class="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 mt-1">Operational Control</p>
             </div>
             <nav class="flex flex-col">
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% set user_role = session.get('rol_descripcion', '') %}
+
+                {% if user_role in ('Administrador', 'Administrdor') %}
+                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
                     href="{{ url_for('vistas.dashboard') }}">
-                    <span class="material-symbols-outlined">grid_view</span> Dashboard
+                    <span class="material-symbols-outlined">analytics</span> Dashboard
                 </a>
+                {% endif %}
+
                 <!-- Nuevas Secciones -->
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% if user_role not in ('Técnico', 'Tecnico') %}
+                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
                     href="{{ url_for('clientes.gestion_cliente') }}">
                     <span class="material-symbols-outlined">person</span> Clientes
                 </a>
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
-                    href="{{ url_for('equipo.gestion_equipos') }}">
-                    <span class="material-symbols-outlined">devices</span> Equipos
-                </a>
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
-                    href="{{ url_for('ordenServicio.tickets') }}">
-                    <span class="material-symbols-outlined">assignment</span> Tablero Tickets
-                </a>
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% endif %}
+
+                {% if user_role in ('Administrador', 'Administrdor') %}
+                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
                     href="{{ url_for('ordenServicio.historial') }}">
                     <span class="material-symbols-outlined">history</span> Historial Global
                 </a>
+                {% endif %}
                 <!-- Secciones Filtros de Rol -->
-                {% set user_role = session.get('rol_descripcion', '') %}
-                
+
                 {% if user_role in ('Secretario', 'Secretaria', 'Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
                     href="{{ url_for('usuarios.secretary') }}">
                     <span class="material-symbols-outlined">badge</span> Secretary
                 </a>
                 {% endif %}
 
                 {% if user_role in ('Técnico', 'Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
                     href="{{ url_for('usuarios.technician') }}">
                     <span class="material-symbols-outlined">engineering</span> Technician
                 </a>
                 {% endif %}
 
                 {% if user_role in ('Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 dark:text-zinc-400 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
-                    href="{{ url_for('usuarios.admin') }}">
-                    <span class="material-symbols-outlined">analytics</span> Admin
-                </a>
                 <a class="bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider"
                     href="{{ url_for('usuarios.listar_usuarios') }}">
                     <span class="material-symbols-outlined">group</span> Gestión Usuarios
@@ -80,10 +76,6 @@
             </nav>
         </div>
         <div class="flex flex-col border-t border-[#1A1A1A]/5 pt-4">
-            <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
-                href="#">
-                <span class="material-symbols-outlined">settings</span> Settings
-            </a>
             <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 transition-all"
                 href="{{ url_for('vistas.logout') }}">
                 <span class="material-symbols-outlined">logout</span> Logout
@@ -94,23 +86,26 @@
     <!-- Main Content Shell -->
     <div id="main-content" class="flex flex-col min-h-screen">
         <!-- Floating Toast Notification Container -->
-        <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
+        <div id="toast-container"
+            class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="toast-alert pointer-events-auto flex items-center gap-3 p-4 bg-white dark:bg-zinc-900 border-l-4 shadow-lg animate-slide-in duration-300 {% if category == 'success' %}border-emerald-500 text-emerald-800 dark:text-emerald-300{% else %}border-red-500 text-red-800 dark:text-red-300{% endif %}" role="alert">
-                            <span class="material-symbols-outlined">
-                                {% if category == 'success' %}check_circle{% else %}error{% endif %}
-                            </span>
-                            <div class="flex-grow font-label-mono text-xs uppercase tracking-wider pr-2">
-                                {{ message }}
-                            </div>
-                            <button class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors" onclick="this.parentElement.remove()">
-                                <span class="material-symbols-outlined text-sm">close</span>
-                            </button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast-alert pointer-events-auto flex items-center gap-3 p-4 bg-white border-l-4 shadow-lg animate-slide-in duration-300 {% if category == 'success' %}border-emerald-500 text-emerald-800{% else %}border-red-500 text-red-800{% endif %}"
+                role="alert">
+                <span class="material-symbols-outlined">
+                    {% if category == 'success' %}check_circle{% else %}error{% endif %}
+                </span>
+                <div class="flex-grow font-label-mono text-xs uppercase tracking-wider pr-2">
+                    {{ message }}
+                </div>
+                <button class="text-zinc-400 hover:text-zinc-900 transition-colors"
+                    onclick="this.parentElement.remove()">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
         </div>
 
@@ -129,12 +124,12 @@
             });
 
             // Global JS helper to trigger toasts programmatically
-            window.showToast = function(message, category = 'success') {
+            window.showToast = function (message, category = 'success') {
                 const container = document.getElementById('toast-container');
                 if (!container) return;
 
                 const toast = document.createElement('div');
-                toast.className = `toast-alert pointer-events-auto flex items-center gap-3 p-4 bg-white dark:bg-zinc-900 border-l-4 shadow-lg transition-all duration-300 transform translate-x-10 opacity-0 ${category === 'success' ? 'border-emerald-500 text-emerald-800 dark:text-emerald-300' : 'border-red-500 text-red-800 dark:text-red-300'}`;
+                toast.className = `toast-alert pointer-events-auto flex items-center gap-3 p-4 bg-white border-l-4 shadow-lg transition-all duration-300 transform translate-x-10 opacity-0 ${category === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-red-500 text-red-800'}`;
                 toast.setAttribute('role', 'alert');
 
                 toast.innerHTML = `
@@ -144,7 +139,7 @@
                     <div class="flex-grow font-label-mono text-xs uppercase tracking-wider pr-2">
                         \${message}
                     </div>
-                    <button class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors" onclick="this.parentElement.remove()">
+                    <button class="text-zinc-400 hover:text-zinc-900 transition-colors" onclick="this.parentElement.remove()">
                         <span class="material-symbols-outlined text-sm">close</span>
                     </button>
                 `;
@@ -188,6 +183,23 @@
                         placeholder="Global Search..." type="text" />
                 </div>
                 <div class="flex items-center gap-2 md:gap-4">
+                    {% if session.get('real_rol_descripcion') in ('Administrador', 'Administrdor') %}
+                    <div
+                        class="flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 px-3 py-1 mr-2 text-xs select-none">
+                        <span class="material-symbols-outlined text-[16px] text-zinc-500">swap_horiz</span>
+                        <span
+                            class="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-['Space_Grotesk'] hidden md:inline">Vista:</span>
+                        <select onchange="window.location.href='/admin/cambiar-rol?rol=' + this.value"
+                            class="bg-transparent border-none p-0 pr-6 text-xs font-bold text-primary focus:ring-0 cursor-pointer capitalize font-['Space_Grotesk']">
+                            <option value="Administrador" {% if session.get('rol_descripcion')=='Administrador'
+                                %}selected{% endif %}>Administrador</option>
+                            <option value="Técnico" {% if session.get('rol_descripcion')=='Técnico' %}selected{% endif
+                                %}>Técnico</option>
+                            <option value="Secretario" {% if session.get('rol_descripcion')=='Secretario' %}selected{%
+                                endif %}>Secretario</option>
+                        </select>
+                    </div>
+                    {% endif %}
                     <button class="text-zinc-500 hover:text-[#0057FF] transition-colors mr-2">
                         <span class="material-symbols-outlined">notifications</span>
                     </button>
@@ -196,11 +208,13 @@
                         <span class="text-xs font-bold text-[#1A1A1A] capitalize font-['Space_Grotesk']">
                             {{ session.get('username', 'Usuario') }}
                         </span>
-                        <span class="text-[9px] text-zinc-400 font-medium uppercase tracking-wider font-['Space_Grotesk']">
+                        <span
+                            class="text-[9px] text-zinc-400 font-medium uppercase tracking-wider font-['Space_Grotesk']">
                             {{ session.get('rol_descripcion', 'Invitado') }}
                         </span>
                     </div>
-                    <div class="h-8 w-8 rounded-full bg-zinc-950 flex items-center justify-center text-white text-[10px] font-bold uppercase font-['Space_Grotesk'] border-2 border-zinc-100 shadow-sm">
+                    <div
+                        class="h-8 w-8 rounded-full bg-zinc-950 flex items-center justify-center text-white text-[10px] font-bold uppercase font-['Space_Grotesk'] border-2 border-zinc-100 shadow-sm">
                         {{ session.get('username', 'US')[:2] }}
                     </div>
                 </div>

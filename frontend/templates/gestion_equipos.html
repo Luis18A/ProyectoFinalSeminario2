@@ -162,7 +162,7 @@
                 </form>
             </div>
         </div>
-        <!-- Buscador de Repuestos (MercadoLibre y Megatone) -->
+        <!-- Buscador de Repuestos (MercadoLibre y Megatone) 
         <div class="col-span-12 flex flex-col gap-grid-gutter mt-8">
             <div class="bento-card p-6">
                 <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4 flex items-center gap-2">
@@ -180,16 +180,16 @@
                     <button id="ml-search-btn" type="button" class="btn-swiss btn-primary px-8">
                         Buscar Ofertas
                     </button>
-                </div>
+                </div>-->
 
-                <!-- Estado de Carga -->
+        <!-- Estado de Carga 
                 <div id="ml-loading"
                     class="hidden py-8 flex flex-col items-center justify-center text-on-surface-variant">
                     <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">sync</span>
                     <p class="font-label-mono uppercase text-xs tracking-widest">Buscando en múltiples tiendas...</p>
-                </div>
+                </div>-->
 
-                <!-- Tabla de Resultados -->
+        <!-- Tabla de Resultados 
                 <div id="ml-results-container" class="hidden table-container border-none">
                     <table class="table-swiss">
                         <thead>
@@ -201,18 +201,18 @@
                                 <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="ml-results-body">
-                            <!-- Los resultados se insertarán aquí por JS -->
+                        <tbody id="ml-results-body">-->
+        <!--Los resultados se insertarán aquí por JS 
                         </tbody>
                     </table>
-                </div>
+                </div>-->
 
-                <!-- Mensaje sin resultados -->
+        <!-- Mensaje sin resultados     
                 <div id="ml-no-results" class="hidden py-8 text-center text-on-surface-variant">
                     No se encontraron repuestos para tu búsqueda.
                 </div>
             </div>
-        </div>
+        </div>-->
     </div>
 </main>
 
@@ -221,8 +221,8 @@
 <div id="modal-editar-equipo"
     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <div
-        class="bg-white dark:bg-zinc-950 w-full max-w-md bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/50">
+        class="bg-white w-full max-w-md bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50">
             <h2 class="font-headline-md text-primary tracking-tight">Editar Equipo</h2>
             <button onclick="cerrarModal()" class="text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined">close</span>

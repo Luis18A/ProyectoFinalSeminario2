@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from backend.controller.usuario_controller import UsuarioController
 from backend.utils.decorators import login_required, role_required
+from backend.controller.ordenServicio_controller import OrdenServicioController
+
 
 # Creamos el Blueprint para los usuarios
 usuarios_bp = Blueprint('usuarios', __name__)
@@ -43,12 +45,6 @@ def actualizar_usuario(id):
         flash("Error al actualizar el usuario.", "error")
     return redirect(url_for('usuarios.listar_usuarios'))
 
-@usuarios_bp.route('/admin')
-@role_required('Administrador', 'Administrdor')
-def admin():
-    datos = UsuarioController.obtener_datos_analytics()
-    return render_template('admin_analytics.html', **datos)
-
 @usuarios_bp.route('/admin/backup/download')
 @role_required('Administrador', 'Administrdor')
 def download_backup():
@@ -65,7 +61,7 @@ def download_backup():
         )
     except Exception as e:
         flash(f"Error al generar backup: {str(e)}", "error")
-        return redirect(url_for('usuarios.admin'))
+        return redirect(url_for('vistas.dashboard'))
 
 @usuarios_bp.route('/secretary')
 @role_required('Secretario', 'Secretaria', 'Administrador', 'Administrdor')
@@ -79,8 +75,34 @@ def secretary():
 @usuarios_bp.route('/technician')
 @role_required('Técnico', 'Administrador', 'Administrdor')
 def technician():
-    pendientes, en_trabajo, listos = UsuarioController.obtener_datos_tecnico()
+    pendientes, en_trabajo, listos = OrdenServicioController.obtener_tickets_tablero()
     return render_template('technician_board.html',
                            pendientes=pendientes,
                            en_trabajo=en_trabajo,
                            listos=listos)
+
+@usuarios_bp.route('/admin/cambiar-rol')
+@login_required
+def cambiar_rol():
+    from flask import session, request, redirect, url_for, flash
+    real_rol = session.get('real_rol_descripcion', '')
+    if real_rol not in ('Administrador', 'Administrdor'):
+        flash("No tienes permisos para cambiar de rol.", "error")
+        return redirect(url_for('vistas.login'))
+    
+    nuevo_rol = request.args.get('rol')
+    if nuevo_rol not in ('Administrador', 'Técnico', 'Secretario'):
+        flash("Rol de simulación no válido.", "error")
+        return redirect(url_for('vistas.dashboard'))
+    
+    session['rol_descripcion'] = nuevo_rol
+    flash(f"Simulando entorno como {nuevo_rol}.", "success")
+    
+    if nuevo_rol == 'Administrador':
+        return redirect(url_for('vistas.dashboard'))
+    elif nuevo_rol == 'Técnico':
+        return redirect(url_for('usuarios.technician'))
+    elif nuevo_rol == 'Secretario':
+        return redirect(url_for('usuarios.secretary'))
+        
+    return redirect(url_for('vistas.dashboard'))

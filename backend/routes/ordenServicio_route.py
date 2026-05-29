@@ -1,6 +1,6 @@
 from backend.controller.ordenServicio_controller import OrdenServicioController
 from flask import Blueprint, request, render_template, url_for, flash, redirect, jsonify
-from backend.utils.decorators import login_required
+from backend.utils.decorators import login_required, role_required
 
 ordenServicio_bp = Blueprint('ordenServicio', __name__)
 
@@ -35,15 +35,6 @@ def equipos_por_cliente(cliente_id):
     """Devuelve los equipos de un cliente en formato JSON (para AJAX)."""
     return jsonify(OrdenServicioController.obtener_equipos_cliente_json(cliente_id))
 
-@ordenServicio_bp.route('/tablero-tickets')
-@login_required
-def tickets():
-    pendientes, en_trabajo, listos = OrdenServicioController.obtener_tickets_tablero()
-    return render_template('tickets.html',
-                           pendientes=pendientes,
-                           en_trabajo=en_trabajo,
-                           listos=listos)
-
 @ordenServicio_bp.route('/tablero-tickets/<int:orden_id>')
 @login_required
 def gestionar_ticket(orden_id):
@@ -52,15 +43,86 @@ def gestionar_ticket(orden_id):
     datos = OrdenServicioController.obtener_datos_gestion_ticket(orden_id, rol_actual)
     if not datos:
         flash("Orden no encontrada.", "error")
-        return redirect(url_for('ordenServicio.tickets'))
+        return redirect(url_for('usuarios.technician'))
     
     return render_template('gestionar_ticket.html', **datos)
 
 @ordenServicio_bp.route('/historial')
-@login_required
+@role_required('Administrador', 'Administrdor')
 def historial():
-    ordenes = OrdenServicioController.obtener_todos()
+    ticket_id = request.args.get('ticket_id', '').strip()
+    cliente = request.args.get('cliente', '').strip()
+    equipo = request.args.get('equipo', '').strip()
+    
+    ordenes = OrdenServicioController.obtener_historial_filtrado(ticket_id, cliente, equipo)
     return render_template('historial_tickets.html', ordenes=ordenes)
+
+@ordenServicio_bp.route('/historial/exportar')
+@role_required('Administrador', 'Administrdor')
+def exportar_csv():
+    from flask import Response
+    import csv
+    import io
+    
+    ticket_id = request.args.get('ticket_id', '').strip()
+    cliente = request.args.get('cliente', '').strip()
+    equipo = request.args.get('equipo', '').strip()
+    
+    ordenes = OrdenServicioController.obtener_historial_filtrado(ticket_id, cliente, equipo)
+    
+    # Crear el archivo CSV en memoria
+    output = io.StringIO()
+    # Escribir UTF-8 BOM para soporte óptimo de Excel en Windows
+    output.write('\ufeff')
+    writer = csv.writer(output, delimiter=';')
+    
+    # Cabeceras
+    writer.writerow([
+        'Ticket ID', 
+        'Cliente Nombre', 
+        'Cliente DNI/CUIL', 
+        'Cliente Teléfono', 
+        'Cliente Email', 
+        'Equipo Tipo', 
+        'Equipo Marca', 
+        'Equipo Modelo', 
+        'Equipo S/N', 
+        'Estado', 
+        'Fecha Recepción', 
+        'Fecha Entrega', 
+        'Costo ($)', 
+        'Observaciones'
+    ])
+    
+    for o in ordenes:
+        fecha_recepcion_str = o.fecha_recepcion.strftime('%d/%m/%Y %H:%M:%S') if o.fecha_recepcion else '—'
+        fecha_entrega_str = o.fecha_entrega.strftime('%d/%m/%Y %H:%M:%S') if o.fecha_entrega else '—'
+        costo_str = f"{o.costo:.2f}" if o.costo is not None else '0.00'
+        tipo_str = o.equipo.tipo.descripcion if (o.equipo and o.equipo.tipo) else '—'
+        
+        writer.writerow([
+            f"TK-{o.id:04d}",
+            f"{o.equipo.cliente.apellido}, {o.equipo.cliente.nombre}" if o.equipo and o.equipo.cliente else '—',
+            o.equipo.cliente.dni_cuil if o.equipo and o.equipo.cliente else '—',
+            o.equipo.cliente.telefono if o.equipo and o.equipo.cliente else '—',
+            o.equipo.cliente.email if o.equipo and o.equipo.cliente else '—',
+            tipo_str,
+            o.equipo.marca if o.equipo else '—',
+            o.equipo.modelo if o.equipo else '—',
+            o.equipo.numero_serie if o.equipo else '—',
+            o.estado.value if o.estado else '—',
+            fecha_recepcion_str,
+            fecha_entrega_str,
+            costo_str,
+            o.observaciones or '—'
+        ])
+        
+    csv_data = output.getvalue()
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=techflow_historial_tickets.csv"}
+    )
 
 @ordenServicio_bp.route('/comprobante/<int:orden_id>')
 @login_required
@@ -68,7 +130,7 @@ def comprobante(orden_id):
     orden = OrdenServicioController.obtener_por_id(orden_id)
     if not orden:
         flash("Orden de servicio no encontrada.", "error")
-        return redirect(url_for('ordenServicio.tickets'))
+        return redirect(url_for('usuarios.technician'))
     return render_template('comprobante.html', orden=orden)
 
 @ordenServicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/agregar')

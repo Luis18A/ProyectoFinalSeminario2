@@ -6,7 +6,7 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between mb-xl gap-4">
         <div>
             <nav class="flex items-center text-on-surface-variant font-label-bold uppercase mb-2">
-                <a class="hover:text-tech-blue" href="{{ url_for('ordenServicio.tickets') }}">Tablero</a>
+                <a class="hover:text-tech-blue" href="{{ url_for('usuarios.technician') }}">Tablero</a>
                 <span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
                 <span class="text-on-surface">Ticket #{{ orden.id }}</span>
             </nav>
@@ -14,11 +14,11 @@
         </div>
         <div class="flex gap-4">
             <a href="{{ url_for('ordenServicio.comprobante', orden_id=orden.id) }}"
-                class="px-6 py-3 bg-accent text-white font-label-mono uppercase tracking-wider hover:bg-[#0039A6] transition-colors flex items-center gap-2">
+                class="px-6 py-3 bg-zinc-950 text-white font-label-mono uppercase tracking-wider hover:bg-zinc-800 transition-colors flex items-center gap-2 shadow-sm border border-zinc-900">
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 Comprobante
             </a>
-            <a href="{{ url_for('ordenServicio.tickets') }}"
+            <a href="{{ url_for('usuarios.technician') }}"
                 class="px-6 py-3 border border-outline text-on-surface font-label-mono uppercase tracking-wider hover:bg-surface-variant transition-colors flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 Volver
@@ -33,7 +33,7 @@
         <!-- Left Column (7 cols) -->
         <div class="lg:col-span-7 flex flex-col gap-grid-gutter">
             <!-- Info Card -->
-            <div class="bento-card">
+            <div class="bento-card shadow-sm border-zinc-200">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <h3 class="font-label-bold uppercase text-on-surface-variant mb-4">Datos del Cliente</h3>
@@ -73,7 +73,8 @@
                             </p>
                             <p class="font-body-md flex items-center gap-2">
                                 <span class="font-bold">Estado Actual:</span>
-                                <span class="bg-surface-variant text-on-surface px-2 py-1 font-label-bold uppercase border border-[#1A1A1A]/10 text-[10px]">
+                                <span
+                                    class="bg-surface-variant text-on-surface px-2 py-1 font-label-bold uppercase border border-[#1A1A1A]/10 text-[10px]">
                                     {{ orden.estado.value }}
                                 </span>
                             </p>
@@ -83,7 +84,7 @@
             </div>
 
             <!-- Fault Warning -->
-            <div class="border-l-4 border-[#FFD600] bg-[#FFD600]/10 p-lg border-y border-r border-[#1A1A1A]/10">
+            <div class="border-l-4 border-[#FFD600] bg-[#FFD600]/10 p-lg border-y border-r border-[#1A1A1A]/10 shadow-sm">
                 <h3 class="font-label-bold uppercase text-[#1A1A1A] mb-2 flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">warning</span>
                     Falla Reportada
@@ -92,7 +93,7 @@
             </div>
 
             <!-- Sugerencia de Inteligencia de Fallas (Data Mining) -->
-            <div class="bento-card border border-primary/20 bg-primary/5">
+            <div class="bento-card border border-primary/20 bg-primary/5 shadow-sm">
                 <h3 class="font-label-bold uppercase text-primary mb-4 flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">psychology</span>
                     Inteligencia de Fallas (Minería de Datos Históricos)
@@ -105,14 +106,16 @@
                     <div class="bg-white border border-[#1A1A1A]/10 p-4 relative group">
                         <div class="flex justify-between items-start mb-2 gap-2">
                             <span class="font-body-md font-bold text-on-surface">{{ pf.falla }}</span>
-                            <span class="px-1.5 py-0.5 bg-primary/10 text-primary font-mono text-[9px] font-bold uppercase whitespace-nowrap">
+                            <span
+                                class="px-1.5 py-0.5 bg-primary/10 text-primary font-mono text-[9px] font-bold uppercase whitespace-nowrap">
                                 Prob: {{ pf.probabilidad }}%
                             </span>
                         </div>
                         <div class="space-y-2 mt-3">
                             <!-- Frecuencia/Probabilidad bar -->
                             <div>
-                                <div class="flex justify-between text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">
+                                <div
+                                    class="flex justify-between text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">
                                     <span>Probabilidad de Incidencia</span>
                                     <span>{{ pf.probabilidad }}%</span>
                                 </div>
@@ -122,7 +125,8 @@
                             </div>
                             <!-- Success Rate bar -->
                             <div>
-                                <div class="flex justify-between text-[8px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                                <div
+                                    class="flex justify-between text-[8px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
                                     <span>Tasa de Éxito de Reparación</span>
                                     <span>{{ pf.tasa_exito }}%</span>
                                 </div>
@@ -138,23 +142,28 @@
 
             <!-- Update Form — Solo visible para Técnico / Admin -->
             {% if puede_editar %}
-            <div class="bento-card bg-white flex-grow">
-                <h3 class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10">
-                    Actualizar Estado y Diagnóstico
-                </h3>
-                <form method="POST"
-                    action="{{ url_for('ordenServicio.editar_ordenServicio', id=orden.id) }}"
+            <div class="bento-card bg-white flex-grow shadow-sm border-zinc-200">
+                <form method="POST" action="{{ url_for('ordenServicio.editar_ordenServicio', id=orden.id) }}"
                     class="space-y-6">
-
                     <input type="hidden" name="usuario_id" value="{{ session.get('usuario_id') }}">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <h3
+                        class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex justify-between items-center">
+                        <span>Actualizar Estado y Diagnóstico</span>
+                        <button
+                            class="px-4 py-2 bg-emerald-600 text-white font-label-mono text-xs uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                            type="submit">
+                            <span class="material-symbols-outlined text-[16px]">save</span>
+                            Guardar Cambios
+                        </button>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="flex flex-col">
                             <label class="font-label-bold text-on-surface-variant mb-2 uppercase">Nuevo Estado</label>
-                            <select name="estado" class="input-swiss appearance-none">
+                            <select name="estado" class="input-swiss appearance-none bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all">
                                 {% for estado in estados %}
-                                <option value="{{ estado.name }}"
-                                    {% if estado == orden.estado %}selected{% endif %}>
+                                <option value="{{ estado.name }}" {% if estado==orden.estado %}selected{% endif %}>
                                     {{ estado.value }}
                                 </option>
                                 {% endfor %}
@@ -162,10 +171,19 @@
                         </div>
                         <div class="flex flex-col">
                             <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
-                                Costo de Reparación ($)
+                                Mano de Obra / Labor ($)
                             </label>
-                            <input class="input-swiss" placeholder="Ej: 45000" type="number" step="0.01"
-                                name="costo" value="{{ orden.costo or '' }}">
+                            <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" id="input-mano-obra" placeholder="Ej: 15000" type="number"
+                                step="0.01">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                                Costo Total de Reparación ($)
+                            </label>
+                            <input
+                                class="input-swiss bg-zinc-100 border border-zinc-200 font-bold cursor-not-allowed text-emerald-600 px-3 py-2 text-sm"
+                                id="input-costo-total" type="number" step="0.01" name="costo"
+                                value="{{ orden.costo or '' }}" readonly>
                         </div>
                     </div>
 
@@ -173,7 +191,7 @@
                         <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
                             Estado del Diagnóstico
                         </label>
-                        <input class="input-swiss" name="estado_diagnostico"
+                        <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" name="estado_diagnostico"
                             placeholder="Ej: Placa base dañada, requiere reemplazo..."
                             value="{{ orden.estado_diagnostico or '' }}">
                     </div>
@@ -182,16 +200,14 @@
                         <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
                             Falla Reportada
                         </label>
-                        <input class="input-swiss" name="falla_reportada"
-                            value="{{ orden.falla_reportada }}">
+                        <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" name="falla_reportada" value="{{ orden.falla_reportada }}">
                     </div>
 
                     <div class="flex flex-col">
                         <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
                             Accesorios
                         </label>
-                        <input class="input-swiss" name="accesorios"
-                            value="{{ orden.accesorios or '' }}">
+                        <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" name="accesorios" value="{{ orden.accesorios or '' }}">
                     </div>
 
                     <div class="flex flex-col">
@@ -199,185 +215,43 @@
                             Observación Técnica (se añade al historial)
                         </label>
                         <textarea name="observaciones"
-                            class="w-full bg-[#F5F5F7] border border-[#1A1A1A]/10 focus:ring-0 focus:border-[#0057FF] focus:border-2 p-4 font-body-md transition-all resize-none"
+                            class="w-full bg-zinc-50 border border-zinc-200 focus:ring-0 focus:border-emerald-500 focus:bg-white p-4 font-body-md transition-all resize-none"
                             placeholder="Ingrese detalles técnicos del diagnóstico..." rows="4"></textarea>
                     </div>
 
-                    <div class="pt-4">
-                        <button class="w-full py-4 bg-accent text-white font-label-mono uppercase tracking-wider hover:bg-blue-700 transition-colors"
+                    <div class="pt-2">
+                        <button
+                            class="w-full py-4 bg-emerald-600 text-white font-label-mono uppercase tracking-wider hover:bg-emerald-700 transition-colors shadow-sm"
                             type="submit">
                             Guardar Cambios
                         </button>
                     </div>
                 </form>
             </div>
-
-            <!-- BENTO CARD: Presupuesto y Buscador de Repuestos -->
-            <div class="bento-card bg-white mt-6">
-                <h3 class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex items-center justify-between">
-                    <span class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
-                        Presupuesto y Repuestos Requeridos
-                    </span>
-                    <span class="font-mono text-[10px] bg-zinc-900 text-white px-3 py-1">
-                        ITEMS: {{ (orden.repuestos or []) | length }}
-                    </span>
-                </h3>
-
-                <!-- Tabla de repuestos cargados -->
-                <div class="mb-6">
-                    <h4 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Repuestos Cotizados</h4>
-                    {% if orden.repuestos %}
-                    <div class="border border-[#1A1A1A]/10 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-zinc-50 border-b border-zinc-100 text-[10px] uppercase font-bold text-zinc-400">
-                                    <th class="p-3">Proveedor</th>
-                                    <th class="p-3">Producto</th>
-                                    <th class="p-3 text-right">Precio</th>
-                                    <th class="p-3 text-center">Remover</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-xs divide-y divide-zinc-50">
-                                {% for r in orden.repuestos %}
-                                <tr class="hover:bg-zinc-50 transition-colors">
-                                    <td class="p-3">
-                                        {% if r.tienda == 'MercadoLibre' %}
-                                        <span class="px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 text-[8px] font-bold uppercase rounded">ML</span>
-                                        {% elif r.tienda == 'Megatone' %}
-                                        <span class="px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 text-[8px] font-bold uppercase rounded">Mega</span>
-                                        {% else %}
-                                        <span class="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 text-[8px] font-bold uppercase rounded">{{ r.tienda }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="p-3 font-semibold text-zinc-700">
-                                        <a href="{{ r.link }}" target="_blank" class="hover:underline text-primary flex items-center gap-1">
-                                            {{ r.titulo | truncate(60) }} <span class="material-symbols-outlined text-[12px]">open_in_new</span>
-                                        </a>
-                                    </td>
-                                    <td class="p-3 text-right font-bold text-zinc-800">
-                                        ${{ "%.2f" | format(r.precio) }}
-                                    </td>
-                                    <td class="p-3 text-center">
-                                        <button type="button" onclick="eliminarRepuesto('{{ loop.index0 }}')" class="text-red-500 hover:text-red-700 transition-colors" title="Remover repuesto">
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <p class="text-xs text-zinc-400 italic bg-zinc-50 p-4 text-center border border-dashed border-zinc-200">
-                        No se han agregado repuestos al presupuesto de este equipo.
-                    </p>
-                    {% endif %}
-                </div>
-
-                <!-- Resumen de Costos y Mano de obra -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50 p-6 border border-[#1A1A1A]/10 mb-6">
-                    <div>
-                        <h4 class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Desglose de Costos</h4>
-                        <div class="space-y-1.5 text-xs">
-                            <div class="flex justify-between">
-                                <span class="text-zinc-500">Mano de Obra / Labor:</span>
-                                <span class="font-semibold" id="costo-labor-display">$0.00</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-zinc-500">Suma de Repuestos:</span>
-                                <span class="font-semibold" id="costo-repuestos-display">$0.00</span>
-                            </div>
-                            <div class="flex justify-between border-t border-zinc-200 pt-2 font-bold text-sm text-primary">
-                                <span>TOTAL TICKET:</span>
-                                <span id="costo-total-display">$0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col justify-center items-stretch gap-3">
-                        <button type="button" onclick="solicitarAprobacionPresupuesto()" 
-                                class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-label-mono uppercase tracking-wider text-xs font-bold transition-colors flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-[16px]">send</span> Enviar Presupuesto para Aprobación
-                        </button>
-                        <p class="text-[9px] text-zinc-400 leading-snug">
-                            💡 Al presionar este botón, se guardará el presupuesto y se marcará como <b>Presupuestado</b> para que la secretaria comunique y confirme la aceptación del cliente.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Buscador Integrado de Ofertas y Repuestos -->
-                <div class="border-t border-[#1A1A1A]/10 pt-6">
-                    <h4 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-[16px]">search</span>
-                        Buscador de Repuestos Integrado
-                    </h4>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="flex-grow relative">
-                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[18px]">search</span>
-                            <input id="repuesto-query" class="input-swiss w-full pl-10 text-xs" 
-                                   placeholder="Buscar pantallas, discos, memorias, fuentes..." type="text"
-                                   value="{{ orden.equipo.marca }} {{ orden.equipo.modelo }}" />
-                        </div>
-                        <button type="button" id="btn-buscar-repuestos" onclick="buscarRepuestosTaller()" class="btn-swiss btn-primary text-xs py-3 px-6">
-                            Buscar Proveedores
-                        </button>
-                    </div>
-
-                    <!-- Loading scrapers -->
-                    <div id="repuestos-loading" class="hidden py-6 flex flex-col items-center justify-center text-zinc-400">
-                        <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-primary">sync</span>
-                        <p class="font-label-mono uppercase text-[9px] tracking-widest">Buscando repuestos en tiempo real...</p>
-                    </div>
-
-                    <!-- Tabla de Resultados Scraping -->
-                    <div id="repuestos-results-container" class="hidden border border-[#1A1A1A]/10 max-h-[300px] overflow-y-auto">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-zinc-50 border-b border-zinc-100 text-[9px] font-bold text-zinc-400 uppercase">
-                                    <th class="p-2.5">Tienda</th>
-                                    <th class="p-2.5">Producto</th>
-                                    <th class="p-2.5 text-right">Precio</th>
-                                    <th class="p-2.5 text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="repuestos-results-body" class="divide-y divide-zinc-50 text-xs">
-                                <!-- Resultados inyectados por JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <!-- Vista de solo lectura para Secretaria -->
-            <div class="bento-card bg-amber-50 border border-amber-200">
-                <div class="flex items-center gap-3 text-amber-700">
-                    <span class="material-symbols-outlined">lock</span>
-                    <p class="font-label-bold uppercase text-sm">
-                        Solo el personal técnico puede modificar el estado de esta orden.
-                    </p>
-                </div>
-            </div>
             {% endif %}
-        </div>
+        </div> <!-- Close Left Column lg:col-span-7 -->
 
         <!-- Right Column (5 cols): Historial de Movimientos -->
         <div class="lg:col-span-5">
-            <div class="bento-card h-full">
-                <h3 class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex items-center justify-between">
+            <div class="bento-card h-full shadow-sm border-zinc-200">
+                <h3
+                    class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex items-center justify-between">
                     Historial de Movimientos
                     <span class="material-symbols-outlined text-[18px]">history</span>
                 </h3>
 
                 {% if historial %}
-                <div class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-[2px] before:bg-[#1A1A1A]/10">
+                <div
+                    class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-[2px] before:bg-[#1A1A1A]/10">
                     {% for entrada in historial %}
                     <div class="relative">
                         <!-- Dot en la línea de tiempo -->
                         <div class="absolute -left-[29px] top-1 w-3 h-3 bg-white border-2
-                            {% if loop.first %}border-accent{% else %}border-[#1A1A1A]/20{% endif %}">
+                            {% if loop.first %}border-emerald-500{% else %}border-[#1A1A1A]/20{% endif %}">
                         </div>
                         <div class="flex items-start justify-between mb-2">
-                            <span class="{% if loop.first %}bg-accent text-white{% else %}bg-surface-variant text-on-surface{% endif %} px-2 py-1 font-label-bold uppercase text-[10px] border border-[#1A1A1A]/10">
+                            <span
+                                class="{% if loop.first %}bg-emerald-600 text-white{% else %}bg-surface-variant text-on-surface{% endif %} px-2 py-1 font-label-bold uppercase text-[10px] border border-[#1A1A1A]/10">
                                 {{ entrada.estado_nuevo }}
                             </span>
                             <span class="font-label-mono text-on-surface-variant text-xs">
@@ -385,10 +259,12 @@
                             </span>
                         </div>
                         <p class="font-body-sm font-bold text-on-surface mb-1">
-                            {{ entrada.usuario.nombre ~ ' ' ~ entrada.usuario.apellido if entrada.usuario else 'Sistema' }}
+                            {{ entrada.usuario.nombre ~ ' ' ~ entrada.usuario.apellido if entrada.usuario else 'Sistema'
+                            }}
                         </p>
                         {% if entrada.observacion_tecnica %}
-                        <div class="bg-white p-3 border border-[#1A1A1A]/10 italic font-body-sm text-on-surface-variant">
+                        <div
+                            class="bg-zinc-50 p-3 border border-[#1A1A1A]/10 italic font-body-sm text-on-surface-variant">
                             {{ entrada.observacion_tecnica }}
                         </div>
                         {% endif %}
@@ -405,201 +281,151 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- Full Width Bottom Column (12 cols): Presupuesto y Buscador de Repuestos -->
+        <div class="lg:col-span-12">
+            {% if puede_editar %}
+            <div class="bento-card bg-white mt-6 shadow-sm border-zinc-200">
+                <h3
+                    class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-emerald-600 text-[20px]">shopping_cart</span>
+                        Presupuesto y Repuestos Requeridos
+                    </span>
+                    <span class="font-mono text-[10px] bg-zinc-900 text-white px-3 py-1" id="repuestos-count-label">
+                        ITEMS: {{ (orden.repuestos or []) | length }}
+                    </span>
+                </h3>
+
+                <!-- Tabla de repuestos cargados -->
+                <div class="mb-6">
+                    <h4 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Repuestos Cotizados
+                    </h4>
+                    <div id="tabla-repuestos-container">
+                        <!-- Renderizado dinámicamente por JS -->
+                    </div>
+                </div>
+
+                <!-- Resumen de Costos y Mano de obra -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50 p-6 border border-[#1A1A1A]/10 mb-6">
+                    <div>
+                        <h4 class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Desglose de Costos
+                        </h4>
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Mano de Obra / Labor:</span>
+                                <span class="font-semibold" id="costo-labor-display">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Suma de Repuestos:</span>
+                                <span class="font-semibold" id="costo-repuestos-display">$0.00</span>
+                            </div>
+                            <div
+                                class="flex justify-between border-t border-zinc-200 pt-2 font-bold text-sm text-emerald-600">
+                                <span>TOTAL TICKET:</span>
+                                <span id="costo-total-display">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center items-stretch gap-3">
+                        <button type="button" onclick="solicitarAprobacionPresupuesto()"
+                            class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-label-mono uppercase tracking-wider text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">send</span> Enviar Presupuesto para
+                            Aprobación
+                        </button>
+                        <p class="text-[9px] text-zinc-400 leading-snug">
+                            💡 Al presionar este botón, se guardará el presupuesto y se marcará como
+                            <b>Presupuestado</b> para que la secretaria comunique y confirme la aceptación del cliente.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Buscador Integrado de Ofertas y Repuestos -->
+                <div class="border-t border-[#1A1A1A]/10 pt-6">
+                    <h4
+                        class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">search</span>
+                        Buscador de Repuestos Integrado
+                    </h4>
+                    {% if orden.estado.name == 'PRESUPUESTADO' %}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex-grow relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[18px]">search</span>
+                            <input id="repuesto-query" class="input-swiss w-full pl-10 text-xs bg-zinc-50 border border-zinc-200 px-3 py-2 focus:border-emerald-500 focus:bg-white transition-all"
+                                placeholder="Buscar pantallas, discos, memorias, fuentes..." type="text"
+                                value="{{ orden.equipo.marca }} {{ orden.equipo.modelo }}" />
+                        </div>
+                        <button type="button" id="btn-buscar-repuestos" onclick="buscarRepuestosTaller()"
+                            class="btn-swiss btn-primary text-xs py-3 px-6 bg-zinc-950 hover:bg-zinc-800 transition-colors">
+                            Buscar Proveedores
+                        </button>
+                    </div>
+
+                    <!-- Loading scrapers -->
+                    <div id="repuestos-loading"
+                        class="hidden py-6 flex flex-col items-center justify-center text-zinc-400">
+                        <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-emerald-600">sync</span>
+                        <p class="font-label-mono uppercase text-[9px] tracking-widest">Buscando repuestos en tiempo real...</p>
+                    </div>
+
+                    <!-- Tabla de Resultados Scraping -->
+                    <div id="repuestos-results-container"
+                        class="hidden border border-[#1A1A1A]/10 max-h-[300px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr
+                                    class="bg-zinc-50 border-b border-zinc-100 text-[9px] font-bold text-zinc-400 uppercase">
+                                    <th class="p-2.5">Tienda</th>
+                                    <th class="p-2.5">Producto</th>
+                                    <th class="p-2.5 text-right">Precio</th>
+                                    <th class="p-2.5 text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="repuestos-results-body" class="divide-y divide-zinc-50 text-xs">
+                                <!-- Resultados inyectados por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <!-- Aviso de bloqueo de búsqueda -->
+                    <div class="bg-zinc-50 border border-dashed border-zinc-200 p-6 text-center text-xs text-zinc-500 shadow-inner">
+                        <span class="material-symbols-outlined text-[24px] text-zinc-400 mb-2">lock</span>
+                        <p class="font-semibold uppercase tracking-wider text-[10px] text-zinc-400 mb-1">Buscador Desactivado</p>
+                        <p>Para buscar y cotizar repuestos en tiempo real, el equipo debe estar en estado <b>PRESUPUESTADO</b>.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Vista de solo lectura para Secretaria -->
+            <div class="bento-card bg-amber-50 border border-amber-200 mt-6 shadow-sm">
+                <div class="flex items-center gap-3 text-amber-700">
+                    <span class="material-symbols-outlined">lock</span>
+                    <p class="font-label-bold uppercase text-sm">
+                        Solo el personal técnico puede modificar el estado de esta orden.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </main>
 
 </div> <!-- Cierre de #main-content (abierto en header.html) -->
 
-<!-- Lógica Interactiva para Técnicos (Presupuestos, Cálculos y Scraping) -->
+<!-- Configuración para el script externo -->
 <script>
-    const repuestosActivos = {{ (orden.repuestos or []) | tojson }};
-    const ordenId = {{ orden.id }};
-    const totalRepuestos = repuestosActivos.reduce((acc, curr) => acc + curr.precio, 0);
-    const inputCosto = document.querySelector('input[name="costo"]');
-
-    function recalcularDesglose() {
-        if (!inputCosto) return;
-        const total = parseFloat(inputCosto.value) || 0;
-        const labor = Math.max(0, total - totalRepuestos);
-        
-        const displayRepuestos = document.getElementById('costo-repuestos-display');
-        const displayLabor = document.getElementById('costo-labor-display');
-        const displayTotal = document.getElementById('costo-total-display');
-        
-        if (displayRepuestos) displayRepuestos.textContent = '$' + totalRepuestos.toFixed(2);
-        if (displayLabor) displayLabor.textContent = '$' + labor.toFixed(2);
-        if (displayTotal) displayTotal.textContent = '$' + total.toFixed(2);
-    }
-
-    // Inicializar desglose en carga de página
-    document.addEventListener('DOMContentLoaded', () => {
-        recalcularDesglose();
-        if (inputCosto) {
-            inputCosto.addEventListener('input', recalcularDesglose);
-        }
-    });
-
-    // Gestión de Repuestos (AJAX)
-    async function agregarRepuestoAlPresupuesto(titulo, precio, link, tienda) {
-        try {
-            const formData = new FormData();
-            formData.append('titulo', titulo);
-            formData.append('precio', precio);
-            formData.append('link', link);
-            formData.append('tienda', tienda);
-            
-            const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/agregar`, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await resp.json();
-            if (data.success) {
-                // Al agregar, incrementamos el input de costo en el frontend para consistencia
-                if (inputCosto) {
-                    const costoActual = parseFloat(inputCosto.value) || 0;
-                    inputCosto.value = (costoActual + parseFloat(precio)).toFixed(2);
-                }
-                window.showToast('Repuesto agregado al presupuesto con éxito.', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                window.showToast('Error al agregar: ' + data.message, 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al agregar el repuesto.', 'error');
-        }
-    }
-
-    async function eliminarRepuesto(idx) {
-        if (!confirm('¿Seguro que querés remover este repuesto del presupuesto?')) {
-            return;
-        }
-        
-        try {
-            const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/eliminar/${idx}`, {
-                method: 'POST'
-            });
-            const data = await resp.json();
-            if (data.success) {
-                window.showToast('Repuesto eliminado y presupuesto actualizado.', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                window.showToast('Error: ' + data.message, 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al eliminar el repuesto.', 'error');
-        }
-    }
-
-    // Cambiar estado a PRESUPUESTADO
-    async function solicitarAprobacionPresupuesto() {
-        if (!inputCosto || !inputCosto.value || parseFloat(inputCosto.value) <= 0) {
-            window.showToast('Por favor, ingresá un costo de reparación mayor a $0 en el formulario de arriba primero.', 'error');
-            return;
-        }
-        
-        if (!confirm('¿Enviar el presupuesto actual para confirmación del cliente? El ticket pasará a estado PRESUPUESTADO.')) {
-            return;
-        }
-        
-        try {
-            // Guardar primero el form de arriba para asegurar que los datos técnicos se guarden
-            const formActualizar = document.querySelector('form[action*="editar_ordenServicio"]');
-            if (formActualizar) {
-                const formD = new FormData(formActualizar);
-                // Forzar el cambio de estado a PRESUPUESTADO
-                formD.set('estado', 'PRESUPUESTADO');
-                formD.set('observaciones', 'Presupuesto de repuestos y mano de obra enviado a secretaría para confirmación del cliente.');
-                
-                const response = await fetch(formActualizar.action, {
-                    method: 'POST',
-                    body: formD
-                });
-                
-                if (response.ok) {
-                    window.showToast('Presupuesto enviado. Se notificará a secretaría en el panel.', 'success');
-                    setTimeout(() => window.location.href = "{{ url_for('usuarios.technician') }}", 1500);
-                } else {
-                    window.showToast('Error al procesar la actualización.', 'error');
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al guardar y enviar el presupuesto.', 'error');
-        }
-    }
-
-    // Buscador de Repuestos (Scraping)
-    async function buscarRepuestosTaller() {
-        const query = document.getElementById('repuesto-query').value.trim();
-        if (!query) {
-            window.showToast('Ingresá algún término de búsqueda para repuestos.', 'error');
-            return;
-        }
-        
-        const loading = document.getElementById('repuestos-loading');
-        const container = document.getElementById('repuestos-results-container');
-        const tbody = document.getElementById('repuestos-results-body');
-        
-        loading.classList.remove('hidden');
-        container.classList.add('hidden');
-        tbody.innerHTML = '';
-        
-        try {
-            const resp = await fetch(`http://localhost:8000/search?q=${encodeURIComponent(query)}`);
-            if (!resp.ok) {
-                throw new Error('Servidor de Scraping no responde');
-            }
-            
-            const data = await resp.json();
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-zinc-400">No se encontraron repuestos para tu búsqueda.</td></tr>`;
-            } else {
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-zinc-50 border-b border-zinc-100 transition-colors';
-                    
-                    let tiendaHtml = '';
-                    if (item.tienda === 'MercadoLibre') {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 border border-yellow-200 text-[9px] font-bold uppercase rounded">ML</span>`;
-                    } else if (item.tienda === 'Megatone') {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-red-100 text-red-800 border border-red-200 text-[9px] font-bold uppercase rounded">Mega</span>`;
-                    } else if (item.tienda === 'Fravega') {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-purple-100 text-purple-800 border border-purple-200 text-[9px] font-bold uppercase rounded">Fravega</span>`;
-                    } else {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-gray-100 text-gray-800 border border-gray-200 text-[9px] font-bold uppercase rounded">${item.tienda}</span>`;
-                    }
-                    
-                    const escTitulo = item.titulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    
-                    tr.innerHTML = `
-                        <td class="p-2.5 text-center">${tiendaHtml}</td>
-                        <td class="p-2.5 max-w-[240px] truncate" title="${item.titulo}">
-                            <a href="${item.link}" target="_blank" class="text-primary hover:underline font-medium">
-                                ${item.titulo}
-                            </a>
-                        </td>
-                        <td class="p-2.5 text-right font-bold text-accent">$${item.precio.toLocaleString('es-AR')}</td>
-                        <td class="p-2.5 text-center">
-                            <button type="button" onclick="agregarRepuestoAlPresupuesto('${escTitulo}', ${item.precio}, '${item.link}', '${item.tienda}')"
-                                    class="px-2 py-1 bg-zinc-900 text-white font-bold uppercase text-[9px] hover:bg-primary transition-all">
-                                + Cotizar
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-            container.classList.remove('hidden');
-        } catch (err) {
-            console.error(err);
-            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-semibold">El microservicio de Scraping de FastAPI (puerto 8000) no responde. Asegurate de que esté encendido para buscar ofertas.</td></tr>`;
-            container.classList.remove('hidden');
-        } finally {
-            loading.classList.add('hidden');
-        }
-    }
+    window.ticketConfig = {
+        repuestosActivos: {{ (orden.repuestos or []) | tojson }},
+        ordenId: {{ orden.id }},
+        ordenCostoInicial: {{ orden.costo or 0.0 }},
+        technicianUrl: "{{ url_for('usuarios.technician') }}"
+    };
 </script>
+
+<!-- Cargar lógica desde el archivo estático JS -->
+<script src="{{ url_for('static', filename='js/gestionar_ticket.js') }}"></script>
 </body>
+
 </html>

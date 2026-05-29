@@ -26,8 +26,15 @@ def role_required(*allowed_roles):
             
             if user_role not in allowed_roles:
                 flash("No tienes permisos suficientes para ver esta página.", "error")
-                # Redirigir al dashboard genérico u otra página segura
-                return redirect(url_for('vistas.dashboard'))
+                # Redirigir al panel correspondiente según el rol del usuario
+                if user_role in ('Técnico', 'Tecnico'):
+                    return redirect(url_for('usuarios.technician'))
+                elif user_role in ('Secretario', 'Secretaria'):
+                    return redirect(url_for('usuarios.secretary'))
+                elif user_role in ('Administrador', 'Administrdor'):
+                    return redirect(url_for('vistas.dashboard'))
+                else:
+                    return redirect(url_for('vistas.login'))
                 
             return f(*args, **kwargs)
         return decorated_function

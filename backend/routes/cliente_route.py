@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from flask import flash
 from backend.models.Cliente import Cliente
 from backend.controller.cliente_controller import ClienteController
-from backend.utils.decorators import login_required
+from backend.utils.decorators import login_required, role_required
 
 cliente_bp = Blueprint('clientes', __name__)
 
@@ -40,6 +40,7 @@ def buscar_clientes():
 
 @cliente_bp.route('/clientes')
 @login_required
+@role_required('Administrador', 'Administrdor', 'Secretario', 'Secretaria')
 def gestion_cliente():
     clientes = ClienteController.obtener_todos()
     return render_template('gestion_cliente.html', clientes=clientes)

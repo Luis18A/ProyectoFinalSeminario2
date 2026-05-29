@@ -100,6 +100,42 @@ class OrdenServicioController:
         return OrdenServicio.get_all()
 
     @staticmethod
+    def obtener_historial_filtrado(ticket_id=None, cliente_query=None, equipo_query=None):
+        """Obtiene las órdenes de servicio filtradas según criterios de búsqueda."""
+        from backend.models.OrdenServicio import OrdenServicio
+        from backend.models.Equipo import Equipo
+        from backend.models.Cliente import Cliente
+        from backend.models.TipoDispositivo import TipoDispositivo
+        
+        query = OrdenServicio.query.join(Equipo).join(Cliente)
+        
+        if ticket_id:
+            # Soportar formatos como "TK-0005" o simplemente "5"
+            clean_id = ticket_id.upper().replace("TK-", "")
+            try:
+                numeric_id = int(clean_id)
+                query = query.filter(OrdenServicio.id == numeric_id)
+            except ValueError:
+                # Si no es un número válido, retornamos un query vacío para que no falle pero no traiga nada
+                query = query.filter(OrdenServicio.id == -1)
+                
+        if cliente_query:
+            query = query.filter(
+                (Cliente.nombre.ilike(f"%{cliente_query}%")) |
+                (Cliente.apellido.ilike(f"%{cliente_query}%")) |
+                (Cliente.telefono.ilike(f"%{cliente_query}%"))
+            )
+            
+        if equipo_query:
+            query = query.join(TipoDispositivo, Equipo.tipo_id == TipoDispositivo.id).filter(
+                (Equipo.marca.ilike(f"%{equipo_query}%")) |
+                (Equipo.modelo.ilike(f"%{equipo_query}%")) |
+                (TipoDispositivo.descripcion.ilike(f"%{equipo_query}%"))
+            )
+            
+        return query.order_by(OrdenServicio.fecha_recepcion.desc()).all()
+
+    @staticmethod
     def obtener_por_id(orden_id):
         """Obtiene una orden específica por su ID."""
         return OrdenServicio.get_by_id(orden_id)
@@ -150,7 +186,7 @@ class OrdenServicioController:
         ordenes = OrdenServicio.get_all()
         pendientes = [o for o in ordenes if o.estado in (EstadoOrden.PENDIENTE, EstadoOrden.PRESUPUESTADO)]
         en_trabajo = [o for o in ordenes if o.estado in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION)]
-        listos     = [o for o in ordenes if o.estado in (EstadoOrden.LISTO, EstadoOrden.ENTREGADO)]
+        listos     = [o for o in ordenes if o.estado == EstadoOrden.LISTO]
         return pendientes, en_trabajo, listos
 
     @staticmethod
