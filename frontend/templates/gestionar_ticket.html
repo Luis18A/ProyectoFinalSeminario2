@@ -1,0 +1,476 @@
+{% include 'header.html' %}
+
+<!-- Main Wrapper -->
+<main class="flex-1 p-container-margin pt-xl min-h-[calc(100vh-73px)]">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-xl gap-4">
+        <div>
+            <nav class="flex items-center text-on-surface-variant font-label-bold uppercase mb-2">
+                <a class="hover:text-tech-blue" href="{{ url_for('usuarios.technician') }}">Tablero</a>
+                <span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
+                <span class="text-on-surface">Ticket #{{ orden.id }}</span>
+            </nav>
+            <h2 class="font-headline-lg text-on-surface">Gestión de Ticket #{{ orden.id }}</h2>
+        </div>
+        <div class="flex gap-4">
+            <a href="{{ url_for('ordenServicio.comprobante', orden_id=orden.id) }}"
+                class="px-6 py-3 bg-zinc-950 text-white font-label-mono uppercase tracking-wider hover:bg-zinc-800 transition-colors flex items-center gap-2 shadow-sm border border-zinc-900">
+                <span class="material-symbols-outlined text-[18px]">print</span>
+                Comprobante
+            </a>
+            <a href="{{ url_for('usuarios.technician') }}"
+                class="px-6 py-3 border border-outline text-on-surface font-label-mono uppercase tracking-wider hover:bg-surface-variant transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Volver
+            </a>
+        </div>
+    </div>
+
+
+
+    <!-- Bento Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-grid-gutter">
+        <!-- Left Column (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col gap-grid-gutter">
+            <!-- Info Card -->
+            <div class="bento-card shadow-sm border-zinc-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-label-bold uppercase text-on-surface-variant mb-4">Datos del Cliente</h3>
+                        <div class="space-y-3">
+                            <p class="font-body-md">
+                                <span class="font-bold">Nombre:</span>
+                                {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
+                            </p>
+                            <p class="font-body-md">
+                                <span class="font-bold">Teléfono:</span>
+                                {{ orden.equipo.cliente.telefono or '—' }}
+                            </p>
+                            <p class="font-body-md">
+                                <span class="font-bold">Email:</span>
+                                {{ orden.equipo.cliente.email or '—' }}
+                            </p>
+                            <p class="font-body-md">
+                                <span class="font-bold">Ingreso:</span>
+                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y %H:%M') if orden.fecha_recepcion else '—' }}
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-label-bold uppercase text-on-surface-variant mb-4">Detalle del Equipo</h3>
+                        <div class="space-y-3">
+                            <p class="font-body-md">
+                                <span class="font-bold">Equipo:</span>
+                                {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
+                            </p>
+                            <p class="font-body-md">
+                                <span class="font-bold">S/N:</span>
+                                {{ orden.equipo.numero_serie }}
+                            </p>
+                            <p class="font-body-md">
+                                <span class="font-bold">Accesorios:</span>
+                                {{ orden.accesorios or 'Sin accesorios' }}
+                            </p>
+                            <p class="font-body-md flex items-center gap-2">
+                                <span class="font-bold">Estado Actual:</span>
+                                <span
+                                    class="bg-surface-variant text-on-surface px-2 py-1 font-label-bold uppercase border border-[#1A1A1A]/10 text-[10px]">
+                                    {{ orden.estado.value }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fault Warning -->
+            <div class="border-l-4 border-[#FFD600] bg-[#FFD600]/10 p-lg border-y border-r border-[#1A1A1A]/10 shadow-sm">
+                <h3 class="font-label-bold uppercase text-[#1A1A1A] mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">warning</span>
+                    Falla Reportada
+                </h3>
+                <p class="font-body-lg font-medium text-on-surface">{{ orden.falla_reportada }}</p>
+            </div>
+
+            {% if puede_editar %}
+            <!-- Sugerencia de Inteligencia de Fallas (Data Mining) -->
+            <div class="bento-card border border-primary/20 bg-primary/5 shadow-sm">
+                <h3 class="font-label-bold uppercase text-primary mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">psychology</span>
+                    Inteligencia de Fallas (Minería de Datos Históricos)
+                </h3>
+                <p class="text-xs text-on-surface-variant font-label-mono mb-4">
+                    Predicciones basadas en marcas, modelos y tipo de equipo similar en nuestro repositorio.
+                </p>
+                <div class="space-y-4">
+                    {% for pf in predicted_failures %}
+                    <div class="bg-white border border-[#1A1A1A]/10 p-4 relative group">
+                        <div class="flex justify-between items-start mb-2 gap-2">
+                            <span class="font-body-md font-bold text-on-surface">{{ pf.falla }}</span>
+                            <span
+                                class="px-1.5 py-0.5 bg-primary/10 text-primary font-mono text-[9px] font-bold uppercase whitespace-nowrap">
+                                Prob: {{ pf.probabilidad }}%
+                            </span>
+                        </div>
+                        <div class="space-y-2 mt-3">
+                            <!-- Frecuencia/Probabilidad bar -->
+                            <div>
+                                <div
+                                    class="flex justify-between text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">
+                                    <span>Probabilidad de Incidencia</span>
+                                    <span>{{ pf.probabilidad }}%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-zinc-100 rounded-none overflow-hidden">
+                                    <div class="h-full bg-primary" style="width: {{ pf.probabilidad }}%"></div>
+                                </div>
+                            </div>
+                            <!-- Success Rate bar -->
+                            <div>
+                                <div
+                                    class="flex justify-between text-[8px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                                    <span>Tasa de Éxito de Reparación</span>
+                                    <span>{{ pf.tasa_exito }}%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-emerald-50 rounded-none overflow-hidden">
+                                    <div class="h-full bg-emerald-500" style="width: {{ pf.tasa_exito }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Update Form — Solo visible para Técnico / Admin -->
+            {% if puede_editar %}
+            <div class="bento-card bg-white flex-grow shadow-sm border-zinc-200">
+                <form method="POST" action="{{ url_for('ordenServicio.editar_ordenServicio', id=orden.id) }}"
+                    class="space-y-6">
+                    <input type="hidden" name="usuario_id" value="{{ session.get('usuario_id') }}">
+
+                    <h3
+                        class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex justify-between items-center">
+                        <span>Actualizar Estado y Diagnóstico</span>
+                        <button
+                            class="px-4 py-2 bg-emerald-600 text-white font-label-mono text-xs uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                            type="submit">
+                            <span class="material-symbols-outlined text-[16px]">save</span>
+                            Guardar Cambios
+                        </button>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="flex flex-col">
+                            <label class="font-label-bold text-on-surface-variant mb-2 uppercase">Nuevo Estado</label>
+                            <select name="estado" {% if orden.estado.name == 'ENTREGADO' %}disabled{% endif %} class="input-swiss appearance-none bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                {% for estado in opciones_estado %}
+                                <option value="{{ estado.name }}" {% if estado==orden.estado %}selected{% endif %}>
+                                    {{ estado.value }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                                Mano de Obra / Labor ($)
+                            </label>
+                            <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                                id="input-mano-obra" placeholder="Ej: 15000" type="number" step="0.01"
+                                {% if not puede_editar_costos %}disabled{% endif %}>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                                Costo Total de Reparación ($)
+                            </label>
+                            {% set es_cerrada = orden.estado.name in ('LISTO', 'ENTREGADO') %}
+                            {% set es_admin = rol_actual in ('Administrador', 'Administrdor') %}
+                            <input
+                                class="input-swiss border border-zinc-200 font-bold px-3 py-2 text-sm 
+                                {% if es_cerrada and es_admin %}
+                                    bg-zinc-50 text-emerald-600 focus:border-emerald-500
+                                {% else %}
+                                    bg-zinc-100 cursor-not-allowed text-zinc-500
+                                {% endif %}"
+                                id="input-costo-total" type="number" step="0.01" name="costo"
+                                value="{{ orden.costo or '' }}" 
+                                {% if not (es_cerrada and es_admin) %}readonly{% endif %}
+                                {% if es_cerrada and not es_admin %}disabled{% endif %}>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                            Estado del Diagnóstico
+                        </label>
+                        <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" name="estado_diagnostico"
+                            placeholder="Ej: Placa base dañada, requiere reemplazo..."
+                            value="{{ orden.estado_diagnostico or '' }}">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                            Falla Reportada
+                        </label>
+                        <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" name="falla_reportada" value="{{ orden.falla_reportada }}">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                            Accesorios
+                        </label>
+                        <input class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white transition-all" name="accesorios" value="{{ orden.accesorios or '' }}">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="font-label-bold text-on-surface-variant mb-2 uppercase">
+                            Observación Técnica (se añade al historial)
+                        </label>
+                        <textarea name="observaciones"
+                            class="w-full bg-zinc-50 border border-zinc-200 focus:ring-0 focus:border-emerald-500 focus:bg-white p-4 font-body-md transition-all resize-none"
+                            placeholder="Ingrese detalles técnicos del diagnóstico..." rows="4"></textarea>
+                    </div>
+
+                    <div class="pt-2">
+                        <button
+                            class="w-full py-4 bg-emerald-600 text-white font-label-mono uppercase tracking-wider hover:bg-emerald-700 transition-colors shadow-sm"
+                            type="submit">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div> <!-- Close Left Column lg:col-span-7 -->
+
+        <!-- Right Column (5 cols): Historial de Movimientos -->
+        <div class="lg:col-span-5">
+            <div class="bento-card h-full shadow-sm border-zinc-200">
+                <h3
+                    class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex items-center justify-between">
+                    Historial de Movimientos
+                    <span class="material-symbols-outlined text-[18px]">history</span>
+                </h3>
+
+                {% if historial %}
+                <div
+                    class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-[2px] before:bg-[#1A1A1A]/10">
+                    {% for entrada in historial %}
+                    <div class="relative">
+                        <!-- Dot en la línea de tiempo -->
+                        <div class="absolute -left-[29px] top-1 w-3 h-3 bg-white border-2
+                            {% if loop.first %}border-emerald-500{% else %}border-[#1A1A1A]/20{% endif %}">
+                        </div>
+                        <div class="flex items-start justify-between mb-2">
+                            <span
+                                class="{% if loop.first %}bg-emerald-600 text-white{% else %}bg-surface-variant text-on-surface{% endif %} px-2 py-1 font-label-bold uppercase text-[10px] border border-[#1A1A1A]/10">
+                                {{ entrada.estado_nuevo }}
+                            </span>
+                            <span class="font-label-mono text-on-surface-variant text-xs">
+                                {{ entrada.fecha_cambio.strftime('%d/%m/%Y %H:%M') if entrada.fecha_cambio else '—' }}
+                            </span>
+                        </div>
+                        <p class="font-body-sm font-bold text-on-surface mb-1">
+                            {{ entrada.usuario.nombre ~ ' ' ~ entrada.usuario.apellido if entrada.usuario else 'Sistema'
+                            }}
+                        </p>
+                        {% if entrada.observacion_tecnica %}
+                        <div
+                            class="bg-zinc-50 p-3 border border-[#1A1A1A]/10 italic font-body-sm text-on-surface-variant">
+                            {{ entrada.observacion_tecnica }}
+                        </div>
+                        {% endif %}
+                        <p class="text-[10px] text-on-surface-variant mt-1">
+                            {{ entrada.estado_anterior }} → {{ entrada.estado_nuevo }}
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-on-surface-variant text-center py-8">
+                    No hay movimientos registrados para esta orden.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Full Width Bottom Column (12 cols): Presupuesto y Repuestos Requeridos -->
+        <div class="lg:col-span-12">
+            <div class="bento-card bg-white mt-6 shadow-sm border-zinc-200">
+                <h3
+                    class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/10 flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-emerald-600 text-[20px]">shopping_cart</span>
+                        Presupuesto y Repuestos Requeridos
+                    </span>
+                    <span class="font-mono text-[10px] bg-zinc-900 text-white px-3 py-1" id="repuestos-count-label">
+                        ÍTEMS: {{ (orden.repuestos or []) | length }}
+                    </span>
+                </h3>
+
+                <!-- Tabla de repuestos cargados -->
+                <div class="mb-6">
+                    <h4 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Repuestos Cotizados
+                    </h4>
+                    <div id="tabla-repuestos-container">
+                        <!-- Renderizado dinámicamente por JS -->
+                    </div>
+                </div>
+
+                {% if puede_editar and puede_editar_costos %}
+                <!-- Agregar Repuesto Manualmente -->
+                <div class="mb-6 border-t border-zinc-100 pt-4">
+                    <h4 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">add_circle</span>
+                        Agregar Repuesto Manualmente
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <div class="md:col-span-6 flex flex-col">
+                            <label class="font-label-bold text-on-surface-variant mb-1.5 uppercase text-[9px]">Descripción del Repuesto</label>
+                            <input id="repuesto-manual-titulo" class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs focus:border-emerald-500 focus:bg-white transition-all placeholder:text-zinc-400" placeholder="Ej: Pantalla LCD, Batería original, etc." type="text" />
+                        </div>
+                        <div class="md:col-span-3 flex flex-col">
+                            <label class="font-label-bold text-on-surface-variant mb-1.5 uppercase text-[9px]">Precio ($)</label>
+                            <input id="repuesto-manual-precio" class="input-swiss bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs focus:border-emerald-500 focus:bg-white transition-all placeholder:text-zinc-400" placeholder="Ej: 8500.00" type="number" step="0.01" />
+                        </div>
+                        <div class="md:col-span-3">
+                            <button type="button" id="btn-agregar-manual" class="w-full py-2 bg-zinc-950 hover:bg-emerald-600 text-white font-label-mono uppercase tracking-wider text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 h-[34px] shadow-sm">
+                                <span class="material-symbols-outlined text-[14px]">add</span>
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Resumen de Costos y Mano de obra -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50 p-6 border border-[#1A1A1A]/10 mb-6">
+                    <div>
+                        <h4 class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Desglose de Costos
+                        </h4>
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Mano de Obra / Labor:</span>
+                                <span class="font-semibold" id="costo-labor-display">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Suma de Repuestos:</span>
+                                <span class="font-semibold" id="costo-repuestos-display">$0.00</span>
+                            </div>
+                            <div
+                                class="flex justify-between border-t border-zinc-200 pt-2 font-bold text-sm text-emerald-600">
+                                <span>TOTAL TICKET:</span>
+                                <span id="costo-total-display">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center items-stretch gap-3">
+                        {% if puede_editar %}
+                        <button type="button" onclick="solicitarAprobacionPresupuesto()"
+                            class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-label-mono uppercase tracking-wider text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">send</span> Enviar Presupuesto para
+                            Aprobación
+                        </button>
+                        <p class="text-[9px] text-zinc-400 leading-snug">
+                            💡 Al presionar este botón, se guardará el presupuesto y se marcará como
+                            <b>Presupuestado</b> para que la secretaria comunique y confirme la aceptación del cliente.
+                        </p>
+                        {% else %}
+                        <div class="bg-zinc-100 p-4 border border-zinc-200 text-xs text-zinc-600">
+                            <p class="font-bold mb-1">Información de Facturación</p>
+                            <p>Este es el detalle actual de los costos cargados por el técnico. La secretaria puede visualizar los montos para comunicarlos al cliente.</p>
+                        </div>
+                        {% if orden.estado.name == 'PRESUPUESTADO' %}
+                        <button type="button" onclick="confirmarPresupuestoSecretaria()"
+                            class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-label-mono uppercase tracking-wider text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">check_circle</span> Aceptar Presupuesto
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if puede_editar %}
+                <!-- Buscador Integrado de Ofertas y Repuestos -->
+                <div class="border-t border-[#1A1A1A]/10 pt-6">
+                    <h4
+                        class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">search</span>
+                        Buscador de Repuestos Integrado
+                    </h4>
+                    {% if orden.estado.name == 'PRESUPUESTADO' %}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex-grow relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[18px]">search</span>
+                            <input id="repuesto-query" class="input-swiss w-full pl-10 text-xs bg-zinc-50 border border-zinc-200 px-3 py-2 focus:border-emerald-500 focus:bg-white transition-all"
+                                placeholder="Buscar pantallas, discos, memorias, fuentes..." type="text"
+                                value="{{ orden.equipo.marca }} {{ orden.equipo.modelo }}" />
+                        </div>
+                        <button type="button" id="btn-buscar-repuestos" onclick="buscarRepuestosTaller()"
+                            class="btn-swiss btn-primary text-xs py-3 px-6 bg-zinc-950 hover:bg-zinc-800 transition-colors">
+                            Buscar Proveedores
+                        </button>
+                    </div>
+
+                    <!-- Loading scrapers -->
+                    <div id="repuestos-loading"
+                        class="hidden py-6 flex flex-col items-center justify-center text-zinc-400">
+                        <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-emerald-600">sync</span>
+                        <p class="font-label-mono uppercase text-[9px] tracking-widest">Buscando repuestos en tiempo real...</p>
+                    </div>
+
+                    <!-- Tabla de Resultados Scraping -->
+                    <div id="repuestos-results-container"
+                        class="hidden border border-[#1A1A1A]/10 max-h-[300px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr
+                                    class="bg-zinc-50 border-b border-zinc-100 text-[9px] font-bold text-zinc-400 uppercase">
+                                    <th class="p-2.5">Tienda</th>
+                                    <th class="p-2.5">Producto</th>
+                                    <th class="p-2.5 text-right">Precio</th>
+                                    <th class="p-2.5 text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="repuestos-results-body" class="divide-y divide-zinc-50 text-xs">
+                                <!-- Resultados inyectados por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <!-- Aviso de bloqueo de búsqueda -->
+                    <div class="bg-zinc-50 border border-dashed border-zinc-200 p-6 text-center text-xs text-zinc-500 shadow-inner">
+                        <span class="material-symbols-outlined text-[24px] text-zinc-400 mb-2">lock</span>
+                        <p class="font-semibold uppercase tracking-wider text-[10px] text-zinc-400 mb-1">Buscador Desactivado</p>
+                        <p>Para buscar y cotizar repuestos en tiempo real, el equipo debe estar en estado <b>PRESUPUESTADO</b>.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        </div>
+    </div>
+</main>
+
+</div> <!-- Cierre de #main-content (abierto en header.html) -->
+
+<!-- Configuración para el script externo -->
+<script>
+    window.ticketConfig = {
+        repuestosActivos: {{ (orden.repuestos or []) | tojson }},
+        ordenId: {{ orden.id }},
+        ordenCostoInicial: {{ orden.costo or 0.0 }},
+        puedeEditar: {{ puede_editar | tojson }},
+        puedeEditarCostos: {{ puede_editar_costos | tojson }},
+        rolActual: {{ rol_actual | tojson }},
+        technicianUrl: "{{ url_for('usuarios.technician') }}"
+    };
+</script>
+
+<!-- Cargar lógica desde el archivo estático JS -->
+<script src="{{ url_for('static', filename='js/gestionar_ticket.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+#solo para inicializar la app y conectar la base de datos
+
+from flask import Flask
+from database import db
+
+# Importar los modelos (ahora dentro de backend)
+from backend.models.Usuario import Usuario
+from backend.models.Rol import Rol
+from backend.models.Cliente import Cliente
+from backend.models.Equipo import Equipo
+from backend.models.OrdenServicio import OrdenServicio
+from backend.models.TipoDispositivo import TipoDispositivo
+
+# Importar los Blueprints de las rutas (ahora dentro de backend)
+from backend.routes.vistas import vistas_bp
+from backend.routes.usuario_route import usuarios_bp
+from backend.routes.cliente_route import cliente_bp
+from backend.routes.tipoDispositivo_route import tipoDispositivo_bp
+from backend.routes.equipo_route import equipo_bp
+from backend.routes.ordenServicio_route import ordenServicio_bp
+
+# Configurar Flask para que busque en la carpeta frontend
+app = Flask(__name__, 
+            template_folder='frontend/templates', 
+            static_folder='frontend/static')
+
+
+# CONEXIÓN A LA BASE DE DATOS
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5432/TechFlowDB'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'techflow_secret_key_123' # Necesario para sesiones y flash messages
+
+db.init_app(app)
+
+# REGISTRO DE RUTAS (Blueprints)
+app.register_blueprint(vistas_bp)
+app.register_blueprint(usuarios_bp)
+app.register_blueprint(cliente_bp)
+app.register_blueprint(tipoDispositivo_bp)
+app.register_blueprint(equipo_bp)
+app.register_blueprint(ordenServicio_bp)
+
+# MANEJO GLOBAL DE ERRORES (Navegación manual no permitida o inexistente)
+@app.errorhandler(404)
+def pagina_no_encontrada(e):
+    from flask import flash, redirect, url_for
+    flash("La dirección ingresada no existe o no está permitida.", "error")
+    return redirect(url_for('vistas.dashboard'))
+
+@app.errorhandler(403)
+def acceso_prohibido(e):
+    from flask import flash, redirect, url_for
+    flash("No tienes permisos suficientes para acceder a esta dirección.", "error")
+    return redirect(url_for('vistas.dashboard'))
+
+with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

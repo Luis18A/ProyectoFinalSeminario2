@@ -1,0 +1,28 @@
+# Python - Archivos compilados y caché
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Base de datos (Para que no subas tu DB local de pruebas)
+*.sqlite3
+db.sqlite3
+
+# Configuración de VS Code y Sistema
+.vscode/
+.history/
+.DS_Store
+Thumbs.db
+
+# Archivos de entorno (SEGURIDAD: Si llegas a crear un .env con contraseñas)
+.env
+
+# Carpetas de desarrollo y archivos temporales
+scratch/
+
+# Documentos a ignorar
+PROYECTO SEMINARIO 2.pdf
