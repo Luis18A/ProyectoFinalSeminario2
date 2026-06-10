@@ -12,7 +12,7 @@ class OrdenServicio(db.Model):
     accesorios = db.Column(db.String(100), nullable=False)
     estado = db.Column(db.Enum(EstadoOrden), nullable=False, default=EstadoOrden.PENDIENTE)
     estado_diagnostico = db.Column(db.String(255), nullable=True)
-    fecha_recepcion = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_recepcion = db.Column(db.DateTime, default=datetime.now)
     fecha_entrega = db.Column(db.DateTime, nullable=True)
     costo = db.Column(db.Float, nullable=True)
     observaciones = db.Column(db.String(500), nullable=True)
@@ -28,7 +28,7 @@ class OrdenServicio(db.Model):
         self.equipo_id = equipo_id
         self.falla_reportada = falla_reportada
         self.accesorios = accesorios
-        self.fecha_recepcion = fecha_recepcion or datetime.utcnow()
+        self.fecha_recepcion = fecha_recepcion or datetime.now()
         self.estado = estado
         self.estado_diagnostico = estado_diagnostico
         self.fecha_entrega = fecha_entrega
@@ -44,37 +44,37 @@ class OrdenServicio(db.Model):
         self.estado = nuevo_estado
         
         # Registrar en el historial
-        HistorialEstado.add_registro(
+        historial = HistorialEstado(
             orden_id=self.id,
             estado_anterior=estado_anterior,
             estado_nuevo=nuevo_estado.value,
             usuario_id=usuario_id,
             observacion_tecnica=observacion
         )
+        db.session.add(historial)
         db.session.commit()
 
     def finalizar_orden(self, costo_final, observaciones, usuario_id):
         """Cierra la orden, registra el costo final y actualiza el estado a ENTREGADO."""
         self.costo = costo_final
         self.observaciones = observaciones
-        self.fecha_entrega = datetime.utcnow()
+        self.fecha_entrega = datetime.now()
         self.actualizar_estado(EstadoOrden.ENTREGADO, usuario_id, "Orden finalizada y entregada al cliente.")
 
-    def actualizar_diagnostico(self, diagnostico, usuario_id):
-        """Actualiza el detalle del diagnóstico y lo registra en el historial."""
+    def actualizar_diagnostico(self, diagnostico):
+        """Actualiza el detalle del diagnóstico."""
         self.estado_diagnostico = diagnostico
-        # Si el diagnóstico implica un cambio de estado, podrías llamarlo aquí.
         db.session.commit()
 
     # Métodos estáticos para CRUD (Active Record Pattern)
 
     @staticmethod
     def get_all():
-        return OrdenServicio.query.all()
+        return OrdenServicio.query.order_by(OrdenServicio.fecha_recepcion.desc(), OrdenServicio.id.desc()).all()
 
     @staticmethod
     def get_by_id(id):
-        return OrdenServicio.query.get(id)
+        return db.session.get(OrdenServicio, id)
 
     @classmethod
     def create(cls, **data):

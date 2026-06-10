@@ -48,6 +48,21 @@ function cerrarCrearEquipoRapido() {
     }
 }
 
+function abrirCrearTipoDispositivoRapido() {
+    const modal = document.getElementById('modal-tipo-dispositivo-rapido');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function cerrarCrearTipoDispositivoRapido() {
+    const modal = document.getElementById('modal-tipo-dispositivo-rapido');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.getElementById('form-tipo-dispositivo-rapido').reset();
+    }
+}
+
 // Funciones globales para control rápido de transiciones de estado
 async function confirmarPresupuesto(ordenId, costo) {
     if (!confirm(`¿Confirmar que el cliente acepta el presupuesto de $${costo} y empezar reparación?`)) {
@@ -61,6 +76,9 @@ async function confirmarPresupuesto(ordenId, costo) {
         
         const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
             method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
             body: formData
         });
         
@@ -77,6 +95,44 @@ async function confirmarPresupuesto(ordenId, costo) {
     }
 }
 
+async function rechazarPresupuesto(ordenId) {
+    const motivo = prompt("Ingrese el motivo del rechazo del presupuesto (ej: Presupuesto muy elevado, el cliente retira el equipo):");
+    if (motivo === null) {
+        return;
+    }
+    
+    const motivoLimpio = motivo.trim();
+    if (!motivoLimpio) {
+        window.showToast('Debe ingresar un motivo para poder rechazar el presupuesto.', 'error');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('estado', 'DIAGNOSTICO');
+        formData.append('observaciones', `Rechazado por el cliente. Motivo: ${motivoLimpio}`);
+        
+        const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: formData
+        });
+        
+        const data = await resp.json();
+        if (data.success) {
+            window.showToast('Presupuesto rechazado. La orden volvió al estado de diagnóstico.', 'success');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            window.showToast('Error: ' + data.message, 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        window.showToast('Ocurrió un error al rechazar el presupuesto.', 'error');
+    }
+}
+
 async function entregarEquipo(ordenId) {
     if (!confirm('¿Registrar la entrega formal del equipo y cerrar el ciclo de la orden?')) {
         return;
@@ -89,6 +145,9 @@ async function entregarEquipo(ordenId) {
         
         const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
             method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
             body: formData
         });
         
@@ -114,6 +173,84 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const formClienteRapido = document.getElementById('form-cliente-rapido');
     const formEquipoRapido = document.getElementById('form-equipo-rapido');
+
+    // Validación y atajo de DNI existente en el modal rápido
+    if (formClienteRapido) {
+        const dniInput = formClienteRapido.querySelector('input[name="dni"]');
+        const submitBtn = formClienteRapido.querySelector('button[type="submit"]');
+        const warningMsg = document.createElement('p');
+        warningMsg.className = 'text-xs text-amber-600 mt-1 hidden font-medium';
+        warningMsg.id = 'dni-rapido-warning-msg';
+        
+        if (dniInput) {
+            dniInput.parentNode.appendChild(warningMsg);
+            
+            dniInput.addEventListener('blur', async function() {
+                const dni = this.value.trim().replace(/[- ]/g, '');
+                if (dni.length !== 7 && dni.length !== 8 && dni.length !== 11) {
+                    warningMsg.classList.add('hidden');
+                    if (submitBtn) submitBtn.disabled = false;
+                    return;
+                }
+                
+                try {
+                    const resp = await fetch(`/clientes/verificar-dni/${dni}`);
+                    const data = await resp.json();
+                    
+                    if (data.exists) {
+                        const c = data.cliente;
+                        warningMsg.innerHTML = `⚠️ DNI ya registrado para <strong>${c.nombre} ${c.apellido}</strong>. <button type="button" class="text-accent underline font-bold ml-1 hover:text-[#0057FF]" id="btn-select-existing-client">Seleccionar Cliente</button>`;
+                        warningMsg.classList.remove('hidden');
+                        
+                        // Autofill other fields
+                        formClienteRapido.querySelector('input[name="nombre"]').value = c.nombre;
+                        formClienteRapido.querySelector('input[name="apellido"]').value = c.apellido;
+                        formClienteRapido.querySelector('input[name="telefono"]').value = c.telefono;
+                        formClienteRapido.querySelector('input[name="email"]').value = c.email;
+                        formClienteRapido.querySelector('input[name="domicilio"]').value = c.domicilio;
+                        formClienteRapido.querySelector('input[name="localidad"]').value = c.localidad;
+                        
+                        // Block submit button
+                        if (submitBtn) submitBtn.disabled = true;
+                        
+                        // Bind select existing client handler
+                        document.getElementById('btn-select-existing-client').addEventListener('click', function() {
+                            let optionExists = false;
+                            for (let i = 0; i < selectCliente.options.length; i++) {
+                                if (selectCliente.options[i].value == c.id) {
+                                    optionExists = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!optionExists) {
+                                const opt = document.createElement('option');
+                                opt.value = c.id;
+                                opt.textContent = `${c.nombre} ${c.apellido} (${c.dni_cuil})`;
+                                selectCliente.appendChild(opt);
+                            }
+                            
+                            selectCliente.value = c.id;
+                            cerrarCrearClienteRapido();
+                            // Load equipment
+                            cargarEquiposCliente(c.id);
+                            window.showToast(`Cliente '${c.nombre} ${c.apellido}' seleccionado correctamente.`, 'success');
+                        });
+                    } else {
+                        warningMsg.classList.add('hidden');
+                        if (submitBtn) submitBtn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+            
+            dniInput.addEventListener('input', function() {
+                warningMsg.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
+            });
+        }
+    }
 
     // Función auxiliar para cargar equipos de un cliente seleccionado
     async function cargarEquiposCliente(clienteId) {
@@ -182,6 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const resp = await fetch('/clientes/rapido', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
                     body: formData
                 });
                 
@@ -220,6 +360,9 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const resp = await fetch('/equipo/rapido', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
                     body: formData
                 });
                 
@@ -252,6 +395,45 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
                 window.showToast('Ocurrió un error al registrar el equipo.', 'error');
+            }
+        });
+    }
+
+    const formTipoDispositivoRapido = document.getElementById('form-tipo-dispositivo-rapido');
+    const selectTipoDispositivo = document.getElementById('rapido-select-tipo');
+
+    if (formTipoDispositivoRapido && selectTipoDispositivo) {
+        formTipoDispositivoRapido.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            try {
+                const resp = await fetch('/tipoDispositivo/rapido', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    body: formData
+                });
+                
+                const data = await resp.json();
+                if (data.success) {
+                    window.showToast('Tipo de dispositivo registrado con éxito.', 'success');
+                    
+                    // Agregar y seleccionar la nueva opción en el modal de equipo
+                    const opt = document.createElement('option');
+                    opt.value = data.tipo.id;
+                    opt.textContent = data.tipo.descripcion;
+                    selectTipoDispositivo.appendChild(opt);
+                    selectTipoDispositivo.value = data.tipo.id;
+                    
+                    cerrarCrearTipoDispositivoRapido();
+                } else {
+                    window.showToast('Error al registrar el tipo: ' + data.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.showToast('Ocurrió un error al registrar el tipo de dispositivo.', 'error');
             }
         });
     }

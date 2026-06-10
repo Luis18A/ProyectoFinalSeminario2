@@ -8,10 +8,10 @@ class Cliente(db.Model):
     nombre = db.Column(db.String(50), nullable=False)
     apellido = db.Column(db.String(50), nullable=False)
     telefono = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(254), unique=True, nullable=False)
+    email = db.Column(db.String(254), unique=True, nullable=True)
     domicilio = db.Column(db.String(150), nullable=False)
     localidad = db.Column(db.String(100), nullable=False)
-    fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_registro = db.Column(db.DateTime, default=datetime.now)
 
     # Relación con Equipo
     equipos = db.relationship('Equipo', back_populates='cliente', lazy=True)
@@ -33,7 +33,7 @@ class Cliente(db.Model):
 
     @staticmethod
     def get_by_id(id):
-        return Cliente.query.get(id)
+        return db.session.get(Cliente, id)
 
     @classmethod
     def create(cls, **data):

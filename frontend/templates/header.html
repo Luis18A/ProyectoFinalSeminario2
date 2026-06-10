@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}TechFlow{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap"
@@ -29,46 +31,47 @@
             </div>
             <nav class="flex flex-col">
                 {% set user_role = session.get('rol_descripcion', '') %}
+                {% set endpoint = request.endpoint %}
 
-                {% if user_role in ('Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% if user_role == 'Administrador' %}
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'vistas.dashboard' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
                     href="{{ url_for('vistas.dashboard') }}">
                     <span class="material-symbols-outlined">analytics</span> Panel de Control
                 </a>
                 {% endif %}
 
                 <!-- Nuevas Secciones -->
-                {% if user_role not in ('Técnico', 'Tecnico') %}
-                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% if user_role != 'Técnico' %}
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'clientes.gestion_cliente' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
                     href="{{ url_for('clientes.gestion_cliente') }}">
                     <span class="material-symbols-outlined">person</span> Clientes
                 </a>
                 {% endif %}
 
-                {% if user_role in ('Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% if user_role == 'Administrador' %}
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'ordenServicio.historial' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
                     href="{{ url_for('ordenServicio.historial') }}">
                     <span class="material-symbols-outlined">history</span> Historial Global
                 </a>
                 {% endif %}
                 <!-- Secciones Filtros de Rol -->
 
-                {% if user_role in ('Secretario', 'Secretaria', 'Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
-                    href="{{ url_for('usuarios.secretary') }}">
-                    <span class="material-symbols-outlined">badge</span> Secretaría
+                {% if user_role in ('Secretario', 'Administrador') %}
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'ordenServicio.listar_ordenes_view' or endpoint == 'ordenServicio.crear_orden_view' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
+                    href="{{ url_for('ordenServicio.listar_ordenes_view') }}">
+                    <span class="material-symbols-outlined">receipt_long</span> Gestión de Órdenes
                 </a>
                 {% endif %}
 
-                {% if user_role in ('Técnico', 'Administrador', 'Administrdor') %}
-                <a class="text-zinc-500 px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all"
+                {% if user_role in ('Técnico', 'Administrador') %}
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'usuarios.technician' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
                     href="{{ url_for('usuarios.technician') }}">
                     <span class="material-symbols-outlined">engineering</span> Técnico
                 </a>
                 {% endif %}
 
-                {% if user_role in ('Administrador', 'Administrdor') %}
-                <a class="bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF] px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider"
+                {% if user_role == 'Administrador' %}
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'usuarios.listar_usuarios' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
                     href="{{ url_for('usuarios.listar_usuarios') }}">
                     <span class="material-symbols-outlined">group</span> Gestión Usuarios
                 </a>
@@ -82,6 +85,9 @@
             </a>
         </div>
     </aside>
+
+    <!-- Sidebar Overlay for mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity duration-300 opacity-0"></div>
 
     <!-- Main Content Shell -->
     <div id="main-content" class="flex flex-col min-h-screen">
@@ -121,7 +127,65 @@
                         }, 500);
                     }, 4000);
                 });
+
+                // Toggle notifications dropdown
+                const btn = document.getElementById('notification-btn');
+                const dropdown = document.getElementById('notification-dropdown');
+                if (btn && dropdown) {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('hidden');
+                    });
+                    document.addEventListener('click', (e) => {
+                        if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                            dropdown.classList.add('hidden');
+                        }
+                    });
+                }
             });
+
+            // Mark a single notification as read and redirect
+            window.handleNotificationClick = async function(id, redirectUrl) {
+                try {
+                    const resp = await fetch(`/notificaciones/${id}/leer`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        }
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        console.error('Error marking notification as read:', data.message);
+                        window.location.href = redirectUrl;
+                    }
+                } catch (err) {
+                    console.error('Network error:', err);
+                    window.location.href = redirectUrl;
+                }
+            };
+
+            // Mark all notifications as read
+            window.markAllNotificationsAsRead = async function() {
+                try {
+                    const resp = await fetch('/notificaciones/leer-todas', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        }
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        window.showToast('Error al marcar notificaciones: ' + data.message, 'error');
+                    }
+                } catch (err) {
+                    console.error('Network error:', err);
+                    window.showToast('Error de red al marcar notificaciones.', 'error');
+                }
+            };
 
             // Global JS helper to trigger toasts programmatically
             window.showToast = function (message, category = 'success') {
@@ -175,15 +239,22 @@
             </div>
             <div class="flex items-center gap-4 md:gap-8">
                 <!-- Search (Oculto en móviles muy pequeños) -->
-                <div
-                    class="hidden sm:flex relative items-center focus-within:border-[#0057FF] border-b border-transparent transition-all">
+                <div class="hidden sm:flex relative items-center border-b border-transparent focus-within:border-[#0057FF] transition-all">
                     <span class="material-symbols-outlined text-zinc-400 absolute left-0 text-sm">search</span>
-                    <input
+                    <input id="global-search-input"
                         class="bg-transparent border-none focus:ring-0 text-sm font-['Space_Grotesk'] pl-6 py-1 w-32 md:w-48"
-                        placeholder="Búsqueda Global..." type="text" />
+                        placeholder="Búsqueda Global..." type="text" autocomplete="off" />
+                    
+                    <!-- Search Results Dropdown -->
+                    <div id="global-search-results" class="absolute top-full right-0 mt-2 w-80 bg-white border border-[#1A1A1A]/10 shadow-xl z-50 hidden max-h-96 overflow-y-auto">
+                        <div class="p-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest border-b border-zinc-50">Resultados de Búsqueda</div>
+                        <div id="global-search-results-content" class="divide-y divide-zinc-50">
+                            <!-- Injected by JavaScript -->
+                        </div>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2 md:gap-4">
-                    {% if session.get('real_rol_descripcion') in ('Administrador', 'Administrdor') %}
+                    {% if session.get('real_rol_descripcion') == 'Administrador' %}
                     <div
                         class="flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 px-3 py-1 mr-2 text-xs select-none">
                         <span class="material-symbols-outlined text-[16px] text-zinc-500">swap_horiz</span>
@@ -200,9 +271,51 @@
                         </select>
                     </div>
                     {% endif %}
-                    <button class="text-zinc-500 hover:text-[#0057FF] transition-colors mr-2">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
+                    <!-- Notifications Dropdown Container -->
+                    <div class="relative">
+                        <button id="notification-btn" class="text-zinc-500 hover:text-[#0057FF] transition-colors mr-2 relative flex items-center justify-center p-1.5 rounded-full hover:bg-zinc-100 focus:outline-none">
+                            <span class="material-symbols-outlined">notifications</span>
+                            {% if global_unread_count > 0 %}
+                            <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center animate-pulse">
+                                {{ global_unread_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="notification-dropdown" class="absolute right-0 mt-3 w-80 bg-white border border-[#1A1A1A]/10 shadow-xl z-50 hidden flex flex-col max-h-[480px]">
+                            <!-- Header -->
+                            <div class="p-3 border-b border-[#1A1A1A]/5 flex justify-between items-center bg-zinc-50">
+                                <span class="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider font-['Space_Grotesk']">Notificaciones</span>
+                                {% if global_unread_count > 0 %}
+                                <button onclick="markAllNotificationsAsRead()" class="text-[9px] font-bold text-primary hover:text-tech-blue uppercase tracking-widest font-['Space_Grotesk']">
+                                    Marcar todas
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Notifications List -->
+                            <div class="overflow-y-auto flex-grow divide-y divide-zinc-50 font-['Space_Grotesk'] text-xs">
+                                {% if global_notifications %}
+                                    {% for notif in global_notifications %}
+                                    <div onclick="handleNotificationClick({{ notif.id }}, '{{ url_for('ordenServicio.gestionar_ticket', orden_id=notif.orden_id) if notif.orden_id else '#' }}')" 
+                                         class="p-4 hover:bg-zinc-50 cursor-pointer transition-colors relative {% if not notif.leido %}bg-[#0057FF]/5 border-l-2 border-[#0057FF]{% endif %}">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <span class="font-bold text-[#1A1A1A] pr-2">{{ notif.titulo }}</span>
+                                            <span class="text-[9px] text-zinc-400 font-mono whitespace-nowrap">{{ notif.fecha_creacion.strftime('%d/%m %H:%M') }}</span>
+                                        </div>
+                                        <p class="text-[11px] text-zinc-600 leading-normal">{{ notif.mensaje }}</p>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="p-8 text-center text-zinc-400 select-none flex flex-col items-center gap-2">
+                                        <span class="material-symbols-outlined text-zinc-300 text-3xl">notifications_off</span>
+                                        <span class="text-[11px] font-medium">No tienes notificaciones</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                     <!-- User Session Name & Role -->
                     <div class="flex flex-col text-right hidden sm:flex">
                         <span class="text-xs font-bold text-[#1A1A1A] capitalize font-['Space_Grotesk']">

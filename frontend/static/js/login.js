@@ -5,7 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // Referencias a elementos del DOM
-    const passwordInput = document.getElementById('passcode');
+    const passwordInput = document.getElementById('password');
     const toggleButton = document.querySelector('button[aria-label="Toggle password visibility"]');
     const toggleIcon = toggleButton?.querySelector('.material-symbols-outlined');
 

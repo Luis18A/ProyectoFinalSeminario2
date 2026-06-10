@@ -242,6 +242,62 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Validación y Autofill por DNI existente (Búsqueda en tiempo real)
+    const dniInput = document.getElementById('dni');
+    const submitBtn = formCreacion ? formCreacion.querySelector('button[type="submit"]') : null;
+    const warningMsg = document.createElement('p');
+    warningMsg.className = 'text-xs text-amber-600 mt-1 hidden font-medium';
+    warningMsg.id = 'dni-warning-msg';
+    
+    if (dniInput) {
+        dniInput.parentNode.appendChild(warningMsg);
+        
+        dniInput.addEventListener('blur', async function() {
+            const dni = this.value.trim().replace(/[- ]/g, '');
+            if (dni.length !== 7 && dni.length !== 8 && dni.length !== 11) {
+                warningMsg.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+            
+            try {
+                const resp = await fetch(`/clientes/verificar-dni/${dni}`);
+                const data = await resp.json();
+                
+                if (data.exists) {
+                    const c = data.cliente;
+                    warningMsg.innerHTML = `⚠️ DNI ya registrado para <strong>${c.nombre} ${c.apellido}</strong>. <button type="button" class="text-accent underline font-bold ml-1 hover:text-[#0057FF]" id="btn-autofill-edit">Editar Cliente</button>`;
+                    warningMsg.classList.remove('hidden');
+                    
+                    // Autofill
+                    document.getElementById('nombre').value = c.nombre;
+                    document.getElementById('apellido').value = c.apellido;
+                    document.getElementById('telefono').value = c.telefono;
+                    document.getElementById('email').value = c.email;
+                    document.getElementById('domicilio').value = c.domicilio;
+                    document.getElementById('localidad').value = c.localidad;
+                    
+                    // Block submit to avoid DB duplicate failure
+                    if (submitBtn) submitBtn.disabled = true;
+                    
+                    document.getElementById('btn-autofill-edit').addEventListener('click', function() {
+                        abrirEditar(c.id, c.dni_cuil, c.nombre, c.apellido, c.telefono, c.email, c.domicilio, c.localidad);
+                    });
+                } else {
+                    warningMsg.classList.add('hidden');
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+        
+        dniInput.addEventListener('input', function() {
+            warningMsg.classList.add('hidden');
+            if (submitBtn) submitBtn.disabled = false;
+        });
+    }
+
     // Lógica para el Buscador en Tiempo Real con sanitización y de-bounce
     const searchInput = document.getElementById('search-input');
     const tbody = document.getElementById('clientes-table-body');

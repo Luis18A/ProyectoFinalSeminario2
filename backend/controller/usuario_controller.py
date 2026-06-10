@@ -8,8 +8,16 @@ class UsuarioController:
         Recibe los datos del formulario (request.form) y crea el usuario en la BD.
         """
         try:
+            username = datos_formulario.get('username')
+            if not username:
+                return False, "El nombre de usuario es requerido."
+            username = username.strip().lower()
+            
+            if Usuario.obtener_por_username(username):
+                return False, "El nombre de usuario ya existe."
+
             Usuario.crear(
-                username=datos_formulario.get('username'),
+                username=username,
                 password=datos_formulario.get('password'),
                 nombre=datos_formulario.get('nombre'),
                 apellido=datos_formulario.get('apellido'),
@@ -47,9 +55,21 @@ class UsuarioController:
 
     @staticmethod
     def actualizar_usuario(usuario_id, datos_formulario):
-        usuario = Usuario.obtener_por_id(usuario_id)
-        if usuario:
-            usuario.username = datos_formulario.get('username')
+        try:
+            usuario = Usuario.obtener_por_id(usuario_id)
+            if not usuario:
+                return False, "Usuario no encontrado."
+                
+            username = datos_formulario.get('username')
+            if not username:
+                return False, "El nombre de usuario es requerido."
+            username = username.strip().lower()
+            
+            existente = Usuario.obtener_por_username(username)
+            if existente and existente.id != usuario_id:
+                return False, "El nombre de usuario ya existe."
+                
+            usuario.username = username
             usuario.nombre = datos_formulario.get('nombre')
             usuario.apellido = datos_formulario.get('apellido')
             usuario.rol_id = int(datos_formulario.get('rol_id'))
@@ -62,7 +82,21 @@ class UsuarioController:
                 usuario.password = generate_password_hash(password)
             
             db.session.commit()
-            return True
-        return False
+            return True, "Usuario actualizado correctamente."
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error al actualizar el usuario: {str(e)}"
+
+    @staticmethod
+    def obtener_datos_secretaria():
+        """
+        Retorna clientes, usuarios y ordenes para la vista de secretaria.
+        """
+        from backend.models.Cliente import Cliente
+        from backend.models.OrdenServicio import OrdenServicio
+        clientes = Cliente.query.all()
+        usuarios = Usuario.obtener_todos()
+        ordenes = OrdenServicio.get_all()
+        return clientes, usuarios, ordenes
 
 

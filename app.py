@@ -10,6 +10,7 @@ from backend.models.Cliente import Cliente
 from backend.models.Equipo import Equipo
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models.Notificacion import Notificacion
 
 # Importar los Blueprints de las rutas (ahora dentro de backend)
 from backend.routes.vistas import vistas_bp
@@ -30,6 +31,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:54
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'techflow_secret_key_123' # Necesario para sesiones y flash messages
 
+from flask_wtf.csrf import CSRFProtect
+csrf = CSRFProtect(app)
+
 db.init_app(app)
 
 # REGISTRO DE RUTAS (Blueprints)
@@ -39,6 +43,17 @@ app.register_blueprint(cliente_bp)
 app.register_blueprint(tipoDispositivo_bp)
 app.register_blueprint(equipo_bp)
 app.register_blueprint(ordenServicio_bp)
+
+@app.context_processor
+def inject_notifications():
+    from flask import session
+    from backend.models.Notificacion import Notificacion
+    usuario_id = session.get('usuario_id')
+    if usuario_id:
+        notificaciones = Notificacion.query.filter_by(usuario_id=usuario_id).order_by(Notificacion.fecha_creacion.desc()).limit(15).all()
+        cant_no_leidas = Notificacion.query.filter_by(usuario_id=usuario_id, leido=False).count()
+        return dict(global_notifications=notificaciones, global_unread_count=cant_no_leidas)
+    return dict(global_notifications=[], global_unread_count=0)
 
 # MANEJO GLOBAL DE ERRORES (Navegación manual no permitida o inexistente)
 @app.errorhandler(404)

@@ -1,4 +1,6 @@
-{% include 'header.html' %}
+{% extends 'base.html' %}
+{% block title %}Métricas y Análisis | TechFlow{% endblock %}
+{% block content %}
 
 <style>
     @keyframes grow-horizontal {
@@ -350,7 +352,7 @@
                 <div class="relative w-full sm:w-64">
                     <span
                         class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">search</span>
-                    <input
+                    <input id="audit-search-input"
                         class="w-full border border-zinc-200 py-2 pl-9 pr-4 font-mono text-xs focus:border-primary focus:outline-none"
                         placeholder="BUSCAR_SISTEMA..." type="text" />
                 </div>
@@ -367,11 +369,9 @@
                             </th>
                             <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Actor
                             </th>
-                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Estado
-                            </th>
                         </tr>
                     </thead>
-                    <tbody class="text-xs">
+                    <tbody class="text-xs" id="audit-table-body">
                         {% for h in recent_history %}
                         <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors cursor-pointer group">
                              <td class="py-4 px-6 font-mono text-zinc-400">
@@ -392,15 +392,10 @@
                                  </div>
                                  {{ h.usuario.username if h.usuario else 'Sistema' }}
                              </td>
-                             <td class="py-4 px-6">
-                                 <span class="px-2 py-1 bg-emerald-50 text-emerald-600 font-bold uppercase text-[8px] border border-emerald-100">
-                                     Completado
-                                 </span>
-                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                             <td colspan="5" class="py-8 px-6 text-center text-zinc-400 font-mono">
+                             <td colspan="4" class="py-8 px-6 text-center text-zinc-400 font-mono">
                                  Sin logs de auditoría registrados.
                              </td>
                         </tr>
@@ -412,8 +407,31 @@
     </div>
 </main>
 
-</div> <!-- Cierre main-content -->
-
-</body>
-
-</html>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('audit-search-input');
+    const tableBody = document.getElementById('audit-table-body');
+    
+    if (searchInput && tableBody) {
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                // Si es la fila de estado vacío, no hacer nada
+                if (row.cells.length === 1 && row.cells[0].textContent.includes('Sin logs')) {
+                    return;
+                }
+                
+                const text = row.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

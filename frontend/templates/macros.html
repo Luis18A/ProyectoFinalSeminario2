@@ -1,0 +1,18 @@
+{% macro badge_estado(estado) %}
+  {% set estado_clean = estado|string|trim %}
+  <span class="px-2 py-1 font-bold uppercase text-[10px] tracking-wider border inline-flex items-center gap-1
+    {% if estado_clean == 'Pendiente' %} bg-yellow-50 text-yellow-700 border-yellow-200
+    {% elif estado_clean == 'Diagnostico' %} bg-blue-50 text-blue-700 border-blue-200
+    {% elif estado_clean == 'Presupuestado' %} bg-purple-50 text-purple-700 border-purple-200
+    {% elif estado_clean == 'Reparacion' %} bg-orange-50 text-orange-700 border-orange-200
+    {% elif estado_clean == 'Listo' %} bg-green-50 text-green-700 border-green-200
+    {% elif estado_clean == 'Entregado' %} bg-emerald-50 text-emerald-700 border-emerald-200
+    {% else %} bg-zinc-100 text-zinc-600 border-zinc-200 {% endif %}">
+    <span class="material-symbols-outlined text-[12px]">
+        {% if estado_clean == 'Listo' or estado_clean == 'Entregado' %}check_circle
+        {% elif estado_clean == 'Pendiente' %}info
+        {% else %}build{% endif %}
+    </span>
+    {{ estado_clean }}
+  </span>
+{% endmacro %}

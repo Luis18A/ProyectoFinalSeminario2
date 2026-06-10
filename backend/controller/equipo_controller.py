@@ -86,8 +86,7 @@ class EquipoController:
             equipo_existente = Equipo.get_por_numero_serie(num_serie)
             if equipo_existente and equipo_existente.id != equipo_id:
                 return False, f"El número de serie {num_serie} ya está registrado en otro equipo."
-            
-            equipo.tipo_dispositivo_id = tipo_id
+            equipo.tipo_id = tipo_id
             equipo.marca = datos_formulario.get('marca')
             equipo.modelo = datos_formulario.get('modelo')
             equipo.numero_serie = num_serie
@@ -127,7 +126,7 @@ class EquipoController:
         equipos = []
 
         if cliente_id:
-            cliente = Cliente.query.get(cliente_id)
+            cliente = db.session.get(Cliente, cliente_id)
             if cliente:
                 equipos = Equipo.get_por_cliente(cliente_id)
                 

@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% block title %}Crear Orden de Servicio | TechFlow{% endblock %}
+{% block content %}
+
+<!-- Main Content Canvas -->
+<main class="flex-1 p-4 md:p-10 overflow-y-auto bg-background animate-in fade-in duration-300">
+    <div class="max-w-3xl mx-auto flex flex-col gap-6">
+
+        <!-- Page Header -->
+        <div class="flex justify-between items-end mb-2">
+            <div>
+                <h1 class="font-headline-xl text-primary mb-1">Nueva Orden de Servicio</h1>
+                <p class="font-body-md text-on-surface-variant">Registrá el ingreso de un equipo al taller y generá su ticket de seguimiento.</p>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white border border-[#1A1A1A]/10 shadow-sm flex flex-col">
+            <div class="p-6 border-b border-[#1A1A1A]/10 bg-zinc-50 flex items-center justify-between">
+                <h2 class="text-lg font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">add_circle</span>
+                    Formulario de Ingreso
+                </h2>
+                <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-label-mono">ITSM Terminal</span>
+            </div>
+
+            <form id="form-orden" method="POST" action="{{ url_for('ordenServicio.crear_ordenServicio') }}"
+                class="p-6 flex flex-col gap-6">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Redirect next path back to order creation after submit -->
+                <input type="hidden" name="next" value="{{ url_for('ordenServicio.crear_orden_view') }}">
+
+                <!-- Usuario técnico que recibe (oculto, tomado de sesión) -->
+                <input type="hidden" name="usuario_id" value="{{ session.get('usuario_id') }}">
+
+                <!-- 1. Seleccionar Cliente -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                            Cliente *
+                        </label>
+                        <span class="text-[9px] text-zinc-400">(Si no existe, podés registrarlo rápido)</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="select-cliente" name="cliente_id" required
+                            class="flex-grow bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none">
+                            <option value="">— Seleccionar cliente —</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}">
+                                {{ cliente.nombre }} {{ cliente.apellido }} ({{ cliente.dni_cuil }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" onclick="abrirCrearClienteRapido()"
+                                class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center"
+                                title="Registrar Cliente Nuevo Rápido">
+                            <span class="material-symbols-outlined text-[18px]">person_add</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Seleccionar Equipo (carga dinámicamente vía AJAX) -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                            Equipo *
+                        </label>
+                        <span class="text-[9px] text-zinc-400">(Seleccioná o registrá el dispositivo a reparar)</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="select-equipo" name="equipo_id" required disabled
+                            class="flex-grow bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none disabled:opacity-40">
+                            <option value="">— Primero seleccione un cliente —</option>
+                        </select>
+                        <button type="button" id="btn-nuevo-equipo-rapido" onclick="abrirCrearEquipoRapido()" disabled
+                                class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center disabled:opacity-40"
+                                title="Registrar Equipo Nuevo Rápido">
+                            <span class="material-symbols-outlined text-[18px]">devices_other</span>
+                        </button>
+                    </div>
+                    <p id="equipo-hint" class="text-[10px] text-zinc-400 hidden">
+                        ⚠ Este cliente no tiene equipos registrados.
+                    </p>
+                </div>
+
+                <!-- 3. Falla Reportada -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        Falla Reportada *
+                    </label>
+                    <textarea name="falla_reportada" required minlength="5" rows="4" maxlength="100"
+                        placeholder="Ej: No enciende, pantalla rota, teclado sin respuesta..."
+                        class="bg-zinc-50 border border-zinc-100 p-3 text-sm focus:ring-0 focus:border-primary transition-all outline-none resize-none mt-1"></textarea>
+                </div>
+
+                <!-- 4. Accesorios -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        Accesorios / Pertenencias
+                    </label>
+                    <input type="text" name="accesorios" value="Sin accesorios" maxlength="100"
+                        placeholder="Ej: cargador, funda, mouse..."
+                        class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none">
+                </div>
+
+                <!-- 5. Costo estimado (opcional) -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        Costo Estimado (opcional)
+                    </label>
+                    <input type="number" name="costo" step="0.01" min="0" placeholder="0.00"
+                        class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none font-label-mono">
+                </div>
+
+                <!-- Botón Submit -->
+                <button type="submit"
+                    class="w-full bg-primary text-white py-4 font-bold uppercase hover:bg-secondary transition-colors flex items-center justify-center gap-2 mt-4">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    Registrar Orden e Ingresar
+                </button>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<!-- Modal Registro Rápido de Cliente -->
+<div id="modal-cliente-rapido" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/10 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-lg font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">person_add</span>
+                Registrar Cliente Rápido
+            </h2>
+            <button type="button" onclick="cerrarCrearClienteRapido()" class="text-zinc-400 hover:text-zinc-950 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-cliente-rapido" class="p-6 flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">DNI / CUIL *</label>
+                <input name="dni" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none font-label-mono" placeholder="Ej: 35123456">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Nombre *</label>
+                    <input name="nombre" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Juan">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Apellido *</label>
+                    <input name="apellido" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Pérez">
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Teléfono *</label>
+                <input name="telefono" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="11 9876-5432">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Email (Opcional)</label>
+                <input name="email" class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="juan.perez@ejemplo.com">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Domicilio *</label>
+                    <input name="domicilio" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Av. Siempreviva 742">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Localidad *</label>
+                    <input name="localidad" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Springfield">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-primary hover:bg-secondary text-white py-3 font-bold uppercase transition-colors flex items-center justify-center gap-2 mt-2">
+                <span class="material-symbols-outlined text-sm">save</span>
+                Guardar Cliente
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Registro Rápido de Equipo -->
+<div id="modal-equipo-rapido" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/10 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-lg font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">devices</span>
+                Registrar Equipo Rápido
+            </h2>
+            <button type="button" onclick="cerrarCrearEquipoRapido()" class="text-zinc-400 hover:text-zinc-950 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-equipo-rapido" class="p-6 flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="rapido-cliente-id" name="cliente_id">
+            
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-label-mono">Cliente Seleccionado</label>
+                <div id="rapido-cliente-nombre" class="font-bold text-sm bg-zinc-50 p-2 border border-zinc-100 text-zinc-600">Ninguno</div>
+            </div>
+            
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-label-mono">Tipo de Dispositivo *</label>
+                <select name="tipo_dispositivo_id" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none">
+                    <option value="">— Seleccionar tipo —</option>
+                    {% for tipo in tipo_dispositivos %}
+                    <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Marca *</label>
+                    <input name="marca" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="HP, Asus, Lenovo...">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Modelo *</label>
+                    <input name="modelo" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="ZenBook, ThinkPad...">
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Número de Serie *</label>
+                <input name="numero_serie" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none font-label-mono uppercase" placeholder="S/N o Service Tag">
+            </div>
+            
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Descripción / Estado Inicial</label>
+                <textarea name="descripcion" rows="2" class="bg-zinc-50 border border-zinc-100 p-3 text-sm focus:ring-0 focus:border-primary transition-all outline-none resize-none mt-1" placeholder="Ej: Rayas en tapa, sin cargador..."></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-primary hover:bg-secondary text-white py-3 font-bold uppercase transition-colors flex items-center justify-center gap-2 mt-2">
+                <span class="material-symbols-outlined text-sm">save</span>
+                Guardar Equipo
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/secretary_view.js') }}"></script>
+
+{% endblock %}

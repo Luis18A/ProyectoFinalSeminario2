@@ -18,4 +18,6 @@ class AdminController:
                 usuario_id=usuario_id,
                 observacion_tecnica="Exportación de respaldo de base de datos completa descargado por Administrador."
             )
+            from database import db
+            db.session.commit()
         return backup_dict

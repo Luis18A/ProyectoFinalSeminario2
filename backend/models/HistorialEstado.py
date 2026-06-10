@@ -7,7 +7,7 @@ class HistorialEstado(db.Model):
     orden_id = db.Column(db.Integer, db.ForeignKey('orden_servicio.id'), nullable=False)
     estado_anterior = db.Column(db.String(50), nullable=False)
     estado_nuevo = db.Column(db.String(50), nullable=False)
-    fecha_cambio = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_cambio = db.Column(db.DateTime, default=datetime.now)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     observacion_tecnica = db.Column(db.Text)
 
@@ -31,7 +31,7 @@ class HistorialEstado(db.Model):
             observacion_tecnica=observacion_tecnica
         )
         db.session.add(registro)
-        db.session.commit()
+        db.session.flush()
 
     @classmethod
     def get_historial_orden(cls, orden_id):
@@ -43,7 +43,20 @@ class HistorialEstado(db.Model):
 
     @classmethod
     def get_historial_fecha(cls, fecha_cambio):
-        return cls.query.filter_by(fecha_cambio=fecha_cambio).all()
+        """
+        Filtra los registros de historial por una fecha determinada (mismo día),
+        tolerando diferencias de hora/minuto/segundo.
+        """
+        from datetime import datetime
+        if isinstance(fecha_cambio, str):
+            try:
+                fecha_cambio = datetime.fromisoformat(fecha_cambio).date()
+            except ValueError:
+                return []
+        elif isinstance(fecha_cambio, datetime):
+            fecha_cambio = fecha_cambio.date()
+            
+        return cls.query.filter(db.func.cast(cls.fecha_cambio, db.Date) == fecha_cambio).all()
     
     @classmethod
     def get_historial_tickets(cls, orden_id):

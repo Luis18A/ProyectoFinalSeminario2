@@ -1,4 +1,6 @@
-{% include 'header.html' %}
+{% extends 'base.html' %}
+{% block title %}Gestión de Clientes | TechFlow{% endblock %}
+{% block content %}
 
 <!-- Canvas Area -->
 <main class="flex-1 p-container-margin overflow-y-auto">
@@ -10,26 +12,26 @@
             <h1 class="font-headline-lg text-primary tracking-tight">Gestión de Clientes</h1>
             <p class="font-body-md text-on-surface-variant">Administrá tu cartera de clientes y sus equipos.</p>
         </div>
-        <button class="btn-swiss btn-primary">
+        <button class="btn-swiss btn-primary" onclick="const dniInput = document.getElementById('dni'); if(dniInput) { dniInput.scrollIntoView({ behavior: 'smooth' }); dniInput.focus(); }">
             <span class="material-symbols-outlined text-sm">add</span>
             Nuevo Cliente
         </button>
     </div>
 
     <!-- Bento Grid Structure -->
-    <div class="grid grid-cols-12 gap-grid-gutter">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-grid-gutter">
         <!-- Main Search Bar -->
         <div class="col-span-12 bento-card">
             <div class="flex items-center gap-sm">
                 <span class="material-symbols-outlined text-on-surface-variant">search</span>
                 <input id="search-input" class="input-swiss flex-1" placeholder="Buscar por nombre, apellido o DNI..."
-                    type="text" />
+                    type="text" value="{{ search_query or '' }}" />
                 <button class="btn-swiss text-accent hover:underline uppercase tracking-widest p-0">Buscar</button>
             </div>
         </div>
 
         <!-- Data Table Container -->
-        <div class="col-span-8 bento-card p-0 flex flex-col min-h-[500px] overflow-hidden">
+        <div class="lg:col-span-8 bento-card p-0 flex flex-col min-h-[500px] overflow-hidden">
             <div class="table-container border-none h-full">
                 <table class="table-swiss">
                     <thead>
@@ -90,12 +92,13 @@
         </div>
 
         <!-- Registration Form -->
-        <div class="col-span-4 bento-card flex flex-col h-full">
+        <div class="lg:col-span-4 bento-card flex flex-col h-fit sticky top-24">
             <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
                 <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nuevo Cliente</h2>
                 <span class="material-symbols-outlined text-on-surface-variant text-sm">person_add</span>
             </div>
             <form class="flex flex-col gap-6 flex-1" method="post" action="/clientes">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="flex flex-col gap-1">
                     <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">DNI / CUIL</label>
                     <input id="dni" name="dni" class="input-swiss" placeholder="Ingresar documento" type="text"
@@ -157,6 +160,7 @@
             </button>
         </div>
         <form id="form-editar" class="p-8 flex flex-col gap-6" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="flex flex-col gap-1">
                 <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">DNI / CUIL</label>
                 <input id="edit-dni" class="input-swiss bg-zinc-50" type="text" readonly disabled />
@@ -200,7 +204,4 @@
 
 <script src="{{ url_for('static', filename='js/gestion_cliente.js') }}"></script>
 
-</div> <!-- Cierre de #main-content (abierto en header.html) -->
-</body>
-
-</html>
+{% endblock %}

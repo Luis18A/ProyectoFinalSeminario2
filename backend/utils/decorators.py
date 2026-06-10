@@ -2,14 +2,11 @@ from functools import wraps
 from flask import session, redirect, url_for, flash
 
 def _redirect_por_rol(rol):
-    """Auxiliar para redirigir al usuario según su rol de forma tolerante a errores ortográficos."""
+    """Auxiliar para redirigir al usuario según su rol de forma normalizada."""
     redirecciones = {
         'técnico': 'usuarios.technician',
-        'tecnico': 'usuarios.technician',
-        'secretario': 'usuarios.secretary',
-        'secretaria': 'usuarios.secretary',
-        'administrador': 'vistas.dashboard',
-        'administrdor': 'vistas.dashboard'
+        'secretario': 'ordenServicio.listar_ordenes_view',
+        'administrador': 'vistas.dashboard'
     }
     dest = redirecciones.get(rol.lower(), 'vistas.login')
     return redirect(url_for(dest))

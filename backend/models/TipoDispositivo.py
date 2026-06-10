@@ -21,7 +21,7 @@ class TipoDispositivo(db.Model):
 
     @classmethod
     def obtener_por_id(cls, id):
-        return cls.query.get(id)
+        return db.session.get(cls, id)
 
     @classmethod
     def get_por_descripcion(cls, termino):

@@ -1,5 +1,17 @@
 // Lógica Interactiva para Técnicos (Presupuestos, Cálculos y Scraping)
 document.addEventListener('DOMContentLoaded', () => {
+    // Proteger las propiedades críticas de ticketConfig contra manipulación en consola
+    if (window.ticketConfig) {
+        try {
+            Object.defineProperty(window.ticketConfig, 'ordenId', { writable: false, configurable: false });
+            Object.defineProperty(window.ticketConfig, 'puedeEditar', { writable: false, configurable: false });
+            Object.defineProperty(window.ticketConfig, 'puedeEditarCostos', { writable: false, configurable: false });
+            Object.defineProperty(window.ticketConfig, 'ordenCostoInicial', { writable: false, configurable: false });
+        } catch (e) {
+            console.warn('No se pudo congelar ticketConfig:', e);
+        }
+    }
+
     const config = window.ticketConfig || {
         repuestosActivos: [],
         ordenId: null,
@@ -20,11 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputCostoTotal = document.getElementById('input-costo-total');
 
     function recalcularDesglose() {
-        const totalRepuestos = repuestosActivos.reduce((acc, curr) => acc + curr.precio, 0);
+        const totalRepuestos = Math.max(0, repuestosActivos.reduce((acc, curr) => acc + curr.precio, 0));
         
         let manoObra = 0;
         if (inputManoObra) {
             manoObra = parseFloat(inputManoObra.value) || 0;
+            if (manoObra < 0) {
+                manoObra = 0;
+                inputManoObra.value = "0.00";
+            }
         }
         
         const total = manoObra + totalRepuestos;
@@ -41,7 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (displayLabor) displayLabor.textContent = '$' + manoObra.toFixed(2);
         if (displayTotal) {
             if (inputCostoTotal && !inputCostoTotal.hasAttribute('readonly')) {
-                const manualTotal = parseFloat(inputCostoTotal.value) || 0;
+                let manualTotal = parseFloat(inputCostoTotal.value) || 0;
+                if (manualTotal < 0) {
+                    manualTotal = 0;
+                    inputCostoTotal.value = "0.00";
+                }
                 displayTotal.textContent = '$' + manualTotal.toFixed(2);
             } else {
                 displayTotal.textContent = '$' + total.toFixed(2);
@@ -53,6 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('tabla-repuestos-container');
         const itemsCountLabel = document.getElementById('repuestos-count-label');
         if (!container) return;
+
+        const selectEstadoEl = document.getElementById('select-estado');
+        const estadoSeleccionado = selectEstadoEl ? selectEstadoEl.value : '';
+        const ocultarPorEstado = ['REPARACION', 'LISTO', 'ENTREGADO'].includes(estadoSeleccionado);
+        const mostrarAcciones = puedeEditar && puedeEditarCostos && !ocultarPorEstado;
 
         if (itemsCountLabel) {
             itemsCountLabel.textContent = `ÍTEMS: ${repuestosActivos.length}`;
@@ -123,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="p-3 text-right font-bold text-zinc-800">
                             $${r.precio.toFixed(2)}
                         </td>
-                        ${puedeEditar && puedeEditarCostos ? `
+                        ${mostrarAcciones ? `
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <button type="button" class="btn-editar-repuesto text-blue-500 hover:text-blue-700 transition-colors" data-idx="${idx}" title="Editar repuesto">
@@ -147,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <th class="p-3">Proveedor</th>
                             <th class="p-3">Producto</th>
                             <th class="p-3 text-right">Precio</th>
-                            ${puedeEditar && puedeEditarCostos ? '<th class="p-3 text-center">Acciones</th>' : ''}
+                            ${mostrarAcciones ? '<th class="p-3 text-center">Acciones</th>' : ''}
                         </tr>
                     </thead>
                     <tbody class="text-xs divide-y divide-zinc-50">
@@ -210,13 +235,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputManoObra) {
         const manoObraInicial = Math.max(0, ordenCostoInicial - totalRepuestosInicial);
         inputManoObra.value = manoObraInicial.toFixed(2);
-        if (inputCostoTotal && inputCostoTotal.hasAttribute('readonly')) {
-            inputManoObra.addEventListener('input', recalcularDesglose);
-        }
+        
+        // Evitar números negativos en tiempo real
+        inputManoObra.addEventListener('input', () => {
+            if (parseFloat(inputManoObra.value) < 0) {
+                inputManoObra.value = 0;
+            }
+            recalcularDesglose();
+        });
     }
     
     if (inputCostoTotal && !inputCostoTotal.hasAttribute('readonly')) {
+        // Evitar números negativos en tiempo real
         inputCostoTotal.addEventListener('input', () => {
+            if (parseFloat(inputCostoTotal.value) < 0) {
+                inputCostoTotal.value = 0;
+            }
             const displayTotal = document.getElementById('costo-total-display');
             if (displayTotal) {
                 const val = parseFloat(inputCostoTotal.value) || 0;
@@ -225,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    renderRepuestos();
+    // renderRepuestos() is called inside actualizarVisibilidadPresupuesto() below
 
     // Evitar que el formulario se envíe al presionar ENTER en cualquier input
     const formActualizar = document.querySelector('form[action*="/ordenServicio/editar/"]');
@@ -273,6 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/agregar`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
                 body: formData
             });
             const data = await resp.json();
@@ -304,7 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/eliminar/${idx}`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
             });
             const data = await resp.json();
             if (data.success) {
@@ -328,6 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/editar/${idx}`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
                 body: formData
             });
             const data = await resp.json();
@@ -360,10 +403,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (formActualizar) {
                 const formD = new FormData(formActualizar);
                 formD.set('estado', 'PRESUPUESTADO');
-                formD.set('observaciones', 'Presupuesto de repuestos y mano de obra enviado a secretaría para confirmación del cliente.');
                 
                 const response = await fetch(formActualizar.action, {
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
                     body: formD
                 });
                 
@@ -399,7 +444,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.innerHTML = '';
         
         try {
-            const resp = await fetch(`http://localhost:8000/search?q=${encodeURIComponent(query)}`);
+            const scraperHost = window.location.hostname;
+            const resp = await fetch(`http://${scraperHost}:8000/search?q=${encodeURIComponent(query)}`);
             if (!resp.ok) {
                 throw new Error('Servidor de Scraping no responde');
             }
@@ -515,6 +561,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
                 body: formData
             });
             
@@ -531,4 +580,114 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     window.confirmarPresupuestoSecretaria = confirmarPresupuestoSecretaria;
+
+    // Rechazar Presupuesto por parte de la Secretaria (desde vista detalle)
+    async function rechazarPresupuestoSecretaria() {
+        const motivo = prompt("Ingrese el motivo del rechazo del presupuesto (ej: Presupuesto muy elevado, el cliente retira el equipo):");
+        if (motivo === null) {
+            return;
+        }
+        
+        const motivoLimpio = motivo.trim();
+        if (!motivoLimpio) {
+            window.showToast('Debe ingresar un motivo para poder rechazar el presupuesto.', 'error');
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('estado', 'DIAGNOSTICO');
+            formData.append('observaciones', `Rechazado por el cliente. Motivo: ${motivoLimpio}`);
+            
+            const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: formData
+            });
+            
+            const data = await resp.json();
+            if (data.success) {
+                window.showToast('Presupuesto rechazado. La orden volvió al estado de diagnóstico.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                window.showToast('Error: ' + data.message, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            window.showToast('Ocurrió un error al rechazar el presupuesto.', 'error');
+        }
+    }
+    window.rechazarPresupuestoSecretaria = rechazarPresupuestoSecretaria;
+
+    // Entregar Equipo por parte de la Secretaria (desde vista detalle)
+    async function entregarEquipoSecretaria() {
+        if (!confirm('¿Registrar la entrega formal del equipo y cerrar el ciclo de la orden?')) {
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('estado', 'ENTREGADO');
+            formData.append('observaciones', 'Equipo entregado formalmente al cliente. Ciclo de servicio finalizado.');
+            
+            const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: formData
+            });
+            
+            const data = await resp.json();
+            if (data.success) {
+                window.showToast('Equipo entregado y ciclo cerrado exitosamente.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                window.showToast('Error: ' + data.message, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            window.showToast('Ocurrió un error al registrar la entrega del equipo.', 'error');
+        }
+    }
+    window.entregarEquipoSecretaria = entregarEquipoSecretaria;
+
+    // Lógica para mostrar/ocultar secciones de presupuesto según el estado seleccionado
+    const selectEstado = document.getElementById('select-estado');
+    const seccionAgregarManual = document.getElementById('seccion-agregar-manual');
+    const seccionBuscadorRepuestos = document.getElementById('seccion-buscador-repuestos');
+    const contenedorEnviarPresupuesto = document.getElementById('contenedor-enviar-presupuesto');
+
+    function actualizarVisibilidadPresupuesto() {
+        if (selectEstado) {
+            const estadoSeleccionado = selectEstado.value;
+            const ocultar = ['REPARACION', 'LISTO', 'ENTREGADO'].includes(estadoSeleccionado);
+
+            if (ocultar) {
+                if (seccionAgregarManual) seccionAgregarManual.classList.add('hidden');
+                if (seccionBuscadorRepuestos) seccionBuscadorRepuestos.classList.add('hidden');
+                if (contenedorEnviarPresupuesto) contenedorEnviarPresupuesto.classList.add('hidden');
+                if (inputManoObra) inputManoObra.disabled = true;
+            } else {
+                if (seccionAgregarManual) seccionAgregarManual.classList.remove('hidden');
+                if (seccionBuscadorRepuestos) seccionBuscadorRepuestos.classList.remove('hidden');
+                if (contenedorEnviarPresupuesto) contenedorEnviarPresupuesto.classList.remove('hidden');
+                if (inputManoObra) inputManoObra.disabled = !(puedeEditar && puedeEditarCostos);
+            }
+        }
+        
+        // Renderizar la tabla de repuestos cotizados
+        renderRepuestos();
+    }
+
+    if (selectEstado) {
+        selectEstado.addEventListener('change', actualizarVisibilidadPresupuesto);
+        // Inicializar visibilidad al cargar la página
+        actualizarVisibilidadPresupuesto();
+    } else {
+        // Si no existe select-estado (modo de lectura), renderizar repuestos de todos modos
+        renderRepuestos();
+    }
 });

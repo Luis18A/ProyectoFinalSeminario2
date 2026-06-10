@@ -1,4 +1,8 @@
-{% include 'header.html' %}
+{% extends 'base.html' %}
+{% block title %}Gestión de Equipos | TechFlow{% endblock %}
+{% block content %}
+{% from 'macros.html' import badge_estado %}
+
 
 <!-- Canvas Area -->
 <main class="flex-1 p-container-margin overflow-y-auto">
@@ -22,13 +26,14 @@
             <div class="bento-card p-6 h-full flex flex-col">
                 <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Registrar Dispositivo</h2>
                 <form class="flex flex-col gap-6 flex-1" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Tipo de
                             Equipo</label>
                         {% if cliente %}
                         <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
                         {% endif %}
-                        <select name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent">
+                        <select name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent" required>
                             <option disabled selected value="">Seleccionar tipo</option>
                             {% for tipo in tipo_dispositivos %}
                             <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
@@ -37,19 +42,19 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Marca</label>
-                            <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" />
+                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Marca *</label>
+                            <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Modelo</label>
-                            <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text" />
+                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Modelo *</label>
+                            <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text" required />
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Número de Serie
+                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Número de Serie *
                             (S/N)</label>
                         <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX"
-                            type="text" />
+                            type="text" required />
                     </div>
                     <div class="flex flex-col gap-1 flex-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Descripción
@@ -98,22 +103,48 @@
                                         </span>
                                         {{ equipo.tipo.descripcion }} - {{ equipo.marca }}
                                     </div>
+                                    <!-- Hidden service orders list for AJAX-like modal populating -->
+                                    <div id="ordenes-equipo-{{ equipo.id }}" class="hidden">
+                                        <div class="space-y-4">
+                                            {% if equipo.ordenes %}
+                                                {% for o in equipo.ordenes %}
+                                                <div class="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-200">
+                                                    <div>
+                                                        <p class="font-bold text-xs text-zinc-800">Ticket #{{ o.id }}</p>
+                                                        <p class="text-xs font-semibold text-zinc-600 mt-1">Falla: {{ o.falla_reportada }}</p>
+                                                        <p class="text-[10px] text-zinc-400 font-label-mono mt-0.5">
+                                                            Ingreso: {{ o.fecha_recepcion.strftime('%d/%m/%Y %H:%M') if o.fecha_recepcion else '—' }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        {{ badge_estado(o.estado.value) }}
+                                                        <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=o.id) }}"
+                                                           class="px-3 py-2 bg-zinc-950 text-white font-label-mono text-[9px] uppercase tracking-wider font-bold hover:bg-emerald-600 transition-colors flex items-center gap-1 shadow-sm">
+                                                            <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                            Ver
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="text-xs text-zinc-400 italic text-center py-4">Este equipo no tiene órdenes de servicio registradas.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="font-label-mono text-[11px] text-on-surface-variant">{{ equipo.numero_serie
                                     }}</td>
                                 <td class="text-on-surface-variant text-xs">{{ equipo.descripcion }}</td>
                                 <td class="text-center">
-                                    <button
-                                        class="px-3 py-1 bg-amber-100 text-amber-700 border border-amber-200 font-label-bold text-[10px] uppercase tracking-wider flex items-center gap-1 mx-auto">
-                                        <span class="material-symbols-outlined text-[14px]">build</span>
-                                        Taller
-                                    </button>
+                                    {{ badge_estado(equipo.estado_actual) }}
                                 </td>
                                 <td class="text-right">
-                                    <div class="flex justify-end gap-2">
+                                    <div class="flex justify-end gap-1.5 items-center">
                                         <button
-                                            class="px-3 py-1 border border-border text-on-surface-variant font-label-bold text-[10px] uppercase tracking-wider hover:bg-zinc-50 transition-colors">
-                                            Cambiar Estado
+                                            onclick="mostrarOrdenesEquipo('{{ equipo.id }}', '{{ equipo.tipo.descripcion }} - {{ equipo.marca }} {{ equipo.modelo }}')"
+                                            class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                            title="Ver órdenes de servicio asociadas">
+                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
                                         </button>
                                         <button
                                             onclick="abrirEditar('{{ equipo.id }}', '{{ equipo.tipo_id }}', '{{ equipo.marca }}', '{{ equipo.modelo }}', '{{ equipo.numero_serie }}', '{{ equipo.descripcion }}')"
@@ -146,18 +177,19 @@
                 <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Nuevo Tipo de Equipo</h2>
                 <form class="flex flex-col gap-6 flex-1"
                     action="{{ url_for('tipoDispositivo.crear_tipo_dispositivo') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% if cliente %}
                     <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
                     {% endif %}
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Dispositivo</label>
+                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Dispositivo *</label>
                         <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->
                         <input name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora"
-                            type="text" />
+                            type="text" required />
                     </div>
 
                     <button class="btn-swiss btn-primary w-full justify-center py-4 mt-auto" type="submit">
-                        Guardar Equipo
+                        Guardar Tipo de Dispositivo
                     </button>
                 </form>
             </div>
@@ -229,6 +261,8 @@
             </button>
         </div>
         <form id="form-editar-equipo" class="p-8 flex flex-col gap-6" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="edit-id" name="id">
             {% if cliente %}
             <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
             {% endif %}
@@ -271,9 +305,41 @@
     </div>
 </div>
 
+<!-- Modal Ver Órdenes de Servicio -->
+<div id="modal-ver-ordenes"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div
+        class="bg-white w-full max-w-lg bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="font-headline-md text-primary tracking-tight flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">history</span>
+                Historial de Órdenes de Servicio
+            </h2>
+            <button onclick="cerrarModalOrdenes()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+            <div>
+                <p class="font-label-bold text-on-surface-variant uppercase text-[10px] tracking-wider">Equipo Seleccionado</p>
+                <h3 id="modal-equipo-nombre" class="font-headline-sm text-primary mt-1"></h3>
+            </div>
+            <div class="border-t border-border pt-4">
+                <p class="font-label-bold text-on-surface-variant uppercase text-[10px] tracking-wider mb-3">Órdenes Vinculadas</p>
+                <div id="modal-ordenes-contenido" class="max-h-[350px] overflow-y-auto pr-1 flex flex-col gap-3">
+                    <!-- Se poblará dinámicamente -->
+                </div>
+            </div>
+            <div class="flex gap-4 mt-2">
+                <button type="button" onclick="cerrarModalOrdenes()"
+                    class="btn-swiss w-full justify-center border border-border hover:bg-zinc-100 transition-colors py-3">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/gestion_equipos.js') }}"></script>
 
-</div> <!-- Cierre de #main-content (abierto en header.html) -->
-</body>
-
-</html>
+{% endblock %}

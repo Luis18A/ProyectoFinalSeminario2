@@ -17,13 +17,12 @@ class AuthController:
             
         if not usuario.verificar_password(password):
             usuario.intentos_fallidos += 1
-            db.session.commit()
-
             if usuario.intentos_fallidos >= 5:
                 usuario.activo = False
                 db.session.commit()
                 return None, 'Esta cuenta ha sido bloqueada tras 5 intentos fallidos de inicio de sesión. Contacte al Administrador.'
-
+            
+            db.session.commit()
             return None, f'Usuario o contraseña incorrectos. Le quedan {5 - usuario.intentos_fallidos} intentos antes de bloquear la cuenta.'
             
         # Login exitoso

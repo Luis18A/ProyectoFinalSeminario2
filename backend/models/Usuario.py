@@ -13,7 +13,7 @@ class Usuario(db.Model):
     intentos_fallidos = db.Column(db.Integer, nullable=False, default=0)
 
     def __init__(self, username, password, nombre, apellido, rol_id, activo=True, intentos_fallidos=0):
-        self.username = username
+        self.username = username.strip().lower() if username else username
         self.password = generate_password_hash(password)
         self.nombre = nombre
         self.apellido = apellido
@@ -43,7 +43,7 @@ class Usuario(db.Model):
 
     @classmethod
     def obtener_por_id(cls, id):
-        return cls.query.get(id)
+        return db.session.get(cls, id)
 
     def actualizar(self, **kwargs):
         for key, value in kwargs.items():
@@ -66,7 +66,9 @@ class Usuario(db.Model):
     @staticmethod
     def obtener_por_username(username):
         """Obtiene un usuario por username."""
-        return Usuario.query.filter_by(username=username).first()
+        if username:
+            return Usuario.query.filter(db.func.lower(Usuario.username) == username.strip().lower()).first()
+        return None
 
     @staticmethod
     def obtener_por_nombre(nombre):

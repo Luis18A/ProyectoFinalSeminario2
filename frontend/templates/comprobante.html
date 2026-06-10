@@ -329,7 +329,11 @@
 {% for r in orden.repuestos or [] %}
     {% set ns.total_repuestos = ns.total_repuestos + r.precio %}
 {% endfor %}
-{% set mano_obra = (orden.costo or 0.0) - ns.total_repuestos %}
+{% if orden.costo is not none %}
+    {% set mano_obra = orden.costo - ns.total_repuestos %}
+{% else %}
+    {% set mano_obra = 0.0 %}
+{% endif %}
 
 <!-- Actions Bar (Non-printing) -->
 <div class="no-print max-w-4xl mx-auto mb-4 bg-white border border-zinc-200 p-4 flex justify-between items-center shadow-sm">
@@ -456,13 +460,25 @@
                     <tr>
                         <td class="col-qty">1</td>
                         <td class="col-desc">Mano de Obra (Diagnóstico, Labor Técnica)</td>
-                        <td class="col-price">${{ "%.2f"|format(mano_obra) }}</td>
+                        <td class="col-price">
+                            {% if orden.costo is not none %}
+                                ${{ "%.2f"|format(mano_obra) }}
+                            {% else %}
+                                Pendiente de presupuesto
+                            {% endif %}
+                        </td>
                     </tr>
                     {% for r in orden.repuestos or [] %}
                     <tr>
                         <td class="col-qty">1</td>
                         <td class="col-desc">Repuesto: {{ r.titulo }} ({{ r.tienda }})</td>
                         <td class="col-price">${{ "%.2f"|format(r.precio) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td class="col-qty">—</td>
+                        <td class="col-desc" style="color: #6b7280; font-style: italic;">Sin repuestos adicionales utilizados en esta reparación.</td>
+                        <td class="col-price" style="color: #6b7280; text-align: right;">$0.00</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -481,7 +497,13 @@
                 </div>
                 <div class="total-row">
                     <div class="total-label">Subtotal Mano de Obra:</div>
-                    <div class="total-val">${{ "%.2f"|format(mano_obra) }}</div>
+                    <div class="total-val">
+                        {% if orden.costo is not none %}
+                            ${{ "%.2f"|format(mano_obra) }}
+                        {% else %}
+                            Pendiente de presupuesto
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="total-row grand-total">
                     <div class="total-label">TOTAL FACTURADO:</div>
@@ -489,7 +511,7 @@
                         {% if orden.costo is not none %}
                             ${{ "%.2f"|format(orden.costo) }}
                         {% else %}
-                            Pendiente
+                            Pendiente de presupuesto
                         {% endif %}
                     </div>
                 </div>

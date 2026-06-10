@@ -22,6 +22,19 @@ class Equipo(db.Model):
         self.tipo_id = tipo_id
         self.descripcion = descripcion
 
+    @property
+    def estado_actual(self):
+        from backend.models.OrdenServicio import OrdenServicio
+        ultima_orden = OrdenServicio.query.filter_by(equipo_id=self.id).order_by(OrdenServicio.id.desc()).first()
+        if ultima_orden:
+            return ultima_orden.estado.value
+        return "Disponible"
+
+    @property
+    def ordenes(self):
+        from backend.models.OrdenServicio import OrdenServicio
+        return OrdenServicio.query.filter_by(equipo_id=self.id).order_by(OrdenServicio.id.desc()).all()
+
     # Métodos CRUD (Active Record Pattern)
 
     @staticmethod
@@ -30,7 +43,7 @@ class Equipo(db.Model):
 
     @staticmethod
     def get_by_id(id):
-        return Equipo.query.get(id)
+        return db.session.get(Equipo, id)
 
     @classmethod
     def crear(cls, **data):

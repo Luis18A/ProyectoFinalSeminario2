@@ -139,7 +139,7 @@ class ClienteController:
                 nombre=datos_formulario.get('nombre').strip().title(),
                 apellido=datos_formulario.get('apellido').strip().title(),
                 telefono=datos_formulario.get('telefono').strip(),
-                email=datos_formulario.get('email').strip().lower(),
+                email=datos_formulario.get('email', '').strip().lower() or None,
                 domicilio=datos_formulario.get('domicilio').strip(),
                 localidad=datos_formulario.get('localidad').strip()
             )
@@ -205,7 +205,7 @@ class ClienteController:
             cliente.nombre = datos_formulario.get('nombre').strip().title()
             cliente.apellido = datos_formulario.get('apellido').strip().title()
             cliente.telefono = datos_formulario.get('telefono').strip()
-            cliente.email = datos_formulario.get('email').strip().lower()
+            cliente.email = datos_formulario.get('email', '').strip().lower() or None
             cliente.domicilio = datos_formulario.get('domicilio').strip()
             cliente.localidad = datos_formulario.get('localidad').strip()
             

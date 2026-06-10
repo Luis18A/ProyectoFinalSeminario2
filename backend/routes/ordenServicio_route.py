@@ -28,40 +28,23 @@ def editar_ordenServicio(id):
     success, message = OrdenServicioController.actualizar_ordenServicio(id, request.form)
     if success:
         flash(message, 'success')
-    else:
-        flash(message, 'error')
-    rol = session.get('rol_descripcion', '')
-    redirecciones = {
-        'Técnico': 'usuarios.technician',
-        'Tecnico': 'usuarios.technician',
-        'Secretario': 'usuarios.secretary',
-        'Secretaria': 'usuarios.secretary',
-        'Administrador': 'vistas.dashboard'
-    }
-    destino = redirecciones.get(rol, 'usuarios.secretary')
-    return redirect(url_for(destino))
-
-@ordenServicio_bp.get('/ordenServicio/historial/<int:orden_id>')
-@login_required
-@role_required('Administrador', 'Secretario', 'Técnico')
-def historial_ordenServicio(orden_id):
-    rol_actual = session.get('rol_descripcion', '')
-    datos = OrdenServicioController.obtener_datos_gestion_ticket(orden_id, rol_actual)
-    if not datos:
-        flash("Orden de servicio no encontrada.", "error")
+        rol = session.get('rol_descripcion', '')
         redirecciones = {
             'Técnico': 'usuarios.technician',
             'Secretario': 'usuarios.secretary',
             'Administrador': 'vistas.dashboard'
         }
-        destino = redirecciones.get(rol_actual, 'usuarios.secretary')
+        destino = redirecciones.get(rol, 'usuarios.secretary')
         return redirect(url_for(destino))
-        
-    # Forzar vista de solo lectura para consulta histórica
-    datos['puede_editar'] = False
-    datos['puede_editar_costos'] = False
-    
-    return render_template('gestionar_ticket.html', **datos)
+    else:
+        flash(message, 'error')
+        return redirect(url_for('ordenServicio.gestionar_ticket', orden_id=id))
+
+@ordenServicio_bp.get('/ordenServicio/historial/<int:orden_id>')
+@login_required
+@role_required('Administrador', 'Secretario', 'Técnico')
+def historial_ordenServicio(orden_id):
+    return redirect(url_for('ordenServicio.gestionar_ticket', orden_id=orden_id, readonly='true'))
 
 @ordenServicio_bp.get('/clientes/<int:cliente_id>/equipos')
 @login_required
@@ -81,13 +64,18 @@ def gestionar_ticket(orden_id):
     datos = OrdenServicioController.obtener_datos_gestion_ticket(orden_id, rol_actual)
     if not datos or 'orden' not in datos:
         flash("Error al cargar la orden o acceso denegado.", "error")
-        if rol_actual in ('Técnico', 'Tecnico'):
+        if rol_actual == 'Técnico':
             return redirect(url_for('usuarios.technician'))
         return redirect(url_for('usuarios.secretary'))
     
+    if request.args.get('readonly') == 'true':
+        datos['puede_editar'] = False
+        datos['puede_editar_costos'] = False
+        
     return render_template('gestionar_ticket.html', **datos)
 
 @ordenServicio_bp.route('/historial')
+@login_required
 @role_required('Administrador')
 def historial():
     ticket_id = request.args.get('ticket_id', '').strip()
@@ -98,6 +86,7 @@ def historial():
     return render_template('historial_tickets.html', ordenes=ordenes)
 
 @ordenServicio_bp.route('/historial/exportar')
+@login_required
 @role_required('Administrador')
 def exportar_csv():
     ticket_id = request.args.get('ticket_id', '').strip()
@@ -168,7 +157,7 @@ def comprobante(orden_id):
     if not orden:
         flash("Orden de servicio no encontrada.", "error")
         rol = session.get('rol_descripcion', '')
-        if rol in ('Técnico', 'Tecnico'):
+        if rol == 'Técnico':
             return redirect(url_for('usuarios.technician'))
         return redirect(url_for('usuarios.secretary'))
     return render_template('comprobante.html', orden=orden)
@@ -238,8 +227,44 @@ def cambiar_estado_flujo(orden_id):
     if not usuario_id:
         return jsonify({'success': False, 'message': 'Sesión expirada.'}), 401
     
+    rol_actual = session.get('rol_descripcion', '')
+    if rol_actual == 'Técnico':
+        from backend.models.OrdenServicio import OrdenServicio
+        from backend.models.EstadoOrden import EstadoOrden
+        orden = OrdenServicio.get_by_id(orden_id)
+        if orden:
+            if orden.estado == EstadoOrden.PRESUPUESTADO:
+                return jsonify({'success': False, 'message': 'No tienes permisos para aprobar o rechazar presupuestos.'}), 403
+            if nuevo_estado == 'ENTREGADO' or (orden.estado == EstadoOrden.LISTO and nuevo_estado == 'ENTREGADO'):
+                return jsonify({'success': False, 'message': 'El técnico no tiene permitido entregar equipos. Esto debe ser realizado por la secretaría o administración.'}), 403
+            
     success, message = OrdenServicioController.cambiar_estado_flujo(orden_id, nuevo_estado, usuario_id, observaciones)
     if success:
         flash(message, 'success')
         return jsonify({'success': True, 'message': message})
     return jsonify({'success': False, 'message': message}), 400
+
+@ordenServicio_bp.get('/ordenServicio/crear')
+@login_required
+@role_required('Administrador', 'Secretario')
+def crear_orden_view():
+    return redirect(url_for('ordenServicio.listar_ordenes_view'))
+
+@ordenServicio_bp.get('/ordenServicio/activas')
+@login_required
+@role_required('Administrador', 'Secretario')
+def listar_ordenes_view():
+    from backend.models.OrdenServicio import OrdenServicio
+    from backend.models.Cliente import Cliente
+    from backend.controller.tipoDispositivo_controller import TipoDispositivoController
+    from backend.models.EstadoOrden import EstadoOrden
+    
+    # Traer únicamente las órdenes de servicio que siguen activas en el taller (no entregadas)
+    ordenes = OrdenServicio.query.filter(OrdenServicio.estado != EstadoOrden.ENTREGADO).order_by(OrdenServicio.id.desc()).all()
+    clientes = Cliente.query.all()
+    tipo_dispositivos = TipoDispositivoController.obtener_todos()
+    
+    return render_template('listar_ordenes.html', 
+                           ordenes=ordenes, 
+                           clientes=clientes, 
+                           tipo_dispositivos=tipo_dispositivos)

@@ -34,6 +34,7 @@
                 </header>
                 <!-- Authentication Form -->
                 <form class="flex flex-col gap-lg flex-grow" action="{{ url_for('vistas.login_post') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         {% if error %}
                         <div
                                 class="bg-error-container text-on-error-container p-sm rounded text-center font-body-sm mb-sm">
@@ -58,7 +59,7 @@
                                         for="username">Usuario</label>
                                 <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md"
                                         id="username" name="username" placeholder="Ingrese usuario" required=""
-                                        type="text" />
+                                        type="text" autocomplete="username" />
                         </div>
                         <!-- Passcode Input -->
                         <div class="flex flex-col relative group">
@@ -71,7 +72,7 @@
                                 <div class="relative flex items-center">
                                         <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 pr-xl focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md tracking-[0.2em]"
                                                 id="password" name="password" placeholder="••••••••" required=""
-                                                type="password" />
+                                                type="password" autocomplete="current-password" />
                                         <button aria-label="Toggle password visibility"
                                                 class="absolute right-0 bottom-sm text-outline hover:text-primary transition-colors flex items-center justify-center focus:outline-none"
                                                 type="button">
