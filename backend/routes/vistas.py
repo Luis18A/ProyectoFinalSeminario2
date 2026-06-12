@@ -14,7 +14,7 @@ def login():
     if 'usuario_id' in session:
         from backend.utils.decorators import _redirect_por_rol
         return _redirect_por_rol(session.get('rol_descripcion', ''))
-    return render_template('login.html')
+    return render_template('auth/login.html')
 
 @vistas_bp.route('/login', methods=['POST'])
 def login_post():
@@ -36,7 +36,7 @@ def login_post():
         from backend.utils.decorators import _redirect_por_rol
         return _redirect_por_rol(session['rol_descripcion'])
     else:
-        return render_template('login.html', error=mensaje)
+        return render_template('auth/login.html', error=mensaje)
 
 @vistas_bp.route('/logout')
 def logout():

@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'layout/base.html' %}
 {% block title %}Gestión de Equipos | TechFlow{% endblock %}
 {% block content %}
-{% from 'macros.html' import badge_estado %}
+{% from 'layout/macros.html' import badge_estado %}
 
 
 <!-- Canvas Area -->
@@ -21,15 +21,18 @@
 
     <!-- Bento Grid Structure -->
     <div class="grid grid-cols-12 gap-grid-gutter">
-        <!-- Left Column (4): Registrar Dispositivo -->
-        <div class="col-span-12 md:col-span-4 flex flex-col gap-grid-gutter">
-            <div class="bento-card p-6 h-full flex flex-col">
-                <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Registrar Dispositivo</h2>
+        <!-- Left Column: Formularios de Registro -->
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-grid-gutter">
+            <!-- Registrar Dispositivo -->
+            <div class="bento-card p-6 flex flex-col">
+                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
+                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Dispositivo</h2>
+                    <span class="material-symbols-outlined text-on-surface-variant text-sm">devices</span>
+                </div>
                 <form class="flex flex-col gap-6 flex-1" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Tipo de
-                            Equipo</label>
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de Equipo</label>
                         {% if cliente %}
                         <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
                         {% endif %}
@@ -42,43 +45,65 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Marca *</label>
+                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca *</label>
                             <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Modelo *</label>
+                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo *</label>
                             <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text" required />
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Número de Serie *
-                            (S/N)</label>
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie * (S/N)</label>
                         <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX"
                             type="text" required />
                     </div>
-                    <div class="flex flex-col gap-1 flex-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Descripción
-                            General</label>
-                        <textarea name="descripcion" class="input-swiss resize-none flex-1"
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción General</label>
+                        <textarea name="descripcion" class="input-swiss resize-none"
                             placeholder="Detalles de estado, color, accesorios..." rows="3"></textarea>
                     </div>
-                    <button class="btn-swiss btn-primary w-full justify-center py-4 mt-auto" type="submit">
+                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
                         Guardar Equipo
+                    </button>
+                </form>
+            </div>
+
+            <!-- Nuevo Tipo de Equipo -->
+            <div class="bento-card p-6 flex flex-col">
+                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
+                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Nuevo Tipo de Equipo</h2>
+                    <span class="material-symbols-outlined text-on-surface-variant text-sm">playlist_add</span>
+                </div>
+                <form class="flex flex-col gap-6 flex-1"
+                    action="{{ url_for('tipoDispositivo.crear_tipo_dispositivo') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if cliente %}
+                    <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+                    {% endif %}
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Dispositivo *</label>
+                        <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->
+                        <input name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora"
+                            type="text" required />
+                    </div>
+
+                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
+                        Guardar Tipo de Dispositivo
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Right Column (8): Lista de Equipos -->
-        <div class="col-span-12 md:col-span-8">
-            <div class="bento-card p-0 flex flex-col overflow-hidden">
+        <!-- Right Column: Lista de Equipos -->
+        <div class="col-span-12 lg:col-span-9">
+            <div class="table-container flex flex-col overflow-hidden h-full">
                 <div class="p-6 border-b border-border flex justify-between items-center bg-white">
                     <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Inventario del Cliente
                     </h2>
                     <span class="font-label-mono text-[10px] text-zinc-400">Total: {{ equipos|length }} Activo(s)</span>
                 </div>
-                <div class="table-container border-none min-h-[400px]">
-                    <table class="table-swiss">
+                <table class="table-swiss">
                         <thead>
                             <tr>
                                 <th>Equipo</th>
@@ -132,9 +157,8 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="font-label-mono text-[11px] text-on-surface-variant">{{ equipo.numero_serie
-                                    }}</td>
-                                <td class="text-on-surface-variant text-xs">{{ equipo.descripcion }}</td>
+                                <td class="font-label-mono text-zinc-600 text-xs">{{ equipo.numero_serie }}</td>
+                                <td class="text-zinc-600">{{ equipo.descripcion }}</td>
                                 <td class="text-center">
                                     {{ badge_estado(equipo.estado_actual) }}
                                 </td>
@@ -165,33 +189,10 @@
                             {% endif %}
                         </tbody>
                     </table>
-                </div>
                 <div
                     class="p-4 bg-zinc-50 flex justify-between items-center text-[10px] text-on-surface-variant font-label-mono uppercase">
                     <span>Mostrando {{ equipos|length }} dispositivo(s)</span>
                 </div>
-            </div>
-        </div>
-        <div class="col-span-12 md:col-span-4 flex flex-col gap-grid-gutter">
-            <div class="bento-card p-6 h-full flex flex-col">
-                <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Nuevo Tipo de Equipo</h2>
-                <form class="flex flex-col gap-6 flex-1"
-                    action="{{ url_for('tipoDispositivo.crear_tipo_dispositivo') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    {% if cliente %}
-                    <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
-                    {% endif %}
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Dispositivo *</label>
-                        <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->
-                        <input name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora"
-                            type="text" required />
-                    </div>
-
-                    <button class="btn-swiss btn-primary w-full justify-center py-4 mt-auto" type="submit">
-                        Guardar Tipo de Dispositivo
-                    </button>
-                </form>
             </div>
         </div>
         <!-- Buscador de Repuestos (MercadoLibre y Megatone) 
@@ -267,7 +268,7 @@
             <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
             {% endif %}
             <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Tipo de Equipo</label>
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de Equipo</label>
                 <select id="edit-tipo" name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent"
                     required>
                     <option disabled value="">Seleccionar tipo</option>
@@ -278,27 +279,26 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Marca</label>
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca</label>
                     <input id="edit-marca" name="marca" class="input-swiss" type="text" required />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Modelo</label>
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo</label>
                     <input id="edit-modelo" name="modelo" class="input-swiss" type="text" required />
                 </div>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Número de Serie
-                    (S/N)</label>
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie (S/N)</label>
                 <input id="edit-serie" name="numero_serie" class="input-swiss font-label-mono uppercase" type="text"
                     required />
             </div>
             <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Descripción</label>
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción</label>
                 <textarea id="edit-descripcion" name="descripcion" class="input-swiss resize-none" rows="3"></textarea>
             </div>
             <div class="flex gap-4 mt-4">
                 <button type="button" onclick="cerrarModal()"
-                    class="btn-swiss flex-1 justify-center border border-border hover:bg-zinc-100 transition-colors">Cancelar</button>
+                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
                 <button type="submit" class="btn-swiss btn-primary flex-1 justify-center">Actualizar</button>
             </div>
         </form>
@@ -332,7 +332,7 @@
             </div>
             <div class="flex gap-4 mt-2">
                 <button type="button" onclick="cerrarModalOrdenes()"
-                    class="btn-swiss w-full justify-center border border-border hover:bg-zinc-100 transition-colors py-3">
+                    class="btn-swiss btn-outline w-full justify-center">
                     Cerrar
                 </button>
             </div>

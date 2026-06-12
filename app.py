@@ -27,7 +27,7 @@ app = Flask(__name__,
 
 
 # CONEXIÓN A LA BASE DE DATOS
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5432/TechFlowDB'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3536@localhost:5432/TechFlowDB'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'techflow_secret_key_123' # Necesario para sesiones y flash messages
 
