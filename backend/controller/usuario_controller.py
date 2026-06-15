@@ -80,6 +80,9 @@ class UsuarioController:
             success, result = UsuarioController.procesar_datos(
                 datos_formulario, is_edit=True, usuario_id=usuario_id
             )
+            if not success:
+                return False, result
+
             # Actualizamos los campos desde el diccionario sanitizado
             usuario.username = result['username']
             usuario.nombre   = result['nombre']

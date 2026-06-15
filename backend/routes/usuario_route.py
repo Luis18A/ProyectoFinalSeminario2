@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from backend.controller.usuario_controller import UsuarioController
+from backend.controller import usuario_controller
 from backend.utils.decorators import login_required, role_required
 
 # Creamos el Blueprint para los usuarios
@@ -9,14 +9,14 @@ usuarios_bp = Blueprint('usuarios', __name__)
 @login_required
 @role_required('Administrador')
 def listar_usuarios():
-    data = UsuarioController.obtener_datos_gestion_usuarios()
+    data = usuario_controller.obtener_datos_gestion_usuarios()
     return render_template('gestion_usuarios.html', **data)
 
 @usuarios_bp.post('/usuarios')
 @login_required
 @role_required('Administrador')
 def crear_usuario():
-    success, message = UsuarioController.crear_usuario(request.form)
+    success, message = usuario_controller.crear_usuario(request.form)
     flash(message, 'success' if success else 'error')
     return redirect(url_for('usuarios.listar_usuarios'))
 
@@ -24,7 +24,7 @@ def crear_usuario():
 @login_required
 @role_required('Administrador')
 def eliminar_usuario(id):
-    success, message = UsuarioController.eliminar_usuario(id, session.get('usuario_id'))
+    success, message = usuario_controller.eliminar_usuario(id, session.get('usuario_id'))
     flash(message, 'success' if success else 'error')
     return redirect(url_for('usuarios.listar_usuarios'))
 
@@ -32,6 +32,6 @@ def eliminar_usuario(id):
 @login_required
 @role_required('Administrador')
 def actualizar_usuario(id):
-    success, message = UsuarioController.actualizar_usuario(id, request.form)
+    success, message = usuario_controller.actualizar_usuario(id, request.form)
     flash(message, 'success' if success else 'error')
     return redirect(url_for('usuarios.listar_usuarios'))

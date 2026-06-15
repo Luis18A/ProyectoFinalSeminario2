@@ -1,3 +1,4 @@
+from asyncio import exceptions
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.EstadoOrden import EstadoOrden
 from backend.models.HistorialEstado import HistorialEstado
@@ -6,6 +7,7 @@ from backend.models.Equipo import Equipo
 from backend.models.TipoDispositivo import TipoDispositivo
 from backend.controller.tipo_dispositivo_controller import TipoDispositivoController
 from database import db
+import csv, io
            
 class OrdenServicioController:
     
@@ -59,9 +61,9 @@ class OrdenServicioController:
             db.session.add(historial)
             db.session.commit()
             return True, "Orden creada exitosamente."
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return False, f"Error: {str(e)}"
+            return False, "Error al crear la orden. Intentá de nuevo."
 
     @staticmethod
     def obtener_todos():
@@ -153,3 +155,34 @@ class OrdenServicioController:
             'usuario_id':     usuario_id,
         }
     
+    @staticmethod
+    def generar_csv_historial(args):
+        ordenes = OrdenServicioController.obtener_historial_filtrado(
+            ticket_id=args.get('ticket_id', '').strip(),
+            cliente_query=args.get('cliente', '').strip(),
+            equipo_query=args.get('equipo', '').strip(),
+        )
+        output = io.StringIO()
+        output.write('\ufeff')  # BOM para Excel
+        writer = csv.writer(output, delimiter=';')
+        writer.writerow(['Ticket ID', 'Cliente', 'DNI/CUIL', 'Teléfono', 'Email',
+                        'Tipo', 'Marca', 'Modelo', 'S/N', 'Estado',
+                        'Fecha Recepción', 'Fecha Entrega', 'Costo ($)', 'Observaciones'])
+        for o in ordenes:
+            writer.writerow([
+                f"TK-{o.id:04d}",
+                f"{o.equipo.cliente.apellido}, {o.equipo.cliente.nombre}" if o.equipo and o.equipo.cliente else '—',
+                o.equipo.cliente.dni_cuil if o.equipo and o.equipo.cliente else '—',
+                o.equipo.cliente.telefono if o.equipo and o.equipo.cliente else '—',
+                o.equipo.cliente.email if o.equipo and o.equipo.cliente else '—',
+                o.equipo.tipo.descripcion if o.equipo and o.equipo.tipo else '—',
+                o.equipo.marca if o.equipo else '—',
+                o.equipo.modelo if o.equipo else '—',
+                o.equipo.numero_serie if o.equipo else '—',
+                o.estado.value if o.estado else '—',
+                o.fecha_recepcion.strftime('%d/%m/%Y %H:%M') if o.fecha_recepcion else '—',
+                o.fecha_entrega.strftime('%d/%m/%Y %H:%M') if o.fecha_entrega else '—',
+                f"{o.costo:.2f}" if o.costo is not None else '0.00',
+                o.observaciones or '—',
+            ])
+        return output.getvalue()    

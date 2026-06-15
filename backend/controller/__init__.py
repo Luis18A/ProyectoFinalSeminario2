@@ -1,0 +1,13 @@
+from .auth_controller import AuthController as auth_controller
+from .analytics_controller import AnalyticsController as analytics_controller
+from .orden_servicio_controller import OrdenServicioController as orden_servicio_controller
+from .orden_presupuesto_controller import OrdenPresupuestoController as orden_presupuesto_controller
+from .orden_flujo_controller import OrdenFlujoController as orden_flujo_controller
+from .usuario_controller import UsuarioController as usuario_controller
+from .cliente_controller import ClienteController as cliente_controller
+from .tipo_dispositivo_controller import TipoDispositivoController as tipo_dispositivo_controller
+from .equipo_controller import EquipoController as equipo_controller
+from .search_controller import SearchController as search_controller
+from .admin_controller import AdminController as admin_controller
+from .notificacion_controller import NotificacionController as notificacion_controller
+from .dashboard_controller import DashboardController as dashboard_controller

@@ -13,6 +13,8 @@ class AnalyticsController:
     @staticmethod
     def obtener_datos_analytics():
         # ── OPTIMIZACIÓN: Eager loading para evitar N+1 queries ──
+        # DEUDA TÉCNICA: Se resuelve el N+1 para equipo.tipo, pero si más adelante o en los
+        # templates se accede a equipo.cliente, puede haber un N+1 residual. Aceptable para la entrega.
         from sqlalchemy.orm import joinedload
         ordenes = OrdenServicio.query.options(
             joinedload(OrdenServicio.equipo).joinedload(Equipo.tipo)

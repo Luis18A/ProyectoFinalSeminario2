@@ -5,6 +5,40 @@ from sqlalchemy.orm.attributes import flag_modified
 
 class OrdenPresupuestoController:
     @staticmethod
+    def procesar_datos(datos_formulario, es_edicion=False):
+        """
+        Centraliza la validación y sanitización de datos de un repuesto.
+        Retorna: (True, dict_con_datos_limpios) o (False, mensaje_de_error)
+        """
+        titulo = (datos_formulario.get('titulo') or '').strip()
+        precio_raw = datos_formulario.get('precio')
+        
+        if not titulo:
+            return False, "La descripción del repuesto es obligatoria."
+        if len(titulo) < 3 or len(titulo) > 200:
+            return False, "La descripción del repuesto debe tener entre 3 y 200 caracteres."
+            
+        try:
+            if isinstance(precio_raw, str):
+                precio_raw = precio_raw.replace(',', '.')
+            precio = float(precio_raw) if precio_raw is not None else 0.0
+            if precio < 0:
+                return False, "El precio no puede ser negativo."
+        except (TypeError, ValueError):
+            return False, "El precio debe ser un número válido."
+
+        datos = {
+            'titulo': titulo,
+            'precio': precio
+        }
+
+        if not es_edicion:
+            datos['link'] = (datos_formulario.get('link') or '').strip() or '#'
+            datos['tienda'] = (datos_formulario.get('tienda') or 'Manual').strip() or 'Manual'
+
+        return True, datos
+
+    @staticmethod
     def _recalcular_costo(orden, mano_obra):
         """Calcula el costo total sumando todos los repuestos y la mano de obra para evitar errores de redondeo."""
         repuestos = orden.repuestos or []
@@ -12,7 +46,7 @@ class OrdenPresupuestoController:
         orden.costo = max(0.0, mano_obra + total_repuestos)
 
     @staticmethod
-    def agregar_repuesto(orden_id, titulo, precio, link, tienda):
+    def agregar_repuesto(orden_id, **datos_formulario):
         """Agrega un repuesto al presupuesto del ticket de forma asíncrona y recalcula costo."""
         try:
             orden = OrdenServicio.get_by_id(orden_id)
@@ -22,19 +56,17 @@ class OrdenPresupuestoController:
             if orden.estado not in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION):
                 return False, "No se pueden modificar repuestos en este estado del ticket."
             
+            success, result = OrdenPresupuestoController.procesar_datos(datos_formulario, es_edicion=False)
+            if not success:
+                return False, result
+
             actuales = list(orden.repuestos or [])
             
             # Calcular mano de obra previa para preservarla
             old_sum = sum(float(r.get('precio', 0.0)) for r in actuales)
             mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
 
-            repuesto_data = {
-                'titulo': titulo,
-                'precio': float(precio),
-                'link': link,
-                'tienda': tienda
-            }
-            actuales.append(repuesto_data)
+            actuales.append(result)
             orden.repuestos = actuales
             flag_modified(orden, 'repuestos')
             
@@ -48,7 +80,7 @@ class OrdenPresupuestoController:
             return False, f"Error al agregar repuesto: {str(e)}"
 
     @staticmethod
-    def editar_repuesto(orden_id, idx, titulo, precio):
+    def editar_repuesto(orden_id, idx, **datos_formulario):
         """Modifica un repuesto del presupuesto del ticket y actualiza el costo total."""
         try:
             orden = OrdenServicio.get_by_id(orden_id)
@@ -58,6 +90,10 @@ class OrdenPresupuestoController:
             if orden.estado not in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION):
                 return False, "No se pueden modificar repuestos en este estado del ticket."
             
+            success, result = OrdenPresupuestoController.procesar_datos(datos_formulario, es_edicion=True)
+            if not success:
+                return False, result
+
             actuales = list(orden.repuestos or [])
             if 0 <= idx < len(actuales):
                 # Calcular mano de obra previa para preservarla
@@ -65,8 +101,7 @@ class OrdenPresupuestoController:
                 mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
 
                 repuesto_data = dict(actuales[idx])
-                repuesto_data['titulo'] = titulo
-                repuesto_data['precio'] = float(precio)
+                repuesto_data.update(result)
                 actuales[idx] = repuesto_data
                 orden.repuestos = actuales
                 flag_modified(orden, 'repuestos')

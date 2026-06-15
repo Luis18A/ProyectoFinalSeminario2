@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
-from backend.controller.auth_controller import AuthController
-from backend.controller.analytics_controller import AnalyticsController
-from backend.controller.orden_servicio_controller import OrdenServicioController
-from backend.controller.search_controller import SearchController
+from backend.controller import auth_controller
+from backend.controller import analytics_controller
+from backend.controller import orden_servicio_controller
+from backend.controller import search_controller
 from backend.utils.decorators import login_required, role_required, _redirect_por_rol
 
 vistas_bp = Blueprint('vistas', __name__)
@@ -25,7 +25,7 @@ def login_post():
         return render_template('auth/login.html', error="Completá todos los campos.")
 
     # La ruta ahora espera que el AuthController valide TODO (incluyendo si está activo)
-    success, data_or_error = AuthController.validar_login_completo(username, password)
+    success, data_or_error = auth_controller.validar_login_completo(username, password)
 
     if not success:
         return render_template('auth/login.html', error=data_or_error)
@@ -48,7 +48,7 @@ def logout():
 @login_required
 @role_required('Administrador')
 def dashboard():
-    return render_template('admin_analytics.html', **AnalyticsController.obtener_datos_analytics())
+    return render_template('admin_analytics.html', **analytics_controller.obtener_datos_analytics())
 
 @vistas_bp.route('/secretary')
 @login_required
@@ -60,9 +60,9 @@ def secretary():
 @login_required
 @role_required('Técnico', 'Administrador')
 def technician():
-    return render_template('technician_board.html', **OrdenServicioController.obtener_tablero_tecnico(session.get('usuario_id')))
+    return render_template('technician_board.html', **orden_servicio_controller.obtener_tablero_tecnico(session.get('usuario_id')))
 
 @vistas_bp.route('/api/global-search')
 @login_required
 def global_search():
-    return jsonify(SearchController.buscar_global(request.args.get('q', '').strip()))
+    return jsonify(search_controller.buscar_global(request.args.get('q', '').strip()))

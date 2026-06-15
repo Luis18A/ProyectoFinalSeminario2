@@ -6,7 +6,7 @@ def _redirect_por_rol(rol):
     """Redirige al usuario a su vista principal según su rol."""
     destinos = {
         'técnico':       'vistas.technician',
-        'secretario':    'orden_servicio.listar_ordenes_view',
+        'secretario':    'vistas.secretary',
         'administrador': 'vistas.dashboard',
     }
     destino = destinos.get(rol.strip().lower(), 'vistas.login')

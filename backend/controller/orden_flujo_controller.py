@@ -21,7 +21,10 @@ class OrdenFlujoController:
 
             # Capturamos datos del formulario
             nuevo_estado_id = datos_formulario.get('estado')
-            usuario_id = int(datos_formulario.get('usuario_id'))
+            try:
+                usuario_id = int(datos_formulario.get('usuario_id'))
+            except (TypeError, ValueError):
+                return False, "ID de usuario inválido."
             observacion = datos_formulario.get('observaciones')
             costo = datos_formulario.get('costo')
             estado_anterior_nombre = orden.estado.value
@@ -173,6 +176,7 @@ class OrdenFlujoController:
     def _enviar_notificaciones_cambio_estado(orden, estado_anterior, nuevo_estado, observacion=None):
         """Envía notificaciones a los destinatarios correspondientes al cambiar el estado de la orden."""
         try:
+            notificaciones = []
 
             # 1. Notificaciones al técnico (Aprobación o Rechazo de Presupuesto)
             if estado_anterior == EstadoOrden.PRESUPUESTADO:
@@ -194,13 +198,13 @@ class OrdenFlujoController:
                     titulo = "Presupuesto Aprobado"
                     mensaje = f"El presupuesto para el Ticket #{orden.id} ({orden.equipo.marca} {orden.equipo.modelo}) ha sido aprobado. Puede comenzar la reparación."
                     for t_id in tecnicos_a_notificar:
-                        Notificacion.crear_notificacion(usuario_id=t_id, titulo=titulo, mensaje=mensaje, orden_id=orden.id)
+                        notificaciones.append(Notificacion(usuario_id=t_id, titulo=titulo, mensaje=mensaje, orden_id=orden.id))
                 elif nuevo_estado == EstadoOrden.DIAGNOSTICO:
                     titulo = "Presupuesto Rechazado"
                     motivo_str = f" Motivo: {observacion}" if observacion else ""
                     mensaje = f"El presupuesto para el Ticket #{orden.id} ({orden.equipo.marca} {orden.equipo.modelo}) fue rechazado y volvió a diagnóstico.{motivo_str}"
                     for t_id in tecnicos_a_notificar:
-                        Notificacion.crear_notificacion(usuario_id=t_id, titulo=titulo, mensaje=mensaje, orden_id=orden.id)
+                        notificaciones.append(Notificacion(usuario_id=t_id, titulo=titulo, mensaje=mensaje, orden_id=orden.id))
 
             # 2. Notificaciones a secretarias y administradores (Presupuesto requerido o Equipo Listo)
             if nuevo_estado in (EstadoOrden.PRESUPUESTADO, EstadoOrden.LISTO):
@@ -213,7 +217,11 @@ class OrdenFlujoController:
                     
                 secretarios = Usuario.query.join(Rol).filter(Rol.descripcion.in_(['Secretario', 'Administrador'])).all()
                 for sec in secretarios:
-                    Notificacion.crear_notificacion(usuario_id=sec.id, titulo=titulo_sec, mensaje=mensaje_sec, orden_id=orden.id)
+                    notificaciones.append(Notificacion(usuario_id=sec.id, titulo=titulo_sec, mensaje=mensaje_sec, orden_id=orden.id))
+
+            # Agregar y commitear todas las notificaciones juntas al final
+            for n in notificaciones:
+                db.session.add(n)
             db.session.commit()
         except Exception as e:
             print(f"Error al enviar notificaciones: {str(e)}")
@@ -286,9 +294,9 @@ class OrdenFlujoController:
 
             return True, f"Estado actualizado a {nuevo_estado.value}."
 
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return False, f"Error al cambiar el estado: {str(e)}"
+            return False, "Error al cambiar el estado. Intentá de nuevo."
 
     @staticmethod
     def obtener_datos_gestion_ticket(orden_id, rol_actual):
@@ -342,7 +350,7 @@ class OrdenFlujoController:
                 'is_actual': e == orden.estado
             })
             
-        puede_editar = rol_actual in ('Técnico', 'Administrador')
+        puede_editar = rol_actual in ('Técnico', 'Administrador', 'Secretario')
         puede_editar_costos = orden.estado in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION)
         predicted_failures = PredictorService.predict_failures(orden.equipo_id)
         

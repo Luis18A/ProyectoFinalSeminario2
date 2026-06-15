@@ -2,6 +2,9 @@ from backend.models.Cliente import Cliente
 from backend.models.Equipo import Equipo
 from backend.models.OrdenServicio import OrdenServicio
 from database import db
+# DEUDA TÉCNICA: url_for requiere un contexto de aplicación Flask activo.
+# Si este controller se llama fuera de un request context (tests, scripts) va a fallar.
+# Se permite para la entrega actual de Seminario II, pero se debe documentar/refactorizar.
 from flask import url_for # Permitido en controllers de presentación
 
 class SearchController:

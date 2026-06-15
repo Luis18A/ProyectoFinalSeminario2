@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, url_for, flash, redirect, jsonify
-from backend.controller.equipo_controller import EquipoController
-from backend.controller.dashboard_controller import DashboardController
+from backend.controller import equipo_controller
+from backend.controller import dashboard_controller
 from backend.utils.decorators import login_required, role_required
 
 equipo_bp = Blueprint('equipo', __name__)
@@ -10,7 +10,7 @@ equipo_bp = Blueprint('equipo', __name__)
 @role_required('Administrador', 'Secretario')
 def crear_equipo():
     cliente_id = request.form.get('cliente_id')
-    success, message = EquipoController.crear_equipo(request.form)
+    success, message = equipo_controller.crear_equipo(request.form)
     flash(message, 'success' if success else 'error')
     
     # Estandarización de redirección
@@ -22,7 +22,7 @@ def crear_equipo():
 @role_required('Administrador', 'Secretario')
 def editar_equipo(id):
     cliente_id = request.form.get('cliente_id')
-    success, message = EquipoController.editar_equipo(id, request.form)
+    success, message = equipo_controller.editar_equipo(id, request.form)
     flash(message, 'success' if success else 'error')
     
     destino = url_for('equipo.gestion_equipos', cliente_id=cliente_id) if cliente_id else url_for('clientes.gestion_cliente')
@@ -32,7 +32,7 @@ def editar_equipo(id):
 @login_required
 @role_required('Administrador', 'Secretario')
 def gestion_equipos(cliente_id):
-    tipo_dispositivos, cliente, equipos = DashboardController.obtener_datos_gestion_cliente(cliente_id)
+    tipo_dispositivos, cliente, equipos = dashboard_controller.obtener_datos_gestion_cliente(cliente_id)
     if not cliente:
         flash("Cliente no encontrado para gestionar sus equipos.", "error")
         return redirect(url_for('clientes.gestion_cliente'))
@@ -46,7 +46,7 @@ def gestion_equipos(cliente_id):
 @login_required
 @role_required('Administrador', 'Secretario')
 def crear_equipo_rapido():
-    success, message, equipo_data = EquipoController.crear_equipo_rapido(request.form)
+    success, message, equipo_data = equipo_controller.crear_equipo_rapido(request.form)
     
     if not success:
         return jsonify({'success': False, 'message': message}), 400
@@ -61,5 +61,5 @@ def crear_equipo_rapido():
 @login_required
 @role_required('Administrador', 'Secretario')
 def equipos_por_cliente(cliente_id):
-    equipos = EquipoController.obtener_equipos_cliente_json(cliente_id)
+    equipos = equipo_controller.obtener_equipos_cliente_json(cliente_id)
     return jsonify(equipos if equipos is not None else {'error': 'Cliente no encontrado.'}), (200 if equipos is not None else 404)

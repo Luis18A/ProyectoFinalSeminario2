@@ -23,8 +23,6 @@ class ClienteController:
         provided = int(cuit[10])
         if check_digit == 10: return provided in (9, 4)
         return provided == calculated
-            
-        return provided == calculated
 
     @staticmethod
     def procesar_datos(datos_formulario, is_edit=False, cliente_id=None):

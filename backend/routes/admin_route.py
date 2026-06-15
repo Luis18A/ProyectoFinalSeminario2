@@ -1,7 +1,8 @@
+
 import json
 from datetime import datetime
 from flask import Blueprint, Response, request, redirect, url_for, flash, session
-from backend.controller.admin_controller import AdminController
+from backend.controller import admin_controller
 from backend.utils.decorators import login_required, role_required
 
 admin_bp = Blueprint('admin', __name__)
@@ -12,7 +13,7 @@ admin_bp = Blueprint('admin', __name__)
 def download_backup():
     try:
         usuario_id = session.get('usuario_id')
-        backup_dict = AdminController.generar_backup(usuario_id)
+        backup_dict = admin_controller.generar_backup(usuario_id)
         json_str = json.dumps(backup_dict, indent=4, ensure_ascii=False)
 
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -31,12 +32,12 @@ def download_backup():
 @login_required
 def cambiar_rol():
     # Delegamos toda la validación al AdminController.
-    success, destination = AdminController.simular_rol(
+    success, destination = admin_controller.simular_rol(
         usuario_id=session.get('usuario_id'), 
         nuevo_rol=request.args.get('rol')
     )
     
-    if success:
+    if success and destination:
         session['rol_descripcion'] = request.args.get('rol')
         flash(f"Simulando entorno como {request.args.get('rol')}.", "success")
         return redirect(url_for(destination))
