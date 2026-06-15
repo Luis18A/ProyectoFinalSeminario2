@@ -330,14 +330,14 @@
     {% set ns.total_repuestos = ns.total_repuestos + r.precio %}
 {% endfor %}
 {% if orden.costo is not none %}
-    {% set mano_obra = orden.costo - ns.total_repuestos %}
+    {% set mano_obra = (orden.costo | float) - (ns.total_repuestos | float) %}
 {% else %}
     {% set mano_obra = 0.0 %}
 {% endif %}
 
 <!-- Actions Bar (Non-printing) -->
 <div class="no-print max-w-4xl mx-auto mb-4 bg-white border border-zinc-200 p-4 flex justify-between items-center shadow-sm">
-    <a href="{{ url_for('usuarios.technician') }}" class="flex items-center gap-2 text-zinc-600 hover:text-[#1e3a8a] transition-colors">
+    <a href="{{ url_for('vistas.technician') }}" class="flex items-center gap-2 text-zinc-600 hover:text-[#1e3a8a] transition-colors">
         <span class="material-symbols-outlined text-sm">arrow_back</span>
         <span class="font-bold text-xs uppercase">Volver al sistema</span>
     </a>

@@ -24,12 +24,12 @@
                 <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-label-mono">ITSM Terminal</span>
             </div>
 
-            <form id="form-orden" method="POST" action="{{ url_for('ordenServicio.crear_ordenServicio') }}"
+            <form id="form-orden" method="POST" action="{{ url_for('orden_servicio.crear_ordenServicio') }}"
                 class="p-6 flex flex-col gap-6">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <!-- Redirect next path back to order creation after submit -->
-                <input type="hidden" name="next" value="{{ url_for('ordenServicio.crear_orden_view') }}">
+                <input type="hidden" name="next" value="{{ url_for('orden_servicio.listar_ordenes_view') }}">
 
                 <!-- Usuario técnico que recibe (oculto, tomado de sesión) -->
                 <input type="hidden" name="usuario_id" value="{{ session.get('usuario_id') }}">

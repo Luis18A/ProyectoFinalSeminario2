@@ -102,39 +102,40 @@
                 <div class="flex flex-col gap-1">
                     <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">DNI / CUIL</label>
                     <input id="dni" name="dni" class="input-swiss" placeholder="Ingresar documento" type="text"
-                        required />
+                        value="{{ form_data.get('dni', '') }}" required />
                 </div>
                 <div class="grid grid-cols-2 gap-md">
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Nombre</label>
                         <input id="nombre" name="nombre" class="input-swiss" placeholder="Nombre" type="text"
-                            required />
+                            value="{{ form_data.get('nombre', '') }}" required />
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Apellido</label>
                         <input id="apellido" name="apellido" class="input-swiss" placeholder="Apellido" type="text"
-                            required />
+                            value="{{ form_data.get('apellido', '') }}" required />
                     </div>
                 </div>
                 <div class="flex flex-col gap-1">
                     <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Teléfono</label>
                     <input id="telefono" name="telefono" class="input-swiss" placeholder="+54 9 11 0000-0000" type="tel"
-                        required />
+                        value="{{ form_data.get('telefono', '') }}" required />
                 </div>
                 <div class="flex flex-col gap-1">
                     <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Email</label>
-                    <input id="email" name="email" class="input-swiss" placeholder="correo@ejemplo.com" type="email" />
+                    <input id="email" name="email" class="input-swiss" placeholder="correo@ejemplo.com" type="email"
+                        value="{{ form_data.get('email', '') }}" />
                 </div>
                 <div class="grid grid-cols-2 gap-md">
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Domicilio</label>
                         <input id="domicilio" name="domicilio" class="input-swiss" placeholder="Calle y número"
-                            type="text" required />
+                            type="text" value="{{ form_data.get('domicilio', '') }}" required />
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Localidad</label>
                         <input id="localidad" name="localidad" class="input-swiss" placeholder="Ciudad" type="text"
-                            required />
+                            value="{{ form_data.get('localidad', '') }}" required />
                     </div>
                 </div>
                 <div class="mt-auto pt-lg">

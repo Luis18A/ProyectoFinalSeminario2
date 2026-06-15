@@ -1,57 +1,74 @@
+from datetime import datetime
 from database import db
 from backend.models.Usuario import Usuario
+from backend.models.Rol import Rol
+from backend.models.HistorialEstado import HistorialEstado
 
 class UsuarioController:
+
+    @staticmethod
+    def procesar_datos(datos_formulario, is_edit=False, usuario_id=None):
+        """
+        Extrae, sanitiza y valida las reglas de negocio del usuario.
+        Retorna: (True, dict_con_datos_limpios) o (False, mensaje_de_error)
+        """
+        # ── 1. EXTRACCIÓN BLINDADA ──
+        datos = {
+            'username': (datos_formulario.get('username') or '').strip().lower(),
+            'nombre': (datos_formulario.get('nombre') or '').strip(),
+            'apellido': (datos_formulario.get('apellido') or '').strip(),
+            'rol_id': datos_formulario.get('rol_id'),
+            'activo': bool(datos_formulario.get('activo', True))
+        }
+        password_crudo = (datos_formulario.get('password') or '').strip()
+
+        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS ──
+        if not datos['username']: return False, "El nombre de usuario es requerido."
+        if not datos['nombre']: return False, "El nombre es requerido."
+        if not datos['apellido']: return False, "El apellido es requerido."
+        if not datos['rol_id']: return False, "El rol es requerido."
+
+        try:
+            datos['rol_id'] = int(datos['rol_id'])
+        except (ValueError, TypeError):
+            return False, "El rol provisto no es válido."
+
+        # ── 3. UNICIDAD DE USERNAME ──
+        existente = Usuario.obtener_por_username(datos['username'])
+        if existente and (not is_edit or existente.id != usuario_id):
+            return False, "El nombre de usuario ya está en uso."
+
+        # ── 4. MANEJO DE CONTRASEÑA Y HASHING ──
+        try:
+            if not is_edit:
+                if not password_crudo:
+                    return False, "La contraseña es requerida para un nuevo usuario."
+                datos['password'] = Usuario.hashear_password(password_crudo)
+            else:
+                if password_crudo:  # Solo se actualiza si se envió una nueva
+                    datos['password'] = Usuario.hashear_password(password_crudo)
+        except ValueError as e:
+            # Captura validaciones de longitud desde el modelo (ej. pass muy corto)
+            return False, str(e)
+
+        return True, datos
+
     @staticmethod
     def crear_usuario(datos_formulario):
-        """
-        Recibe los datos del formulario (request.form) y crea el usuario en la BD.
-        """
         try:
-            username = datos_formulario.get('username')
-            if not username:
-                return False, "El nombre de usuario es requerido."
-            username = username.strip().lower()
-            
-            if Usuario.obtener_por_username(username):
-                return False, "El nombre de usuario ya existe."
+            success, result = UsuarioController.procesar_datos(datos_formulario, is_edit=False)
+            if not success:
+                return False, result # result es el mensaje de error
 
-            Usuario.crear(
-                username=username,
-                password=datos_formulario.get('password'),
-                nombre=datos_formulario.get('nombre'),
-                apellido=datos_formulario.get('apellido'),
-                rol_id=int(datos_formulario.get('rol_id')),
-                activo=True if datos_formulario.get('activo') else False
-            )
-            return True, "Usuario creado correctamente."
-        except Exception as e:
-            db.session.rollback()
-            return False, f"Error al crear el usuario: {str(e)}"
-
-    @staticmethod
-    def obtener_todos():
-        """
-        Retorna la lista de todos los usuarios de la base de datos.
-        """
-        return Usuario.obtener_todos()
-
-    @staticmethod
-    def toggle_estado(usuario_id):
-        usuario = Usuario.obtener_por_id(usuario_id)
-        if usuario:
-            usuario.activo = not usuario.activo # Cambia de True a False y viceversa
+            # Desempaquetado limpio directamente al modelo
+            nuevo_usuario = Usuario(**result)
+            db.session.add(nuevo_usuario)
             db.session.commit()
-            return True
-        return False
+            return True, "Usuario creado correctamente."
+        except Exception:
+            db.session.rollback()
+            return False, "Error al crear el usuario. Intentá de nuevo."
 
-    @staticmethod
-    def eliminar_usuario(usuario_id):
-        usuario = Usuario.obtener_por_id(usuario_id)
-        if usuario:
-            usuario.eliminar()
-            return True
-        return False
 
     @staticmethod
     def actualizar_usuario(usuario_id, datos_formulario):
@@ -59,44 +76,74 @@ class UsuarioController:
             usuario = Usuario.obtener_por_id(usuario_id)
             if not usuario:
                 return False, "Usuario no encontrado."
-                
-            username = datos_formulario.get('username')
-            if not username:
-                return False, "El nombre de usuario es requerido."
-            username = username.strip().lower()
-            
-            existente = Usuario.obtener_por_username(username)
-            if existente and existente.id != usuario_id:
-                return False, "El nombre de usuario ya existe."
-                
-            usuario.username = username
-            usuario.nombre = datos_formulario.get('nombre')
-            usuario.apellido = datos_formulario.get('apellido')
-            usuario.rol_id = int(datos_formulario.get('rol_id'))
-            usuario.activo = True if datos_formulario.get('activo') else False
-            
-            # Solo actualizar contraseña si no viene vacía
-            password = datos_formulario.get('password')
-            if password and password.strip():
-                from werkzeug.security import generate_password_hash
-                usuario.password = generate_password_hash(password)
-            
+
+            success, result = UsuarioController.procesar_datos(
+                datos_formulario, is_edit=True, usuario_id=usuario_id
+            )
+            # Actualizamos los campos desde el diccionario sanitizado
+            usuario.username = result['username']
+            usuario.nombre   = result['nombre']
+            usuario.apellido = result['apellido']
+            usuario.rol_id   = result['rol_id']
+            usuario.activo   = result['activo']
+
+            if 'password' in result:
+                usuario.password = result['password']
+
             db.session.commit()
             return True, "Usuario actualizado correctamente."
-        except Exception as e:
+        
+        except Exception:
             db.session.rollback()
-            return False, f"Error al actualizar el usuario: {str(e)}"
+            return False, "Error al actualizar el usuario. Intentá de nuevo."
 
     @staticmethod
-    def obtener_datos_secretaria():
-        """
-        Retorna clientes, usuarios y ordenes para la vista de secretaria.
-        """
-        from backend.models.Cliente import Cliente
-        from backend.models.OrdenServicio import OrdenServicio
-        clientes = Cliente.query.all()
-        usuarios = Usuario.obtener_todos()
-        ordenes = OrdenServicio.get_all()
-        return clientes, usuarios, ordenes
+    def obtener_todos():
+        return Usuario.obtener_todos()
 
+    @staticmethod
+    def toggle_estado(usuario_id):
+        usuario = Usuario.obtener_por_id(usuario_id)
+        if not usuario:
+            return False
+        usuario.activo = not usuario.activo
+        db.session.commit()
+        return True
 
+    @staticmethod
+    def eliminar_usuario(usuario_id, usuario_actual_id):
+        if usuario_id == usuario_actual_id:
+            return False, "No puedes eliminar tu propia cuenta."
+        usuario = Usuario.obtener_por_id(usuario_id)
+        if not usuario:
+            return False, "Usuario no encontrado."
+        try:
+            db.session.delete(usuario)
+            db.session.commit()
+            return True, "Usuario eliminado correctamente."
+        except Exception:
+            db.session.rollback()
+            return False, "Error al eliminar el usuario."
+
+    @staticmethod
+    def obtener_datos_gestion_usuarios():
+        usuarios_lista = Usuario.obtener_todos()
+        roles_lista = Rol.query.all()
+        
+        # Lógica de auditoría movida desde la ruta
+        last_audit = HistorialEstado.query.order_by(HistorialEstado.fecha_cambio.desc()).first()
+        tiempo_auditoria = "Sin registros"
+        
+        if last_audit:
+            diff = datetime.now() - last_audit.fecha_cambio
+            if diff.days > 0: tiempo_auditoria = f"Hace {diff.days}d"
+            elif diff.seconds // 3600 > 0: tiempo_auditoria = f"Hace {diff.seconds // 3600}h"
+            else: tiempo_auditoria = "Hace instantes"
+
+        return {
+            'usuarios': usuarios_lista,
+            'roles': roles_lista,
+            'cant_activos': sum(1 for u in usuarios_lista if u.activo),
+            'cant_roles': len(roles_lista),
+            'tiempo_auditoria': tiempo_auditoria
+        }

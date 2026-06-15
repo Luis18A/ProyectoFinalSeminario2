@@ -118,7 +118,7 @@
                                                     </div>
                                                     <div class="flex items-center gap-3">
                                                         {{ badge_estado(o.estado.value) }}
-                                                        <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=o.id) }}"
+                                                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=o.id) }}"
                                                            class="px-3 py-2 bg-zinc-950 text-white font-label-mono text-[9px] uppercase tracking-wider font-bold hover:bg-emerald-600 transition-colors flex items-center gap-1 shadow-sm">
                                                             <span class="material-symbols-outlined text-[12px]">open_in_new</span>
                                                             Ver
@@ -176,7 +176,7 @@
             <div class="bento-card p-6 h-full flex flex-col">
                 <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Nuevo Tipo de Equipo</h2>
                 <form class="flex flex-col gap-6 flex-1"
-                    action="{{ url_for('tipoDispositivo.crear_tipo_dispositivo') }}" method="POST">
+                    action="{{ url_for('tipo_dispositivo.crear_tipo_dispositivo') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% if cliente %}
                     <input type="hidden" name="cliente_id" value="{{ cliente.id }}">

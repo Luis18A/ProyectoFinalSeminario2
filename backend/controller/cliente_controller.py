@@ -1,17 +1,13 @@
 import re
 from backend.models.Cliente import Cliente
-from database import db
 from backend.models.Equipo import Equipo
+from database import db
 
 class ClienteController:
     @staticmethod
     def validar_cuit_cuil(cuit):
-        """
-        Valida el dígito verificador del algoritmo oficial de CUIT/CUIL para Argentina (11 dígitos).
-        """
-        # Limpiamos el string de cualquier guion o espacio
+        """Valida el dígito verificador del algoritmo oficial de CUIT/CUIL para Argentina."""
         cuit = re.sub(r'\D', '', str(cuit))
-        
         if len(cuit) != 11 or not cuit.isdigit():
             return False
         
@@ -20,132 +16,141 @@ class ClienteController:
         remainder = total % 11
         
         check_digit = 11 - remainder
-        if check_digit == 11:
-            calculated = 0
-        elif check_digit == 10:
-            # En casos especiales de recalculo de CUIT en Argentina para evitar colisiones
-            calculated = 9
-        else:
-            calculated = check_digit
+        if check_digit == 11: calculated = 0
+        elif check_digit == 10: calculated = 9
+        else: calculated = check_digit
             
         provided = int(cuit[10])
-        # Se admite recalculo excepcional oficial que asigna 9 o 4 en residuo 10
-        if check_digit == 10:
-            return provided in (9, 4)
+        if check_digit == 10: return provided in (9, 4)
+        return provided == calculated
             
         return provided == calculated
 
     @staticmethod
-    def validar_datos_cliente(datos_formulario, is_edit=False, cliente_id=None):
-        nombre = datos_formulario.get('nombre', '').strip()
-        apellido = datos_formulario.get('apellido', '').strip()
-        telefono = datos_formulario.get('telefono', '').strip()
-        email = datos_formulario.get('email', '').strip()
-        domicilio = datos_formulario.get('domicilio', '').strip()
-        localidad = datos_formulario.get('localidad', '').strip()
+    def procesar_datos(datos_formulario, is_edit=False, cliente_id=None):
+        """
+        Extrae, sanitiza y valida todas las reglas de negocio.
+        Retorna: (True, dict_con_datos_limpios) o (False, mensaje_de_error)
+        """
+        # ── 1. EXTRACCIÓN Y SANITIZACIÓN ÚNICA (DRY) ──
+        datos = {
+            'nombre': (datos_formulario.get('nombre') or '').strip().title(),
+            'apellido': (datos_formulario.get('apellido') or '').strip().title(),
+            'telefono': (datos_formulario.get('telefono') or '').strip(),
+            'email': (datos_formulario.get('email') or '').strip().lower() or None,
+            'domicilio': (datos_formulario.get('domicilio') or '').strip(),
+            'localidad': (datos_formulario.get('localidad') or '').strip(),
+        }
 
-        # 1. Validación de Nombre y Apellido (Compuestos con guion y límites de longitud)
-        if not nombre or len(nombre) < 2:
-            return False, "El nombre debe tener al menos 2 caracteres."
-        if len(nombre) > 50:
-            return False, "El nombre es demasiado largo (máximo 50 caracteres)."
-            
-        if not apellido or len(apellido) < 2:
-            return False, "El apellido debe tener al menos 2 caracteres."
-        if len(apellido) > 50:
-            return False, "El apellido es demasiado largo (máximo 50 caracteres)."
-            
-        # Permitir letras, espacios, apóstrofes y guiones (para compuestos)
-        nombre_pattern = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$"
-        if not re.match(nombre_pattern, nombre):
-            return False, "El nombre solo debe contener letras, espacios o guiones."
-        if not re.match(nombre_pattern, apellido):
-            return False, "El apellido solo debe contener letras, espacios o guiones."
+        # ── 2. VALIDACIÓN DE NOMBRE Y APELLIDO ──
+        if not datos['nombre'] or len(datos['nombre']) < 2: return False, "El nombre debe tener al menos 2 caracteres."
+        if len(datos['nombre']) > 50: return False, "El nombre es demasiado largo."
+        if not datos['apellido'] or len(datos['apellido']) < 2: return False, "El apellido debe tener al menos 2 caracteres."
+        if len(datos['apellido']) > 50: return False, "El apellido es demasiado largo."
+        
+        patron_texto = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$"
+        if not re.match(patron_texto, datos['nombre']): return False, "El nombre solo debe contener letras, espacios o guiones."
+        if not re.match(patron_texto, datos['apellido']): return False, "El apellido solo debe contener letras, espacios o guiones."
 
-        # 2. Validación de DNI / CUIL (Longitudes fijas y Dígito Verificador oficial)
+        # ── 3. VALIDACIÓN DE DNI / CUIL Y SU UNICIDAD ──
         if not is_edit:
-            dni = datos_formulario.get('dni', '').strip()
-            if not dni:
-                return False, "El DNI/CUIL es requerido."
-            clean_dni = re.sub(r'[- ]', '', dni)
-            if not clean_dni.isdigit() or len(clean_dni) not in [7, 8, 11]:
-                return False, "El DNI/CUIL debe contener exactamente 7, 8 u 11 números, sin letras."
+            dni_crudo = (datos_formulario.get('dni') or '').strip()
+            if not dni_crudo: return False, "El DNI/CUIL es requerido."
             
-            # Si es un CUIL/CUIT de 11 dígitos, se valida el dígito verificador matemático
-            if len(clean_dni) == 11:
+            clean_dni = re.sub(r'[\.\- ]', '', dni_crudo)
+            if not clean_dni.isdigit(): return False, "El documento solo debe contener números."
+            
+            longitud = len(clean_dni)
+            if not (6 <= longitud <= 8) and longitud != 11:
+                return False, "El DNI debe tener entre 6 y 8 números, o exactamente 11 para CUIL/CUIT."
+            
+            if longitud == 11:
+                prefijo = clean_dni[:2]
+                if prefijo not in ['20', '23', '24', '27', '30', '33', '34']:
+                    return False, f"El prefijo '{prefijo}' no es válido para un CUIL/CUIT argentino."
                 if not ClienteController.validar_cuit_cuil(clean_dni):
-                    return False, "El número de CUIL/CUIT no es válido. El dígito verificador es incorrecto."
+                    return False, "El número de CUIL/CUIT no es válido (Dígito verificador incorrecto)."
+            
+            # Cohesión: La unicidad del DNI se evalúa aquí mismo
+            if Cliente.get_por_dni(clean_dni):
+                return False, f"El DNI/CUIL {clean_dni} ya se encuentra registrado en el sistema."
+            
+            datos['dni_cuil'] = clean_dni
 
-        # 3. Validación de Teléfono (Rango neto entre 8 y 15 dígitos)
-        if not telefono:
-            return False, "El teléfono es requerido."
-        if len(telefono) > 20:
-            return False, "El teléfono es demasiado largo."
-        clean_tel = re.sub(r'[-+ ]', '', telefono)
+        # ── 4. VALIDACIÓN DE TELÉFONO ──
+        if not datos['telefono']: return False, "El teléfono es requerido."
+        if len(datos['telefono']) > 20: return False, "El teléfono es demasiado largo."
+        clean_tel = re.sub(r'[-+ ]', '', datos['telefono'])
         if not clean_tel.isdigit() or not (8 <= len(clean_tel) <= 15):
             return False, "El teléfono debe contener entre 8 y 15 números netos."
 
-        # 4. Validación de Correo Electrónico (Longitud máxima y unicidad real)
-        if email:
-            if len(email) > 254:
-                return False, "El correo electrónico es demasiado largo (máximo 254 caracteres)."
-            email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-            if not re.match(email_regex, email):
-                return False, "El formato del correo electrónico no es válido (ej. correo@ejemplo.com)."
+        # ── 5. VALIDACIÓN Y UNICIDAD DE EMAIL ──
+        if datos['email']:
+            if len(datos['email']) > 254: return False, "El correo electrónico es demasiado largo."
+            if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", datos['email']):
+                return False, "El formato del correo electrónico no es válido."
             
-            # Validar Unicidad de Email
-            existente = Cliente.query.filter_by(email=email).first()
-            if not is_edit:
-                if existente:
-                    return False, "El correo electrónico ya está registrado por otro cliente."
-            else:
-                if existente and existente.id != cliente_id:
-                    return False, "El correo electrónico ya está registrado por otro cliente."
+            existente = Cliente.query.filter_by(email=datos['email']).first()
+            if existente and (not is_edit or existente.id != cliente_id):
+                return False, "El correo electrónico ya está registrado por otro cliente."
 
-        # 5. Validación de Domicilio (Al menos un carácter alfanumérico y límite)
-        if not domicilio or len(domicilio) < 3:
-            return False, "El domicilio debe tener al menos 3 caracteres."
-        if len(domicilio) > 150:
-            return False, "El domicilio es demasiado largo (máximo 150 caracteres)."
-        if not re.search(r"[A-Za-z0-9áéíóúÁÉÍÓÚñÑüÜ]", domicilio):
-            return False, "El domicilio es inválido (debe contener letras o números)."
+        # ── 6. VALIDACIÓN DE DOMICILIO Y LOCALIDAD ──
+        if not datos['domicilio'] or len(datos['domicilio']) < 3: return False, "El domicilio debe tener al menos 3 caracteres."
+        if len(datos['domicilio']) > 150: return False, "El domicilio es demasiado largo."
+        if not re.search(r"[A-Za-z0-9áéíóúÁÉÍÓÚñÑüÜ]", datos['domicilio']): return False, "El domicilio es inválido."
+        
+        if not datos['localidad'] or len(datos['localidad']) < 2: return False, "La localidad debe tener al menos 2 caracteres."
+        if len(datos['localidad']) > 100: return False, "La localidad es demasiado larga."
+        if not re.match(patron_texto, datos['localidad']): return False, "La localidad contiene caracteres inválidos."
 
-        # 6. Validación de Localidad (Patrón restrictivo y límites)
-        if not localidad or len(localidad) < 2:
-            return False, "La localidad debe tener al menos 2 caracteres."
-        if len(localidad) > 100:
-            return False, "La localidad es demasiado larga (máximo 100 caracteres)."
-        localidad_pattern = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$"
-        if not re.match(localidad_pattern, localidad):
-            return False, "La localidad solo debe contener letras, espacios, guiones o apóstrofes."
-
-        return True, ""
+        # Retornamos True y el diccionario listo para usar
+        return True, datos
 
     @staticmethod
     def crear_cliente(datos_formulario):
         try:
-            success, message = ClienteController.validar_datos_cliente(datos_formulario, is_edit=False)
+            success, result = ClienteController.procesar_datos(datos_formulario, is_edit=False)
             if not success:
-                return False, message
-                
-            dni = re.sub(r'[- ]', '', datos_formulario.get('dni', '').strip())
+                return False, result # result contiene el mensaje de error
+
+            # Código ultra limpio: desempaquetamos el diccionario validado directamente en el modelo
+            nuevo = Cliente(**result)
             
-            cliente_existente = Cliente.get_por_dni(dni)
-            if cliente_existente:
-                return False, f"El DNI/CUIL {dni} ya existe."
-                
-            Cliente.create(
-                dni_cuil=dni,
-                nombre=datos_formulario.get('nombre').strip().title(),
-                apellido=datos_formulario.get('apellido').strip().title(),
-                telefono=datos_formulario.get('telefono').strip(),
-                email=datos_formulario.get('email', '').strip().lower() or None,
-                domicilio=datos_formulario.get('domicilio').strip(),
-                localidad=datos_formulario.get('localidad').strip()
-            )
+            db.session.add(nuevo)
+            db.session.commit()
             return True, "Cliente creado exitosamente."
-        except Exception as e:
-            return False, f"Error al crear el cliente: {str(e)}"
+
+        except Exception:
+            db.session.rollback()
+            return False, "Error al crear el cliente. Intentá de nuevo."
+
+    @staticmethod
+    def editar_cliente(cliente_id, datos_formulario):
+        try:
+            cliente = Cliente.get_by_id(cliente_id)
+            if not cliente:
+                return False, "Cliente no encontrado."
+
+            success, result = ClienteController.procesar_datos(
+                datos_formulario, is_edit=True, cliente_id=cliente_id
+            )
+            if not success:
+                return False, result
+
+            # Actualizamos usando el diccionario sanitizado (no pisamos el DNI porque no se edita)
+            cliente.nombre    = result['nombre']
+            cliente.apellido  = result['apellido']
+            cliente.telefono  = result['telefono']
+            cliente.email     = result['email']
+            cliente.domicilio = result['domicilio']
+            cliente.localidad = result['localidad']
+
+            db.session.commit()
+            return True, "Cliente actualizado exitosamente."
+
+        except Exception:
+            db.session.rollback()
+            return False, "Error al actualizar el cliente. Intentá de nuevo."
 
     @staticmethod
     def obtener_todos():
@@ -153,8 +158,8 @@ class ClienteController:
 
     @staticmethod
     def obtener_por_id(cliente_id):
-        if cliente_id <= 0:
-            return False, "El ID del cliente es requerido."
+        if not cliente_id or cliente_id <= 0:
+            return None
         return Cliente.get_by_id(cliente_id)
 
     @staticmethod
@@ -163,8 +168,7 @@ class ClienteController:
 
     @staticmethod
     def buscar_clientes(termino):
-        """Busca clientes por nombre, apellido o DNI/CUIL con sanitización y límites."""
-        termino = termino.strip()
+        termino = (termino or '').strip()
         if not termino or len(termino) > 100:
             return []
         return Cliente.query.filter(
@@ -175,53 +179,73 @@ class ClienteController:
 
     @staticmethod
     def buscar_clientes_json(termino):
-        """Busca clientes y retorna una lista de diccionarios JSON listos para responder en la ruta."""
-        clientes = ClienteController.buscar_clientes(termino)
-        resultados = []
-        for c in clientes:
-            resultados.append({
-                'id': c.id,
-                'nombre': c.nombre,
-                'apellido': c.apellido,
-                'dni_cuil': c.dni_cuil,
-                'telefono': c.telefono,
-                'email': c.email,
+        return [
+            {
+                'id':        c.id,
+                'nombre':    c.nombre,
+                'apellido':  c.apellido,
+                'dni_cuil':  c.dni_cuil,
+                'telefono':  c.telefono,
+                'email':     c.email,
                 'domicilio': c.domicilio,
-                'localidad': c.localidad
-            })
-        return resultados
+                'localidad': c.localidad,
+            }
+            for c in ClienteController.buscar_clientes(termino)
+        ]
 
     @staticmethod
-    def editar_cliente(cliente_id, datos_formulario):
-        try:
-            cliente = Cliente.get_by_id(cliente_id)
-            if not cliente:
-                return False, "Cliente no encontrado."
-                
-            success, message = ClienteController.validar_datos_cliente(datos_formulario, is_edit=True, cliente_id=cliente_id)
-            if not success:
-                return False, message
-                
-            cliente.nombre = datos_formulario.get('nombre').strip().title()
-            cliente.apellido = datos_formulario.get('apellido').strip().title()
-            cliente.telefono = datos_formulario.get('telefono').strip()
-            cliente.email = datos_formulario.get('email', '').strip().lower() or None
-            cliente.domicilio = datos_formulario.get('domicilio').strip()
-            cliente.localidad = datos_formulario.get('localidad').strip()
+    def verificar_dni(dni):
+        """Verifica si un cliente existe por DNI y devuelve el DTO correspondiente."""
+        cliente = Cliente.get_por_dni(dni)
+        if not cliente:
+            return False, None
+        return True, {
+            'id': cliente.id, 'nombre': cliente.nombre, 'apellido': cliente.apellido,
+            'telefono': cliente.telefono, 'email': cliente.email or '',
+            'domicilio': cliente.domicilio, 'localidad': cliente.localidad,
+            'dni_cuil': cliente.dni_cuil
+        }
+
+    @staticmethod
+    def obtener_datos_gestion(q):
+        """Busca clientes si q existe, de lo contrario obtiene todos."""
+        q = (q or '').strip()
+        if q:
+            return ClienteController.buscar_clientes(q)
+        return ClienteController.obtener_todos()
+
+    @staticmethod
+    def crear_cliente_rapido(datos_formulario):
+        """Intenta crear un cliente y devuelve el DTO en un único viaje."""
+        success, result = ClienteController.crear_cliente(datos_formulario)
+        if not success:
+            return False, result, None
             
-            db.session.commit()
-            return True, "Cliente actualizado exitosamente."
-        except Exception as e:
-            db.session.rollback()
-            return False, f"Error al actualizar el cliente: {str(e)}"
+        dni = (datos_formulario.get('dni') or '').strip()
+        clean_dni = re.sub(r'[\.\- ]', '', dni)
+        cliente = Cliente.get_por_dni(clean_dni)
+        if not cliente:
+            return False, "Error al recuperar el cliente tras la creación.", None
+            
+        return True, result, {
+            'id': cliente.id,
+            'nombre': cliente.nombre,
+            'apellido': cliente.apellido,
+            'dni_cuil': cliente.dni_cuil
+        }
 
     @staticmethod
     def eliminar_cliente(cliente_id):
         cliente = Cliente.get_by_id(cliente_id)
-        if cliente:
-            cliente.delete()
+        if not cliente:
+            return False
+        try:
+            db.session.delete(cliente)
+            db.session.commit()
             return True
-        return False
+        except Exception:
+            db.session.rollback()
+            return False
 
     @staticmethod
     def obtener_equipos_cliente(cliente_id):

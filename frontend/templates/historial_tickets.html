@@ -15,7 +15,7 @@
 
     <!-- Search & Filter Bar -->
     <div class="bento-card mb-md">
-        <form method="GET" action="{{ url_for('ordenServicio.historial') }}" class="flex flex-col md:flex-row gap-md items-end">
+        <form method="GET" action="{{ url_for('orden_servicio.historial') }}" class="flex flex-col md:flex-row gap-md items-end">
             <div class="flex-1 w-full relative">
                 <label class="font-label-bold text-on-surface-variant uppercase mb-xs block">Ticket #</label>
                 <div class="relative">
@@ -36,7 +36,7 @@
                     <span class="material-symbols-outlined text-sm">filter_list</span>
                     Filtrar
                 </button>
-                <a href="{{ url_for('ordenServicio.exportar_csv', ticket_id=request.args.get('ticket_id', ''), cliente=request.args.get('cliente', ''), equipo=request.args.get('equipo', '')) }}" 
+                <a href="{{ url_for('orden_servicio.exportar_csv', ticket_id=request.args.get('ticket_id', ''), cliente=request.args.get('cliente', ''), equipo=request.args.get('equipo', '')) }}" 
                    class="btn-swiss btn-outline flex-1 md:flex-none flex items-center justify-center gap-sm h-[40px] px-6 text-xs font-bold uppercase tracking-wider">
                     <span class="material-symbols-outlined text-sm">download</span>
                     Exportar
@@ -82,10 +82,10 @@
                         {{ o.fecha_entrega.strftime('%d %b, %H:%M') if o.fecha_entrega else '—' }}
                     </td>
                     <td class="text-right space-x-2">
-                        <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=o.id) }}" class="inline-block text-on-surface-variant hover:text-accent p-xs transition-colors" title="Ver Detalles">
+                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=o.id) }}" class="inline-block text-on-surface-variant hover:text-accent p-xs transition-colors" title="Ver Detalles">
                             <span class="material-symbols-outlined">visibility</span>
                         </a>
-                        <a href="{{ url_for('ordenServicio.comprobante', orden_id=o.id) }}" class="inline-block text-on-surface-variant hover:text-primary p-xs transition-colors" title="Imprimir Ticket">
+                        <a href="{{ url_for('orden_servicio.comprobante', orden_id=o.id) }}" class="inline-block text-on-surface-variant hover:text-primary p-xs transition-colors" title="Imprimir Ticket">
                             <span class="material-symbols-outlined">print</span>
                         </a>
                     </td>

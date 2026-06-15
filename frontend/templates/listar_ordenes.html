@@ -57,7 +57,7 @@
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                                            class="px-2 py-1.5 bg-zinc-100 border border-zinc-200 text-zinc-700 hover:bg-zinc-200 transition-colors uppercase text-[9px] font-bold flex items-center gap-1"
                                            title="Ver Detalle / Historial">
                                             <span class="material-symbols-outlined text-[12px]">visibility</span> Detalle
@@ -103,12 +103,12 @@
                     <span class="material-symbols-outlined text-on-surface-variant text-sm">playlist_add</span>
                 </div>
 
-                <form id="form-orden" method="POST" action="{{ url_for('ordenServicio.crear_ordenServicio') }}"
+                <form id="form-orden" method="POST" action="{{ url_for('orden_servicio.crear_ordenServicio') }}"
                     class="flex flex-col gap-6 flex-1">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <!-- Redirect next path back to unified view after submit -->
-                    <input type="hidden" name="next" value="{{ url_for('ordenServicio.listar_ordenes_view') }}">
+                    <input type="hidden" name="next" value="{{ url_for('orden_servicio.listar_ordenes_view') }}">
 
                     <!-- Usuario técnico que recibe (oculto, tomado de sesión) -->
                     <input type="hidden" name="usuario_id" value="{{ session.get('usuario_id') }}">

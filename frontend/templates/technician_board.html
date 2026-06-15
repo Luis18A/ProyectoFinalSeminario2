@@ -13,7 +13,7 @@
             <h1 class="text-3xl font-black uppercase tracking-tighter text-on-surface">Tablero del Técnico</h1>
             <p class="text-xs text-on-surface-variant mt-1">Gestión de reparaciones y diagnósticos.</p>
         </div>
-        <a href="{{ url_for('usuarios.technician') }}"
+        <a href="{{ url_for('vistas.technician') }}"
             class="bg-zinc-100 text-zinc-700 px-6 py-2 font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 text-xs">
             <span class="material-symbols-outlined text-[16px]">dashboard</span>
             Ver Tablero General
@@ -39,7 +39,7 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in pendiente %}
-                    <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                         class="block bg-white border-l-4 border-l-error border border-border p-4 hover:shadow-sm transition-all group">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-[11px] text-error font-bold">#{{ orden.id }}</span>
@@ -79,7 +79,7 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in diagnostico %}
-                    <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                         class="block bg-white border-l-4 border-l-blue-600 border border-border p-4 hover:shadow-sm transition-all group">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-[11px] text-blue-700 font-bold">#{{ orden.id }}</span>
@@ -119,7 +119,7 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in presupuestado %}
-                    <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                         class="block bg-white border-l-4 border-l-purple-600 border border-border p-4 hover:shadow-sm transition-all group">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-[11px] text-purple-700 font-bold">#{{ orden.id }}</span>
@@ -171,7 +171,7 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in reparacion %}
-                    <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                         class="block bg-white border-l-4 border-l-orange-500 border border-border p-4 hover:shadow-sm transition-all group">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-[11px] text-orange-600 font-bold">#{{ orden.id }}</span>
@@ -220,7 +220,7 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in listo %}
-                    <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                         class="block bg-white border-l-4 border-l-emerald-600 border border-border p-4 hover:shadow-sm transition-all group">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-[11px] text-emerald-700 font-bold">#{{ orden.id }}</span>
@@ -263,7 +263,7 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in entregado %}
-                    <a href="{{ url_for('ordenServicio.gestionar_ticket', orden_id=orden.id) }}"
+                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
                         class="block bg-white border-l-4 border-l-zinc-600 border border-border p-4 hover:shadow-sm transition-all group">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-[11px] text-zinc-600 font-bold">#{{ orden.id }}</span>

@@ -49,23 +49,23 @@
                 {% endif %}
 
                 {% if user_role == 'Administrador' %}
-                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'ordenServicio.historial' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
-                    href="{{ url_for('ordenServicio.historial') }}">
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'orden_servicio.historial' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
+                    href="{{ url_for('orden_servicio.historial') }}">
                     <span class="material-symbols-outlined">history</span> Historial Global
                 </a>
                 {% endif %}
                 <!-- Secciones Filtros de Rol -->
 
                 {% if user_role in ('Secretario', 'Administrador') %}
-                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'ordenServicio.listar_ordenes_view' or endpoint == 'ordenServicio.crear_orden_view' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
-                    href="{{ url_for('ordenServicio.listar_ordenes_view') }}">
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'orden_servicio.listar_ordenes_view' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
+                    href="{{ url_for('orden_servicio.listar_ordenes_view') }}">
                     <span class="material-symbols-outlined">receipt_long</span> Gestión de Órdenes
                 </a>
                 {% endif %}
 
                 {% if user_role in ('Técnico', 'Administrador') %}
-                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'usuarios.technician' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
-                    href="{{ url_for('usuarios.technician') }}">
+                <a class="px-6 py-4 flex items-center gap-4 font-['Space_Grotesk'] text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'vistas.technician' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
+                    href="{{ url_for('vistas.technician') }}">
                     <span class="material-symbols-outlined">engineering</span> Técnico
                 </a>
                 {% endif %}
@@ -298,7 +298,7 @@
                             <div class="overflow-y-auto flex-grow divide-y divide-zinc-50 font-['Space_Grotesk'] text-xs">
                                 {% if global_notifications %}
                                     {% for notif in global_notifications %}
-                                    <div onclick="handleNotificationClick({{ notif.id }}, '{{ url_for('ordenServicio.gestionar_ticket', orden_id=notif.orden_id) if notif.orden_id else '#' }}')" 
+                                    <div onclick="handleNotificationClick({{ notif.id }}, '{{ url_for('orden_servicio.gestionar_ticket', orden_id=notif.orden_id) if notif.orden_id else '#' }}')" 
                                          class="p-4 hover:bg-zinc-50 cursor-pointer transition-colors relative {% if not notif.leido %}bg-[#0057FF]/5 border-l-2 border-[#0057FF]{% endif %}">
                                         <div class="flex justify-between items-start mb-1">
                                             <span class="font-bold text-[#1A1A1A] pr-2">{{ notif.titulo }}</span>
