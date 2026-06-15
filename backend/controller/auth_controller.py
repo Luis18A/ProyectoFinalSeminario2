@@ -10,7 +10,7 @@ class AuthController:
         """
         try:
             # 1. Búsqueda con manejo de errores de conexión
-            usuario = Usuario.obtener_por_username(username)
+            usuario = Usuario.get_por_username(username)
             
             # Simulamos usuario "dummy" si no existe para evitar timing attacks
             # pero para mantenerlo simple y seguro, seguiremos con tu lógica actual:

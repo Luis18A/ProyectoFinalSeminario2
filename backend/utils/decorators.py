@@ -35,7 +35,7 @@ def role_required(*roles_permitidos):
     El rol se lee desde session['rol_descripcion'], no desde la BD.
     Esto asume que la SECRET_KEY es suficientemente segura (variable de entorno).
     Si se requiere mayor rigor, reemplazar por verificación contra BD:
-        usuario = Usuario.obtener_por_id(session['usuario_id'])
+        usuario = Usuario.get_by_id(session['usuario_id'])
         rol_actual = usuario.rol.descripcion
     El costo es una query extra por request protegido.
     """

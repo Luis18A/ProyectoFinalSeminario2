@@ -33,23 +33,21 @@ class Equipo(db.Model):
                   .first())
         return ultima.estado.value if ultima else "Disponible"
 
-    # ── Queries ────────────────────────────────────────────────────
+    @classmethod
+    def get_all(cls):
+        return cls.query.all()
 
-    @staticmethod
-    def get_all():
-        return Equipo.query.all()
+    @classmethod
+    def get_by_id(cls, id):
+        return db.session.get(cls, id)
 
-    @staticmethod
-    def get_by_id(id):
-        return db.session.get(Equipo, id)
+    @classmethod
+    def get_por_cliente(cls, cliente_id):
+        return cls.query.filter_by(cliente_id=cliente_id).all()
 
-    @staticmethod
-    def get_por_cliente(cliente_id):
-        return Equipo.query.filter_by(cliente_id=cliente_id).all()
-
-    @staticmethod
-    def get_por_numero_serie(numero_serie):
-        return Equipo.query.filter_by(numero_serie=numero_serie).first()
+    @classmethod
+    def get_por_numero_serie(cls, numero_serie):
+        return cls.query.filter_by(numero_serie=numero_serie).first()
 
     def __repr__(self):
         return f"<Equipo id={self.id} serie='{self.numero_serie}' marca='{self.marca}'>"

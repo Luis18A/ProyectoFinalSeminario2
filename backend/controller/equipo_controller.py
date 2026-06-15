@@ -62,7 +62,9 @@ class EquipoController:
         if not success:
             return False, result, None
 
-        equipo = Equipo.get_por_numero_serie(datos_formulario.get('numero_serie'))
+        # Limpiamos el número de serie de la misma forma que en procesar_datos (strip y upper)
+        clean_serial = (datos_formulario.get('numero_serie') or '').strip().upper()
+        equipo = Equipo.get_por_numero_serie(clean_serial)
         if not equipo:
             return False, "Error al recuperar el equipo tras la creación.", None
 

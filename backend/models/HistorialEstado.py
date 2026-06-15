@@ -5,7 +5,7 @@ class HistorialEstado(db.Model):
     __tablename__ = 'historial_estados'
 
     id                  = db.Column(db.Integer, primary_key=True)
-    orden_id            = db.Column(db.Integer, db.ForeignKey('orden_servicio.id'), nullable=True)
+    orden_id            = db.Column(db.Integer, db.ForeignKey('orden_servicio.id'), nullable=False)
     estado_anterior     = db.Column(db.String(50), nullable=False)
     estado_nuevo        = db.Column(db.String(50), nullable=False)
     fecha_cambio        = db.Column(db.DateTime, default=datetime.now)
@@ -22,22 +22,12 @@ class HistorialEstado(db.Model):
         self.usuario_id          = usuario_id
         self.observacion_tecnica = observacion_tecnica
 
-    @classmethod
-    def add_registro(cls, orden_id, estado_anterior, estado_nuevo,
-                     usuario_id, observacion_tecnica=None):
-
-        registro = cls(
-            orden_id=orden_id,
-            estado_anterior=estado_anterior,
-            estado_nuevo=estado_nuevo,
-            usuario_id=usuario_id,
-            observacion_tecnica=observacion_tecnica,
-        )
-        db.session.add(registro)
+    # ── Queries ────────────────────────────────────────────────────────
 
     @classmethod
     def get_historial_orden(cls, orden_id):
-        return cls.query.filter_by(orden_id=orden_id).all()
+        """Devuelve el historial de una orden, del más reciente al más antiguo."""
+        return cls.query.filter_by(orden_id=orden_id).order_by(cls.fecha_cambio.desc()).all()
 
     @classmethod
     def get_historial_usuario(cls, usuario_id):
@@ -54,7 +44,3 @@ class HistorialEstado(db.Model):
             fecha_cambio = fecha_cambio.date()
             
         return cls.query.filter(db.func.cast(cls.fecha_cambio, db.Date) == fecha_cambio).all()
-    
-    @classmethod
-    def get_historial_tickets(cls, orden_id):
-        return cls.query.filter_by(orden_id=orden_id).order_by(cls.fecha_cambio.desc()).all()

@@ -27,31 +27,27 @@ class Cliente(db.Model):
         self.domicilio = domicilio
         self.localidad = localidad
 
-    # Métodos CRUD (Active Record Pattern)
+    @classmethod
+    def get_all(cls):
+        return cls.query.all()
 
-    # ── Queries (solo lectura, nunca hacen commit) ─────────────────
+    @classmethod
+    def get_by_id(cls, id):
+        return db.session.get(cls, id)
 
-    @staticmethod
-    def get_all():
-        return Cliente.query.all()
+    @classmethod
+    def get_por_dni(cls, dni):
+        return cls.query.filter_by(dni_cuil=dni).first()
 
-    @staticmethod
-    def get_by_id(id):
-        return db.session.get(Cliente, id)
+    @classmethod
+    def get_por_email(cls, email):
+        return cls.query.filter_by(email=email).first()
 
-    @staticmethod
-    def get_por_dni(dni):
-        return Cliente.query.filter_by(dni_cuil=dni).first()
-
-    @staticmethod
-    def get_por_email(email):
-        return Cliente.query.filter_by(email=email).first()
-
-    @staticmethod
-    def get_por_nombre_apellido(termino):
-        return Cliente.query.filter(
-            (Cliente.nombre.ilike(f"%{termino}%")) |
-            (Cliente.apellido.ilike(f"%{termino}%"))
+    @classmethod
+    def get_por_nombre_apellido(cls, termino):
+        return cls.query.filter(
+            (cls.nombre.ilike(f"%{termino}%")) |
+            (cls.apellido.ilike(f"%{termino}%"))
         ).all()
 
     def __repr__(self):

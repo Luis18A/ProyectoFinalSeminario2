@@ -21,13 +21,14 @@ class Notificacion(db.Model):
         self.mensaje    = mensaje
         self.orden_id   = orden_id
 
+    # ── Queries ────────────────────────────────────────────────────────
+
     @classmethod
-    def crear_notificacion(cls, usuario_id, titulo, mensaje, orden_id=None):
-        nueva = cls(
-            usuario_id=usuario_id,
-            titulo=titulo,
-            mensaje=mensaje,
-            orden_id=orden_id,
-        )
-        db.session.add(nueva)
-        return nueva
+    def get_todas_por_usuario(cls, usuario_id):
+        """Devuelve todas las notificaciones de un usuario, ordenadas por fecha."""
+        return cls.query.filter_by(usuario_id=usuario_id).order_by(cls.fecha_creacion.desc()).all()
+
+    @classmethod
+    def get_no_leidas_por_usuario(cls, usuario_id):
+        """Devuelve solo las notificaciones pendientes de lectura."""
+        return cls.query.filter_by(usuario_id=usuario_id, leido=False).order_by(cls.fecha_creacion.desc()).all()

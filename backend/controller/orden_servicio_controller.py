@@ -120,7 +120,7 @@ class OrdenServicioController:
     @staticmethod
     def obtener_historial(orden_id):
         """Obtiene el historial cronológico de un ticket."""
-        return HistorialEstado.get_historial_tickets(orden_id)
+        return HistorialEstado.get_historial_orden(orden_id)
 
     @staticmethod
     def obtener_por_usuario(usuario_id):

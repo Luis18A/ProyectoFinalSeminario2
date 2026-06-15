@@ -65,41 +65,37 @@ class Usuario(db.Model):
         """Resetea el contador al hacer login exitoso."""
         self.intentos_fallidos = 0
 
-    # ─────────────────────────────────────────────────────────────────
-    # Queries (solo lectura — nunca hacen commit)
-    # ─────────────────────────────────────────────────────────────────
-
     @classmethod
-    def obtener_todos(cls):
+    def get_all(cls):
         return cls.query.all()
 
     @classmethod
-    def obtener_por_id(cls, id):
+    def get_by_id(cls, id):
         return db.session.get(cls, id)
 
-    @staticmethod
-    def obtener_por_username(username):
+    @classmethod
+    def get_por_username(cls, username):
         if not username:
             return None
-        return Usuario.query.filter(
-            db.func.lower(Usuario.username) == username.strip().lower()
+        return cls.query.filter(
+            db.func.lower(cls.username) == username.strip().lower()
         ).first()
 
-    @staticmethod
-    def obtener_por_nombre(nombre):
-        return Usuario.query.filter(Usuario.nombre.ilike(f"%{nombre}%")).all()
+    @classmethod
+    def get_por_nombre(cls, nombre):
+        return cls.query.filter(cls.nombre.ilike(f"%{nombre}%")).all()
 
-    @staticmethod
-    def obtener_por_apellido(apellido):
-        return Usuario.query.filter(Usuario.apellido.ilike(f"%{apellido}%")).all()
+    @classmethod
+    def get_por_apellido(cls, apellido):
+        return cls.query.filter(cls.apellido.ilike(f"%{apellido}%")).all()
 
-    @staticmethod
-    def obtener_por_rol(rol_id):
-        return Usuario.query.filter_by(rol_id=rol_id).all()
+    @classmethod
+    def get_por_rol(cls, rol_id):
+        return cls.query.filter_by(rol_id=rol_id).all()
 
-    @staticmethod
-    def obtener_por_activo(activo):
-        return Usuario.query.filter_by(activo=activo).all()
+    @classmethod
+    def get_por_activo(cls, activo):
+        return cls.query.filter_by(activo=activo).all()
 
     def __repr__(self):
         return f"<Usuario id={self.id} username='{self.username}' rol_id={self.rol_id}>"

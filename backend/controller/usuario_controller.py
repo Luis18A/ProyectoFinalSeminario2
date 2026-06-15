@@ -34,7 +34,7 @@ class UsuarioController:
             return False, "El rol provisto no es válido."
 
         # ── 3. UNICIDAD DE USERNAME ──
-        existente = Usuario.obtener_por_username(datos['username'])
+        existente = Usuario.get_por_username(datos['username'])
         if existente and (not is_edit or existente.id != usuario_id):
             return False, "El nombre de usuario ya está en uso."
 
@@ -73,7 +73,7 @@ class UsuarioController:
     @staticmethod
     def actualizar_usuario(usuario_id, datos_formulario):
         try:
-            usuario = Usuario.obtener_por_id(usuario_id)
+            usuario = Usuario.get_by_id(usuario_id)
             if not usuario:
                 return False, "Usuario no encontrado."
 
@@ -102,11 +102,11 @@ class UsuarioController:
 
     @staticmethod
     def obtener_todos():
-        return Usuario.obtener_todos()
+        return Usuario.get_all()
 
     @staticmethod
     def toggle_estado(usuario_id):
-        usuario = Usuario.obtener_por_id(usuario_id)
+        usuario = Usuario.get_by_id(usuario_id)
         if not usuario:
             return False
         usuario.activo = not usuario.activo
@@ -117,7 +117,7 @@ class UsuarioController:
     def eliminar_usuario(usuario_id, usuario_actual_id):
         if usuario_id == usuario_actual_id:
             return False, "No puedes eliminar tu propia cuenta."
-        usuario = Usuario.obtener_por_id(usuario_id)
+        usuario = Usuario.get_by_id(usuario_id)
         if not usuario:
             return False, "Usuario no encontrado."
         try:
@@ -130,8 +130,8 @@ class UsuarioController:
 
     @staticmethod
     def obtener_datos_gestion_usuarios():
-        usuarios_lista = Usuario.obtener_todos()
-        roles_lista = Rol.query.all()
+        usuarios_lista = Usuario.get_all()
+        roles_lista = Rol.get_all()
         
         # Lógica de auditoría movida desde la ruta
         last_audit = HistorialEstado.query.order_by(HistorialEstado.fecha_cambio.desc()).first()

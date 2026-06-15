@@ -19,7 +19,6 @@ class OrdenServicio(db.Model):
     costo              = db.Column(db.Numeric(10, 2), nullable=True)
     observaciones      = db.Column(db.String(500), nullable=True)
 
-    # ── CORRECCIÓN 1: MutableList para rastreo automático de cambios en JSON ──
     repuestos          = db.Column(MutableList.as_mutable(db.JSON), nullable=True, default=list)
 
     usuario   = db.relationship('Usuario', foreign_keys=[usuario_id])
@@ -75,26 +74,25 @@ class OrdenServicio(db.Model):
     def actualizar_diagnostico(self, diagnostico):
         self.estado_diagnostico = diagnostico
 
-    # ── Queries ────────────────────────────────────────────────────
 
-    @staticmethod
-    def get_all():
-        return (OrdenServicio.query
-                .order_by(OrdenServicio.fecha_recepcion.desc(),
-                          OrdenServicio.id.desc())
+    @classmethod
+    def get_all(cls):
+        return (cls.query
+                .order_by(cls.fecha_recepcion.desc(),
+                          cls.id.desc())
                 .all())
 
-    @staticmethod
-    def get_by_id(id):
-        return db.session.get(OrdenServicio, id)
+    @classmethod
+    def get_by_id(cls, id):
+        return db.session.get(cls, id)
 
-    @staticmethod
-    def get_por_usuario(usuario_id):
-        return OrdenServicio.query.filter_by(usuario_id=usuario_id).all()
+    @classmethod
+    def get_por_usuario(cls, usuario_id):
+        return cls.query.filter_by(usuario_id=usuario_id).all()
 
-    @staticmethod
-    def get_por_estado(estado):
-        return OrdenServicio.query.filter_by(estado=estado).all()
+    @classmethod
+    def get_por_estado(cls, estado):
+        return cls.query.filter_by(estado=estado).all()
 
     def __repr__(self):
         return f"<OrdenServicio id={self.id} estado='{self.estado.value}'>"

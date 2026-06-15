@@ -14,10 +14,6 @@ class EstadoOrden(enum.Enum):
 
     @classmethod
     def transiciones_permitidas(cls, estado_actual):
-        """
-        Define las transiciones válidas desde un estado dado.
-        Usado por el controller para validar cambios de estado.
-        """
         transiciones = {
             cls.PENDIENTE:     [cls.DIAGNOSTICO],
             cls.DIAGNOSTICO:   [cls.PRESUPUESTADO],

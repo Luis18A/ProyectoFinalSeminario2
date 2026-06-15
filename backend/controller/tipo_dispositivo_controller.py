@@ -18,12 +18,12 @@ class TipoDispositivoController:
         return True, {'descripcion': descripcion}
 
     @staticmethod
-    def crear_tipoDispositivo(datos_formulario):
+    def crear_tipo_dispositivo(datos_formulario):
         success, result = TipoDispositivoController.procesar_datos(datos_formulario)
         if not success:
             return False, result
 
-        if TipoDispositivo.obtener_por_descripcion(result['descripcion']):
+        if TipoDispositivo.get_por_descripcion_exacta(result['descripcion']):
             return False, f"El tipo '{result['descripcion']}' ya está registrado."
 
         try:
@@ -42,7 +42,7 @@ class TipoDispositivoController:
         if not success:
             return False, result, None
 
-        if TipoDispositivo.obtener_por_descripcion(result['descripcion']):
+        if TipoDispositivo.get_por_descripcion_exacta(result['descripcion']):
             return False, f"El tipo '{result['descripcion']}' ya está registrado.", None
 
         try:
@@ -55,8 +55,8 @@ class TipoDispositivoController:
             return False, "Error al guardar el tipo de dispositivo.", None
 
     @staticmethod
-    def actualizar_tipoDispositivo(tipo_id, datos_formulario):
-        tipo = TipoDispositivo.obtener_por_id(tipo_id)
+    def actualizar_tipo_dispositivo(tipo_id, datos_formulario):
+        tipo = TipoDispositivo.get_by_id(tipo_id)
         if not tipo:
             return False, "Tipo no encontrado."
             
@@ -74,19 +74,19 @@ class TipoDispositivoController:
 
     @staticmethod
     def obtener_todos():
-        return TipoDispositivo.obtener_todos()
+        return TipoDispositivo.get_all()
 
     @staticmethod
     def buscar(termino):
-        return TipoDispositivo.get_por_descripcion(termino)
+        return TipoDispositivo.get_por_descripcion_parcial(termino)
     
     @staticmethod
     def obtener_por_descripcion(descripcion):
-        return TipoDispositivo.obtener_por_descripcion(descripcion)
+        return TipoDispositivo.get_por_descripcion_exacta(descripcion)
 
     @staticmethod
     def eliminar_tipo_dispositivo(tipo_id):
-        tipo = TipoDispositivo.obtener_por_id(tipo_id)
+        tipo = TipoDispositivo.get_by_id(tipo_id)
         if not tipo:
             return False
         try:

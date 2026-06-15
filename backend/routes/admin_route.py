@@ -1,4 +1,3 @@
-
 import json
 from datetime import datetime
 from flask import Blueprint, Response, request, redirect, url_for, flash, session
