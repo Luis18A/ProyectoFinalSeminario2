@@ -9,6 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContent = document.getElementById('main-content');
     const overlay = document.getElementById('sidebar-overlay');
     
+    // Auto-hide alert toasts
+    const toasts = document.querySelectorAll('.toast-alert');
+    toasts.forEach(toast => {
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-10');
+            toast.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            setTimeout(() => {
+                toast.remove();
+            }, 500);
+        }, 4000);
+    });
+
+    // Toggle notifications dropdown
+    const notifBtn = document.getElementById('notification-btn');
+    const notifDropdown = document.getElementById('notification-dropdown');
+    if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
+    }
+    
     // Función para manejar la visibilidad del sidebar de forma responsiva y animada
     function toggleSidebar(open) {
         if (window.innerWidth > 1024) {
@@ -135,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!hasResults) {
             globalSearchResultsContent.innerHTML = `
-                <div class="p-4 text-center text-xs text-zinc-500 font-['Space_Grotesk']">
+                <div class="p-4 text-center text-xs text-zinc-500">
                     No se encontraron resultados para "${query}"
                 </div>
             `;
@@ -148,14 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Órdenes / Tickets
         if (data.ordenes && data.ordenes.length > 0) {
             html += `
-                <div class="bg-zinc-50/50 p-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-['Space_Grotesk'] border-t border-zinc-100">Tickets de Servicio</div>
+                <div class="bg-zinc-50/50 p-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest border-t border-zinc-100">Tickets de Servicio</div>
                 <div class="py-1">
             `;
             data.ordenes.forEach(o => {
                 html += `
                     <a href="${o.url}" class="block px-4 py-2 hover:bg-zinc-50 transition-colors">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-xs text-primary font-['Space_Grotesk']">${o.codigo}</span>
+                            <span class="font-bold text-xs text-primary">${o.codigo}</span>
                             <span class="text-[9px] bg-zinc-100 text-zinc-600 px-1.5 py-0.5 font-bold uppercase tracking-wider">${o.estado}</span>
                         </div>
                         <div class="text-xs text-zinc-600 truncate mt-0.5">${o.falla}</div>
@@ -168,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Clientes
         if (data.clientes && data.clientes.length > 0) {
             html += `
-                <div class="bg-zinc-50/50 p-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-['Space_Grotesk'] border-t border-zinc-100">Clientes</div>
+                <div class="bg-zinc-50/50 p-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest border-t border-zinc-100">Clientes</div>
                 <div class="py-1">
             `;
             data.clientes.forEach(c => {
@@ -185,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Equipos
         if (data.equipos && data.equipos.length > 0) {
             html += `
-                <div class="bg-zinc-50/50 p-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-['Space_Grotesk'] border-t border-zinc-100">Equipos</div>
+                <div class="bg-zinc-50/50 p-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest border-t border-zinc-100">Equipos</div>
                 <div class="py-1">
             `;
             data.equipos.forEach(e => {
@@ -205,3 +232,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('TechFlow Responsive Terminal initialized with Global Search.');
 });
+
+// Mark a single notification as read and redirect
+window.handleNotificationClick = async function(id, redirectUrl) {
+    try {
+        const resp = await fetch(`/notificaciones/${id}/leer`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        const data = await resp.json();
+        if (data.success) {
+            window.location.href = redirectUrl;
+        } else {
+            console.error('Error marking notification as read:', data.message);
+            window.location.href = redirectUrl;
+        }
+    } catch (err) {
+        console.error('Network error:', err);
+        window.location.href = redirectUrl;
+    }
+};
+
+// Mark all notifications as read
+window.markAllNotificationsAsRead = async function() {
+    try {
+        const resp = await fetch('/notificaciones/leer-todas', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        const data = await resp.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            window.showToast('Error al marcar notificaciones: ' + data.message, 'error');
+        }
+    } catch (err) {
+        console.error('Network error:', err);
+        window.showToast('Error de red al marcar notificaciones.', 'error');
+    }
+};
+
+// Global JS helper to trigger toasts programmatically
+window.showToast = function (message, category = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast-alert pointer-events-auto flex items-center gap-3 p-4 bg-white border-l-4 shadow-lg transition-all duration-300 transform translate-x-10 opacity-0 ${category === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-red-500 text-red-800'}`;
+    toast.setAttribute('role', 'alert');
+
+    toast.innerHTML = `
+        <span class="material-symbols-outlined">
+            ${category === 'success' ? 'check_circle' : 'error'}
+        </span>
+        <div class="flex-grow font-label-mono text-xs uppercase tracking-wider pr-2">
+            ${message}
+        </div>
+        <button class="text-zinc-400 hover:text-zinc-900 transition-colors" onclick="this.parentElement.remove()">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger slide-in
+    setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-x-10');
+    }, 10);
+
+    // Auto-dismiss after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-10');
+        toast.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        setTimeout(() => {
+            toast.remove();
+        }, 500);
+    }, 4000);
+};

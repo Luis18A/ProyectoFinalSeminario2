@@ -27,6 +27,17 @@ from backend.routes.orden_servicio_route import orden_servicio_bp
 from backend.routes.admin_route import admin_bp
 from backend.routes.notificacion_route import notificacion_bp
 
+# Configurar Flask para que busque en la carpeta frontend
+app = Flask(__name__, 
+            template_folder='frontend/templates', 
+            static_folder='frontend/static')
+
+
+# CONEXIÓN A LA BASE DE DATOS
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3536@localhost:5432/TechFlowDB'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'techflow_secret_key_123' # Necesario para sesiones y flash messages
+
 from flask_wtf.csrf import CSRFProtect
 
 csrf = CSRFProtect()

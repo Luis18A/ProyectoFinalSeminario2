@@ -1,549 +1,261 @@
 <!DOCTYPE html>
 <html class="light" lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Comprobante de Servicio Técnico - TECHFLOW</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-    
-    <style>
-    /* CSS Reset & General Setup for Print Container */
-    .receipt-wrapper {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #1f2937;
-        background-color: #ffffff;
-        line-height: 1.25;
-        font-size: 11px;
-        width: 100%;
-    }
-
-    /* Page Layout & Print Optimization */
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-        
-        body {
-            background-color: white !important;
-            color: black !important;
-        }
-        
-        main {
-            padding: 0 !important;
-            margin: 0 !important;
-            display: block !important;
-        }
-        
-        .print-container {
-            border: none !important;
-            box-shadow: none !important;
-            max-width: 100% !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        @page {
-            size: A4;
-            margin: 10mm;
-        }
-    }
-
-    .print-container {
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    /* Typography & Headings */
-    .receipt-wrapper h1, 
-    .receipt-wrapper h2, 
-    .receipt-wrapper h3, 
-    .receipt-wrapper h4 {
-        color: #1e3a8a; /* Deep corporate Navy Blue */
-        font-weight: 700;
-    }
-
-    /* Forms Layout & Boxes */
-    .section-box {
-        border: 1px solid #9ca3af; /* Crisp solid border */
-        margin-bottom: 8px;
-        width: 100%;
-    }
-    .section-header-bar {
-        background-color: #f3f4f6;
-        border-bottom: 1px solid #9ca3af;
-        padding: 4px 6px;
-        font-weight: bold;
-        font-size: 10px;
-        text-transform: uppercase;
-        color: #111827;
-    }
-    .section-body {
-        padding: 6px;
-    }
-
-    /* Tables layout */
-    table.form-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    table.form-table th, table.form-table td {
-        border: 1px solid #cbd5e1;
-        padding: 4px 6px;
-        text-align: left;
-        vertical-align: middle;
-    }
-    table.form-table th {
-        background-color: #f8fafc;
-        color: #475569;
-        font-weight: 700;
-        font-size: 9px;
-        text-transform: uppercase;
-    }
-
-    /* Header Layout */
-    .receipt-header {
-        display: table;
-        width: 100%;
-        margin-bottom: 8px;
-    }
-    .header-left {
-        display: table-cell;
-        width: 60%;
-        vertical-align: top;
-        padding-right: 15px;
-    }
-    .header-right {
-        display: table-cell;
-        width: 40%;
-        vertical-align: top;
-    }
-
-    .company-title {
-        font-size: 16px;
-        font-weight: 900;
-        text-transform: uppercase;
-        color: #1e3a8a;
-        margin-bottom: 3px;
-    }
-    .company-subtitle {
-        font-size: 10px;
-        font-weight: bold;
-        color: #4b5563;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 6px;
-    }
-    .company-details {
-        font-size: 9.5px;
-        color: #4b5563;
-        line-height: 1.3;
-    }
-
-    .ticket-box {
-        background-color: #f3f4f6;
-        border: 1px solid #9ca3af;
-        padding: 8px;
-        text-align: center;
-    }
-    .ticket-title {
-        font-size: 12px;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: #1f2937;
-        margin-bottom: 4px;
-    }
-    .ticket-number {
-        font-size: 20px;
-        font-weight: 900;
-        color: #b91c1c; /* Crimson highlighted ID */
-        margin-bottom: 4px;
-    }
-    .ticket-meta {
-        font-size: 9px;
-        font-weight: bold;
-        color: #374151;
-        text-transform: uppercase;
-    }
-    .badge-delivered {
-        display: inline-block;
-        background-color: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-        padding: 1px 6px;
-        font-weight: bold;
-        font-size: 9px;
-        margin-top: 2px;
-    }
-    .badge-pending {
-        display: inline-block;
-        background-color: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-        padding: 1px 6px;
-        font-weight: bold;
-        font-size: 9px;
-        margin-top: 2px;
-    }
-
-    /* Horizontal boxes layout for fault & resolution */
-    .flex-row-boxes {
-        display: table;
-        width: 100%;
-        border-spacing: 6px 0;
-        margin-left: -6px;
-        margin-right: -6px;
-        margin-bottom: 8px;
-    }
-    .flex-col-box {
-        display: table-cell;
-        vertical-align: top;
-        border: 1px solid #cbd5e1;
-        padding: 6px;
-        background-color: #ffffff;
-    }
-    .box-title {
-        font-weight: bold;
-        font-size: 9px;
-        text-transform: uppercase;
-        color: #475569;
-        border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 2px;
-        margin-bottom: 4px;
-    }
-
-    /* Financial summary table column widths */
-    .col-qty { width: 10%; text-align: center; }
-    .col-desc { width: 65%; }
-    .col-price { width: 25%; text-align: right; }
-
-    /* Total Section layout */
-    .totals-box {
-        display: table;
-        width: 100%;
-        margin-top: 6px;
-    }
-    .totals-left {
-        display: table-cell;
-        width: 55%;
-        vertical-align: bottom;
-        font-size: 8.5px;
-        color: #6b7280;
-        padding-bottom: 4px;
-    }
-    .totals-right {
-        display: table-cell;
-        width: 45%;
-        vertical-align: top;
-    }
-    .total-row {
-        display: table;
-        width: 100%;
-        border-bottom: 1px dashed #cbd5e1;
-        padding: 3px 0;
-        font-size: 10px;
-    }
-    .total-row.grand-total {
-        border-top: 1px solid #9ca3af;
-        border-bottom: 2px double #9ca3af;
-        padding: 5px 0;
-        font-size: 12px;
-        font-weight: bold;
-        color: #1e3a8a;
-    }
-    .total-label {
-        display: table-cell;
-        text-align: left;
-    }
-    .total-val {
-        display: table-cell;
-        text-align: right;
-        font-weight: bold;
-    }
-
-    /* Terms & Warranty Block */
-    .legal-block {
-        border: 1px solid #d1d5db;
-        background-color: #fafafa;
-        padding: 6px;
-        margin-bottom: 10mm; /* Generous gap before signatures for spacing */
-        font-size: 8.5px;
-        color: #4b5563;
-        text-align: justify;
-    }
-    .legal-title {
-        font-weight: bold;
-        font-size: 9px;
-        text-transform: uppercase;
-        color: #374151;
-        margin-bottom: 3px;
-    }
-    .legal-block p {
-        margin-bottom: 2px;
-        line-height: 1.2;
-    }
-
-    /* Signatures block */
-    .signature-table {
-        display: table;
-        width: 100%;
-        margin-top: 15mm;
-    }
-    .signature-cell {
-        display: table-cell;
-        width: 45%;
-        text-align: center;
-        vertical-align: top;
-    }
-    .signature-spacer {
-        display: table-cell;
-        width: 10%;
-    }
-    .signature-line {
-        border-top: 1px solid #4b5563;
-        width: 80%;
-        margin: 0 auto 4px auto;
-    }
-    .signature-label {
-        font-size: 9.5px;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: #374151;
-    }
-    .signature-sub {
-        font-size: 8.5px;
-        color: #6b7280;
-    }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/comprobante.css') }}">
 </head>
+
 <body class="bg-zinc-100 p-4 md:p-8">
 
-{% set ns = namespace(total_repuestos=0.0) %}
-{% for r in orden.repuestos or [] %}
+    {% set ns = namespace(total_repuestos=0.0) %}
+    {% for r in orden.repuestos or [] %}
     {% set ns.total_repuestos = ns.total_repuestos + r.precio %}
-{% endfor %}
-{% if orden.costo is not none %}
+    {% endfor %}
+    {% if orden.costo is not none %}
     {% set mano_obra = (orden.costo | float) - (ns.total_repuestos | float) %}
-{% else %}
+    {% else %}
     {% set mano_obra = 0.0 %}
-{% endif %}
+    {% endif %}
 
-<!-- Actions Bar (Non-printing) -->
-<div class="no-print max-w-4xl mx-auto mb-4 bg-white border border-zinc-200 p-4 flex justify-between items-center shadow-sm">
-    <a href="{{ url_for('vistas.technician') }}" class="flex items-center gap-2 text-zinc-600 hover:text-[#1e3a8a] transition-colors">
-        <span class="material-symbols-outlined text-sm">arrow_back</span>
-        <span class="font-bold text-xs uppercase">Volver al sistema</span>
-    </a>
-    <div class="flex gap-2">
-        <button onclick="window.print()" class="px-4 py-2 border border-zinc-300 text-zinc-700 hover:bg-zinc-50 transition-colors uppercase text-xs font-bold flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">download</span>
-            PDF
-        </button>
-        <button onclick="window.print()" class="px-4 py-2 bg-[#1e3a8a] hover:bg-[#172554] text-white transition-colors uppercase text-xs font-bold flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">print</span>
-            IMPRIMIR
-        </button>
+    <!-- Actions Bar (Non-printing) -->
+    <div
+        class="no-print max-w-4xl mx-auto mb-4 bg-white border border-zinc-200 p-4 flex justify-between items-center shadow-sm">
+        <a href="{{ url_for('vistas.technician') }}" class="btn-swiss btn-outline">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            Volver al sistema
+        </a>
+        <div class="flex gap-2">
+            <button onclick="window.print()" class="btn-swiss btn-outline">
+                <span class="material-symbols-outlined text-sm">download</span>
+                PDF
+            </button>
+            <button onclick="window.print()" class="btn-swiss btn-primary">
+                <span class="material-symbols-outlined text-sm">print</span>
+                IMPRIMIR
+            </button>
+        </div>
     </div>
-</div>
 
-<!-- Main Document Container -->
-<main class="py-4 flex justify-center receipt-wrapper">
-    <div class="print-container w-full max-w-4xl">
-        
-        <!-- Header Block -->
-        <header class="receipt-header">
-            <div class="header-left">
-                <div class="company-title">TECHFLOW</div>
-                <div class="company-subtitle">Servicio Técnico Informático</div>
-                <div class="company-details">
-                    <strong>Dirección:</strong> Av. Corrientes 1234, Piso 4, CABA, Argentina<br>
-                    <strong>Teléfono:</strong> +54 11 5234-5678 | <strong>Email:</strong> contacto@techflow.com.ar<br>
-                    <strong>CUIT:</strong> 30-76543210-9
+    <!-- Main Document Container -->
+    <main class="py-4 flex justify-center receipt-wrapper">
+        <div class="print-container w-full max-w-4xl">
+
+            <!-- Header Block -->
+            <header class="receipt-header">
+                <div class="header-left">
+                    <div class="company-title">TECHFLOW</div>
+                    <div class="company-subtitle">Servicio Técnico Informático</div>
+                    <div class="company-details">
+                        <strong>Dirección:</strong> Av. Corrientes 1234, Piso 4, CABA, Argentina<br>
+                        <strong>Teléfono:</strong> +54 11 5234-5678 | <strong>Email:</strong>
+                        contacto@techflow.com.ar<br>
+                        <strong>CUIT:</strong> 30-76543210-9
+                    </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <div class="ticket-box">
-                    <div class="ticket-title">Orden de Trabajo</div>
-                    <div class="ticket-number">#{{ orden.id }}</div>
-                    <div class="ticket-meta">
-                        Fecha Ingreso: {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}<br>
-                        Estado: 
-                        {% if orden.estado.value in ['Listo', 'Entregado'] %}
+                <div class="header-right">
+                    <div class="ticket-box">
+                        <div class="ticket-title">Orden de Trabajo</div>
+                        <div class="ticket-number">#{{ orden.id }}</div>
+                        <div class="ticket-meta">
+                            Fecha Ingreso: {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else
+                            '—' }}<br>
+                            Estado:
+                            {% if orden.estado.value in ['Listo', 'Entregado'] %}
                             <span class="badge-delivered">{{ orden.estado.value | upper }}</span>
-                        {% else %}
-                            <span class="badge-pending">{{ orden.estado.value | upper }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Bloque 1 - Cliente -->
-        <div class="section-box">
-            <div class="section-header-bar">Datos del Cliente</div>
-            <table class="form-table">
-                <thead>
-                    <tr>
-                        <th style="width: 35%;">Nombre y Apellido</th>
-                        <th style="width: 20%;">DNI / CUIL</th>
-                        <th style="width: 20%;">Teléfono</th>
-                        <th style="width: 25%;">Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>{{ orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</strong></td>
-                        <td style="font-family: monospace;">{{ orden.equipo.cliente.dni_cuil }}</td>
-                        <td>{{ orden.equipo.cliente.telefono or '—' }}</td>
-                        <td>{{ orden.equipo.cliente.email or '[No especificado]' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Bloque 3 - Equipo -->
-        <div class="section-box">
-            <div class="section-header-bar">Detalles del Dispositivo</div>
-            <table class="form-table">
-                <thead>
-                    <tr>
-                        <th style="width: 30%;">Tipo de Dispositivo</th>
-                        <th style="width: 40%;">Marca / Modelo</th>
-                        <th style="width: 30%;">Número de Serie</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ orden.equipo.tipo.descripcion if (orden.equipo and orden.equipo.tipo) else 'Dispositivo' }}</td>
-                        <td><strong>{{ orden.equipo.marca if orden.equipo else '—' }} {{ orden.equipo.modelo if orden.equipo else '' }}</strong></td>
-                        <td style="font-family: monospace; text-transform: uppercase;">{{ orden.equipo.numero_serie if orden.equipo else '—' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Bloque 2 - Falla y Resolución -->
-        <div class="flex-row-boxes">
-            <div class="flex-col-box" style="width: 25%;">
-                <div class="box-title">Falla Reportada</div>
-                <p style="font-style: italic; color: #b91c1c; font-weight: bold;">"{{ orden.falla_reportada }}"</p>
-            </div>
-            <div class="flex-col-box" style="width: 25%;">
-                <div class="box-title">Accesorios Recibidos</div>
-                <p>{{ orden.accesorios or 'Ninguno' }}</p>
-            </div>
-            <div class="flex-col-box" style="width: 50%;">
-                <div class="box-title">Diagnóstico y Resolución Técnica</div>
-                <p>{{ orden.estado_diagnostico if orden.estado_diagnostico else 'Sin diagnóstico cargado aún en el sistema.' }}</p>
-            </div>
-        </div>
-
-        <!-- Bloque 4 - Desglose de Costos -->
-        <div class="section-box" style="margin-bottom: 4px;">
-            <div class="section-header-bar">Desglose de Costos de Servicio</div>
-            <table class="form-table">
-                <thead>
-                    <tr>
-                        <th class="col-qty">Cant.</th>
-                        <th class="col-desc">Concepto / Descripción del Trabajo y Materiales</th>
-                        <th class="col-price" style="text-align: right;">Precio</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="col-qty">1</td>
-                        <td class="col-desc">Mano de Obra (Diagnóstico, Labor Técnica)</td>
-                        <td class="col-price">
-                            {% if orden.costo is not none %}
-                                ${{ "%.2f"|format(mano_obra) }}
                             {% else %}
-                                Pendiente de presupuesto
+                            <span class="badge-pending">{{ orden.estado.value | upper }}</span>
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% for r in orden.repuestos or [] %}
-                    <tr>
-                        <td class="col-qty">1</td>
-                        <td class="col-desc">Repuesto: {{ r.titulo }} ({{ r.tienda }})</td>
-                        <td class="col-price">${{ "%.2f"|format(r.precio) }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td class="col-qty">—</td>
-                        <td class="col-desc" style="color: #6b7280; font-style: italic;">Sin repuestos adicionales utilizados en esta reparación.</td>
-                        <td class="col-price" style="color: #6b7280; text-align: right;">$0.00</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Totals Section -->
-        <div class="totals-box">
-            <div class="totals-left">
-                * Comprobante válido para el reclamo de la garantía sobre el servicio técnico ejecutado.
-            </div>
-            <div class="totals-right">
-                <div class="total-row">
-                    <div class="total-label">Subtotal Materiales:</div>
-                    <div class="total-val">${{ "%.2f"|format(ns.total_repuestos) }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="total-row">
-                    <div class="total-label">Subtotal Mano de Obra:</div>
-                    <div class="total-val">
-                        {% if orden.costo is not none %}
+            </header>
+
+            <!-- Bloque 1 - Cliente -->
+            <div class="section-box">
+                <div class="section-header-bar">Datos del Cliente</div>
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Nombre y Apellido</th>
+                            <th style="width: 20%;">DNI / CUIL</th>
+                            <th style="width: 20%;">Teléfono</th>
+                            <th style="width: 25%;">Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>{{ orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</strong>
+                            </td>
+                            <td style="font-family: monospace;">{{ orden.equipo.cliente.dni_cuil }}</td>
+                            <td>{{ orden.equipo.cliente.telefono or '—' }}</td>
+                            <td>{{ orden.equipo.cliente.email or '[No especificado]' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Bloque 3 - Equipo -->
+            <div class="section-box">
+                <div class="section-header-bar">Detalles del Dispositivo</div>
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Tipo de Dispositivo</th>
+                            <th style="width: 40%;">Marca / Modelo</th>
+                            <th style="width: 30%;">Número de Serie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ orden.equipo.tipo.descripcion if (orden.equipo and orden.equipo.tipo) else
+                                'Dispositivo' }}</td>
+                            <td><strong>{{ orden.equipo.marca if orden.equipo else '—' }} {{ orden.equipo.modelo if
+                                    orden.equipo else '' }}</strong></td>
+                            <td style="font-family: monospace; text-transform: uppercase;">{{ orden.equipo.numero_serie
+                                if orden.equipo else '—' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Bloque 2 - Falla y Resolución -->
+            <div class="flex-row-boxes">
+                <div class="flex-col-box" style="width: 25%;">
+                    <div class="box-title">Falla Reportada</div>
+                    <p style="font-style: italic; color: #b91c1c; font-weight: bold;">"{{ orden.falla_reportada }}"</p>
+                </div>
+                <div class="flex-col-box" style="width: 25%;">
+                    <div class="box-title">Accesorios Recibidos</div>
+                    <p>{{ orden.accesorios or 'Ninguno' }}</p>
+                </div>
+                <div class="flex-col-box" style="width: 50%;">
+                    <div class="box-title">Diagnóstico y Resolución Técnica</div>
+                    <p>{{ orden.estado_diagnostico if orden.estado_diagnostico else 'Sin diagnóstico cargado aún en el
+                        sistema.' }}</p>
+                </div>
+            </div>
+
+            <!-- Bloque 4 - Desglose de Costos -->
+            <div class="section-box" style="margin-bottom: 4px;">
+                <div class="section-header-bar">Desglose de Costos de Servicio</div>
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th class="col-qty">Cant.</th>
+                            <th class="col-desc">Concepto / Descripción del Trabajo y Materiales</th>
+                            <th class="col-price" style="text-align: right;">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-qty">1</td>
+                            <td class="col-desc">Mano de Obra (Diagnóstico, Labor Técnica)</td>
+                            <td class="col-price">
+                                {% if orden.costo is not none %}
+                                ${{ "%.2f"|format(mano_obra) }}
+                                {% else %}
+                                Pendiente de presupuesto
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% for r in orden.repuestos or [] %}
+                        <tr>
+                            <td class="col-qty">1</td>
+                            <td class="col-desc">Repuesto: {{ r.titulo }} ({{ r.tienda }})</td>
+                            <td class="col-price">${{ "%.2f"|format(r.precio) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="col-qty">—</td>
+                            <td class="col-desc" style="color: #6b7280; font-style: italic;">Sin repuestos adicionales
+                                utilizados en esta reparación.</td>
+                            <td class="col-price" style="color: #6b7280; text-align: right;">$0.00</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals Section -->
+            <div class="totals-box">
+                <div class="totals-left">
+                    * Comprobante válido para el reclamo de la garantía sobre el servicio técnico ejecutado.
+                </div>
+                <div class="totals-right">
+                    <div class="total-row">
+                        <div class="total-label">Subtotal Materiales:</div>
+                        <div class="total-val">${{ "%.2f"|format(ns.total_repuestos) }}</div>
+                    </div>
+                    <div class="total-row">
+                        <div class="total-label">Subtotal Mano de Obra:</div>
+                        <div class="total-val">
+                            {% if orden.costo is not none %}
                             ${{ "%.2f"|format(mano_obra) }}
-                        {% else %}
+                            {% else %}
                             Pendiente de presupuesto
-                        {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <div class="total-row grand-total">
-                    <div class="total-label">TOTAL FACTURADO:</div>
-                    <div class="total-val">
-                        {% if orden.costo is not none %}
+                    <div class="total-row grand-total">
+                        <div class="total-label">TOTAL FACTURADO:</div>
+                        <div class="total-val">
+                            {% if orden.costo is not none %}
                             ${{ "%.2f"|format(orden.costo) }}
-                        {% else %}
+                            {% else %}
                             Pendiente de presupuesto
-                        {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Bloque 5 - Términos y Garantía -->
-        <div class="legal-block">
-            <div class="legal-title">Términos del Servicio & Garantía Limitada</div>
-            <p><strong>1. Cobertura de Garantía:</strong> TechFlow otorga una garantía de servicio técnico limitada por un plazo de <strong>treinta (30) días corridos</strong> desde la entrega del equipo. Esta cubre exclusivamente vicios y fallas del ensamblado y mano de obra realizada en esta intervención.</p>
-            <p><strong>2. Exclusiones:</strong> Quedan excluidos daños por caídas, golpes, humedad, derrame de líquidos, problemas de suministro eléctrico externo, sobretensión, manipulación de fajas de garantía de TechFlow por personal no autorizado, o software dañado por virus posterior a la fecha de egreso.</p>
-            <p><strong>3. Procedimiento:</strong> Es obligatorio presentar este comprobante físico para hacer valer la garantía. El taller evaluará previamente el estado general para verificar que las condiciones del equipo concuerden con el servicio original.</p>
-            <p><strong>4. Retiro y Abandono:</strong> Si pasados noventa (90) días del aviso de retiro el equipo no es reclamado, se considerará legalmente abandonado. TechFlow podrá disponer del mismo para cubrir los costos de almacenamiento e insumos invertidos.</p>
-        </div>
-
-        <!-- Bloque 6 - Firmas -->
-        <div class="signature-table">
-            <div class="signature-cell">
-                <div class="signature-line"></div>
-                <div class="signature-label">Firma Técnico Responsable</div>
-                <div class="signature-sub">TechFlow Soporte Técnico</div>
+            <!-- Bloque 5 - Términos y Garantía -->
+            <div class="legal-block">
+                <div class="legal-title">Términos del Servicio & Garantía Limitada</div>
+                <p><strong>1. Cobertura de Garantía:</strong> TechFlow otorga una garantía de servicio técnico limitada
+                    por un plazo de <strong>treinta (30) días corridos</strong> desde la entrega del equipo. Esta cubre
+                    exclusivamente vicios y fallas del ensamblado y mano de obra realizada en esta intervención.</p>
+                <p><strong>2. Exclusiones:</strong> Quedan excluidos daños por caídas, golpes, humedad, derrame de
+                    líquidos, problemas de suministro eléctrico externo, sobretensión, manipulación de fajas de garantía
+                    de TechFlow por personal no autorizado, o software dañado por virus posterior a la fecha de egreso.
+                </p>
+                <p><strong>3. Procedimiento:</strong> Es obligatorio presentar este comprobante físico para hacer valer
+                    la garantía. El taller evaluará previamente el estado general para verificar que las condiciones del
+                    equipo concuerden con el servicio original.</p>
+                <p><strong>4. Retiro y Abandono:</strong> Si pasados noventa (90) días del aviso de retiro el equipo no
+                    es reclamado, se considerará legalmente abandonado. TechFlow podrá disponer del mismo para cubrir
+                    los costos de almacenamiento e insumos invertidos.</p>
             </div>
-            <div class="signature-spacer"></div>
-            <div class="signature-cell">
-                <div class="signature-line"></div>
-                <div class="signature-label">Firma Conformidad Cliente</div>
-                <div class="signature-sub">Recibido de conformidad y a satisfacción</div>
-            </div>
-        </div>
 
-    </div>
-</main>
+            <!-- Bloque 6 - Firmas -->
+            <div class="signature-table">
+                <div class="signature-cell">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Firma Técnico Responsable</div>
+                    <div class="signature-sub">TechFlow Soporte Técnico</div>
+                </div>
+                <div class="signature-spacer"></div>
+                <div class="signature-cell">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Firma Conformidad Cliente</div>
+                    <div class="signature-sub">Recibido de conformidad y a satisfacción</div>
+                </div>
+            </div>
+
+        </div>
+    </main>
 
 </body>
+
 </html>

@@ -9,7 +9,7 @@
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
                 rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap"
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap"
                 rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
                 rel="stylesheet" />
@@ -55,22 +55,22 @@
                         {% endwith %}
                         <!-- Operator ID Input -->
                         <div class="flex flex-col relative group">
-                                <label class="font-label-bold text-label-bold text-primary uppercase tracking-widest mb-sm"
+                                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5"
                                         for="username">Usuario</label>
-                                <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md"
+                                <input class="input-swiss font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md"
                                         id="username" name="username" placeholder="Ingrese usuario" required=""
                                         type="text" autocomplete="username" />
                         </div>
                         <!-- Passcode Input -->
                         <div class="flex flex-col relative group">
                                 <div class="flex justify-between items-end mb-sm">
-                                        <label class="font-label-bold text-label-bold text-primary uppercase tracking-widest"
+                                        <label class="font-label-bold text-zinc-500 uppercase text-[10px]"
                                                 for="password" name="password">Contraseña</label>
                                         <a class="font-label-mono text-label-mono text-secondary hover:text-on-secondary-fixed-variant transition-colors uppercase tracking-widest"
                                                 href="#">Recuperar</a>
                                 </div>
                                 <div class="relative flex items-center">
-                                        <input class="w-full bg-transparent border-0 border-b border-outline-variant py-sm px-0 pr-xl focus:ring-0 focus:border-b-2 focus:border-secondary transition-colors font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md tracking-[0.2em]"
+                                        <input class="input-swiss pr-xl font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md tracking-[0.2em]"
                                                 id="password" name="password" placeholder="••••••••" required=""
                                                 type="password" autocomplete="current-password" />
                                         <button aria-label="Toggle password visibility"
@@ -83,7 +83,7 @@
                         </div>
                         <!-- Action Area -->
                         <div class="mt-md">
-                                <button class="w-full bg-primary text-on-primary py-md px-lg font-label-bold text-label-bold uppercase tracking-widest hover:bg-inverse-surface transition-colors rounded-none flex justify-between items-center group"
+                                <button class="btn-swiss btn-primary w-full justify-between group"
                                         type="submit">
                                         <span>Ingresar</span>
                                         <span class="material-symbols-outlined transform group-hover:translate-x-1 transition-transform"

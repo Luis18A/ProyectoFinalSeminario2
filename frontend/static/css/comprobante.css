@@ -1,0 +1,309 @@
+/* CSS Reset & General Setup for Print Container */
+.receipt-wrapper {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #1f2937;
+    background-color: #ffffff;
+    line-height: 1.25;
+    font-size: 11px;
+    width: 100%;
+}
+
+/* Page Layout & Print Optimization */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    main {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+    
+    .print-container {
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+}
+
+.print-container {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Typography & Headings */
+.receipt-wrapper h1, 
+.receipt-wrapper h2, 
+.receipt-wrapper h3, 
+.receipt-wrapper h4 {
+    color: #1e3a8a; /* Deep corporate Navy Blue */
+    font-weight: 700;
+}
+
+/* Forms Layout & Boxes */
+.section-box {
+    border: 1px solid #9ca3af; /* Crisp solid border */
+    margin-bottom: 8px;
+    width: 100%;
+}
+.section-header-bar {
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #9ca3af;
+    padding: 4px 6px;
+    font-weight: bold;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #111827;
+}
+.section-body {
+    padding: 6px;
+}
+
+/* Tables layout */
+table.form-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+table.form-table th, table.form-table td {
+    border: 1px solid #cbd5e1;
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: middle;
+}
+table.form-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+/* Header Layout */
+.receipt-header {
+    display: table;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.header-left {
+    display: table-cell;
+    width: 60%;
+    vertical-align: top;
+    padding-right: 15px;
+}
+.header-right {
+    display: table-cell;
+    width: 40%;
+    vertical-align: top;
+}
+
+.company-title {
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #1e3a8a;
+    margin-bottom: 3px;
+}
+.company-subtitle {
+    font-size: 10px;
+    font-weight: bold;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+.company-details {
+    font-size: 9.5px;
+    color: #4b5563;
+    line-height: 1.3;
+}
+
+.ticket-box {
+    background-color: #f3f4f6;
+    border: 1px solid #9ca3af;
+    padding: 8px;
+    text-align: center;
+}
+.ticket-title {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+.ticket-number {
+    font-size: 20px;
+    font-weight: 900;
+    color: #b91c1c; /* Crimson highlighted ID */
+    margin-bottom: 4px;
+}
+.ticket-meta {
+    font-size: 9px;
+    font-weight: bold;
+    color: #374151;
+    text-transform: uppercase;
+}
+.badge-delivered {
+    display: inline-block;
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    padding: 1px 6px;
+    font-weight: bold;
+    font-size: 9px;
+    margin-top: 2px;
+}
+.badge-pending {
+    display: inline-block;
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    padding: 1px 6px;
+    font-weight: bold;
+    font-size: 9px;
+    margin-top: 2px;
+}
+
+/* Horizontal boxes layout for fault & resolution */
+.flex-row-boxes {
+    display: table;
+    width: 100%;
+    border-spacing: 6px 0;
+    margin-left: -6px;
+    margin-right: -6px;
+    margin-bottom: 8px;
+}
+.flex-col-box {
+    display: table-cell;
+    vertical-align: top;
+    border: 1px solid #cbd5e1;
+    padding: 6px;
+    background-color: #ffffff;
+}
+.box-title {
+    font-weight: bold;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 2px;
+    margin-bottom: 4px;
+}
+
+/* Financial summary table column widths */
+.col-qty { width: 10%; text-align: center; }
+.col-desc { width: 65%; }
+.col-price { width: 25%; text-align: right; }
+
+/* Total Section layout */
+.totals-box {
+    display: table;
+    width: 100%;
+    margin-top: 6px;
+}
+.totals-left {
+    display: table-cell;
+    width: 55%;
+    vertical-align: bottom;
+    font-size: 8.5px;
+    color: #6b7280;
+    padding-bottom: 4px;
+}
+.totals-right {
+    display: table-cell;
+    width: 45%;
+    vertical-align: top;
+}
+.total-row {
+    display: table;
+    width: 100%;
+    border-bottom: 1px dashed #cbd5e1;
+    padding: 3px 0;
+    font-size: 10px;
+}
+.total-row.grand-total {
+    border-top: 1px solid #9ca3af;
+    border-bottom: 2px double #9ca3af;
+    padding: 5px 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+.total-label {
+    display: table-cell;
+    text-align: left;
+}
+.total-val {
+    display: table-cell;
+    text-align: right;
+    font-weight: bold;
+}
+
+/* Terms & Warranty Block */
+.legal-block {
+    border: 1px solid #d1d5db;
+    background-color: #fafafa;
+    padding: 6px;
+    margin-bottom: 10mm; /* Generous gap before signatures for spacing */
+    font-size: 8.5px;
+    color: #4b5563;
+    text-align: justify;
+}
+.legal-title {
+    font-weight: bold;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #374151;
+    margin-bottom: 3px;
+}
+.legal-block p {
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+/* Signatures block */
+.signature-table {
+    display: table;
+    width: 100%;
+    margin-top: 15mm;
+}
+.signature-cell {
+    display: table-cell;
+    width: 45%;
+    text-align: center;
+    vertical-align: top;
+}
+.signature-spacer {
+    display: table-cell;
+    width: 10%;
+}
+.signature-line {
+    border-top: 1px solid #4b5563;
+    width: 80%;
+    margin: 0 auto 4px auto;
+}
+.signature-label {
+    font-size: 9.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #374151;
+}
+.signature-sub {
+    font-size: 8.5px;
+    color: #6b7280;
+}

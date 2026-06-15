@@ -13,7 +13,7 @@ vistas_bp = Blueprint('vistas', __name__)
 def login():
     if 'usuario_id' in session:
         return _redirect_por_rol(session.get('rol_descripcion', ''))
-    return render_template('login.html')
+    return render_template('auth/login.html')
 
 @vistas_bp.route('/login', methods=['POST'])
 def login_post():
@@ -22,13 +22,13 @@ def login_post():
     password = request.form.get('password', '').strip()
 
     if not username or not password:
-        return render_template('login.html', error="Completá todos los campos.")
+        return render_template('auth/login.html', error="Completá todos los campos.")
 
     # La ruta ahora espera que el AuthController valide TODO (incluyendo si está activo)
     success, data_or_error = AuthController.validar_login_completo(username, password)
 
     if not success:
-        return render_template('login.html', error=data_or_error)
+        return render_template('auth/login.html', error=data_or_error)
 
     session['usuario_id']           = data_or_error['id']
     session['username']             = data_or_error['username']

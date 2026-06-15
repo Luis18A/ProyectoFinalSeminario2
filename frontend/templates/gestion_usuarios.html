@@ -1,156 +1,63 @@
-{% extends 'base.html' %}
+{% extends 'layout/base.html' %}
 {% block title %}Gestión de Usuarios | TechFlow{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion_usuarios.css') }}">
 
 <!-- Main Canvas -->
-<main class="p-4 md:p-10 flex-1 overflow-x-hidden">
+<main class="flex-1 p-4 md:p-10 bg-background overflow-x-hidden">
     <!-- Page Header -->
-    <div class="mb-8 md:mb-12">
-        <h2 class="text-3xl md:text-4xl font-black text-primary uppercase tracking-tighter">Gestión de Usuarios</h2>
-        <div class="h-1 w-24 bg-secondary mt-2"></div>
+    <div class="flex justify-between items-end mb-lg">
+        <div>
+            <h1 class="font-headline-xl text-primary mb-1">Gestión de Usuarios</h1>
+            <p class="font-body-md text-on-surface-variant">Administrá las cuentas de usuario y los roles de acceso al
+                sistema.</p>
+        </div>
     </div>
 
-
-
-    <div class="space-y-8">
-        <!-- Formulario de registro de usuarios -->
-        <section class="bg-white border border-[#1A1A1A]/10 p-6 md:p-8">
-            <div class="mb-8 flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary">person_add</span>
-                <h3 class="font-label-bold text-primary uppercase tracking-widest">Formulario de Registro</h3>
-            </div>
-            <form id="form-usuario" class="space-y-6" method="POST" action="/usuarios">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                        <label class="font-label-bold text-zinc-500 block">USUARIO (ÚNICO)</label>
-                        <input id="input-username" name="username" required
-                            class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
-                            placeholder="ej. jdoe88" type="text" />
-                    </div>
-                    <div class="space-y-1">
-                        <label class="font-label-bold text-zinc-500 block">CONTRASEÑA</label>
-                        <input id="input-password" name="password" required
-                            class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
-                            placeholder="••••••••" type="password" />
-                        <p id="password-help" class="text-[10px] text-zinc-400 mt-1 hidden">Dejar en blanco para
-                            mantener la actual</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                        <label class="font-label-bold text-zinc-500 block">NOMBRE</label>
-                        <input id="input-nombre" name="nombre" required
-                            class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
-                            placeholder="Juan" type="text" />
-                    </div>
-                    <div class="space-y-1">
-                        <label class="font-label-bold text-zinc-500 block">APELLIDO</label>
-                        <input id="input-apellido" name="apellido" required
-                            class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md transition-all"
-                            placeholder="Pérez" type="text" />
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                        <label class="font-label-bold text-zinc-500 block">ROL ASIGNADO</label>
-                        <select id="select-rol" name="rol_id" required
-                            class="w-full border-0 border-b border-[#1A1A1A]/10 focus:border-secondary focus:ring-0 px-0 py-2 font-body-md appearance-none bg-transparent transition-all">
-                            <option value="">Seleccionar rol...</option>
-                            {% for rol in roles %}
-                            <option value="{{ rol.id }}">{{ rol.descripcion }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="flex items-center justify-between pt-4">
-                        <span class="font-label-bold text-zinc-500">ESTADO ACTIVO</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="check-activo" name="activo" checked="" class="sr-only peer" type="checkbox"
-                                value="True" />
-                            <div
-                                class="w-11 h-6 bg-zinc-200 peer-focus:outline-none ring-0 rounded-none peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary">
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4">
-                    <button id="btn-submit"
-                        class="flex-1 bg-primary text-white font-label-bold uppercase py-4 tracking-widest hover:bg-secondary transition-colors mt-4"
-                        type="submit">
-                        CREAR USUARIO
-                    </button>
-                    <button id="btn-cancelar" type="button" onclick="cancelarEdicion()"
-                        class="hidden flex-1 border border-[#1A1A1A]/10 font-label-bold uppercase py-4 tracking-widest hover:bg-zinc-50 transition-colors mt-4">
-                        CANCELAR
-                    </button>
-                </div>
-            </form>
-        </section>
-
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Tabla de Usuarios -->
-        <section class="bg-white border border-[#1A1A1A]/10 overflow-hidden">
-            <div
-                class="p-6 md:p-8 border-b border-[#1A1A1A]/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-secondary">group</span>
-                    <h3 class="font-label-bold text-primary uppercase tracking-widest">Lista de Usuarios</h3>
-                </div>
-                <div class="flex gap-2 w-full sm:w-auto justify-end">
-                    <button
-                        class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
-                        <span class="material-symbols-outlined text-sm">filter_list</span>
-                    </button>
-                    <button
-                        class="p-2 border border-[#1A1A1A]/10 hover:border-secondary text-zinc-400 hover:text-secondary transition-all">
-                        <span class="material-symbols-outlined text-sm">download</span>
-                    </button>
+        <div class="col-span-12 lg:col-span-9 bg-white border border-[#1A1A1A]/10 shadow-sm flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-[#1A1A1A]/10 flex justify-between items-center bg-zinc-50">
+                <h2 class="text-xl font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">group</span>
+                    Lista de Usuarios
+                </h2>
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-[10px] bg-zinc-900 text-white px-3 py-1">
+                        TOTAL: {{ usuarios | length }}
+                    </span>
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[800px]">
+                <table class="table-swiss min-w-[800px]">
                     <thead>
-                        <tr class="bg-zinc-50">
-                            <th
-                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
-                                ID</th>
-                            <th
-                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
-                                Usuario</th>
-                            <th
-                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
-                                Nombre Completo</th>
-                            <th
-                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
-                                Rol</th>
-                            <th
-                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
-                                Estado</th>
-                            <th
-                                class="px-6 py-4 font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest border-b border-[#1A1A1A]/10">
-                                Acciones</th>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#1A1A1A]/5">
+                    <tbody>
                         {% for u in usuarios %}
-                        <tr class="hover:bg-zinc-50 transition-colors group">
-                            <td class="px-6 py-5 font-label-mono text-zinc-400 text-xs">#{{ "%03d" | format(u.id) }}
-                            </td>
-                            <td class="px-6 py-5 font-bold text-primary">{{ u.username }}</td>
-                            <td class="px-6 py-5 text-zinc-600">{{ u.nombre }} {{ u.apellido }}</td>
-                            <td class="px-6 py-5">
+                        <tr>
+                            <td class="font-label-mono text-zinc-400 text-xs">#{{ "%03d" | format(u.id) }}</td>
+                            <td class="font-bold text-primary">{{ u.username }}</td>
+                            <td class="text-zinc-600">{{ u.nombre }} {{ u.apellido }}</td>
+                            <td>
                                 {% if u.rol.descripcion == 'Administrador' %}
                                 <span
-                                    class="bg-primary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">{{ u.rol.descripcion }}</span>
+                                    class="bg-primary text-white text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">{{
+                                    u.rol.descripcion }}</span>
                                 {% else %}
                                 <span
-                                    class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">{{ u.rol.descripcion }}</span>
+                                    class="border border-[#1A1A1A]/20 text-zinc-600 text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">{{
+                                    u.rol.descripcion }}</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-5">
+                            <td>
                                 {% if u.activo %}
                                 <span
                                     class="inline-flex items-center gap-1.5 px-3 py-1 bg-on-tertiary-container/10 text-on-tertiary-container font-label-bold text-[10px] uppercase">
@@ -163,8 +70,8 @@
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-3">
+                            <td>
+                                <div class="flex justify-end gap-3 items-center">
                                     <button class="text-zinc-400 hover:text-secondary" data-id="{{ u.id }}"
                                         data-username="{{ u.username }}" data-nombre="{{ u.nombre }}"
                                         data-apellido="{{ u.apellido }}" data-rol="{{ u.rol_id }}"
@@ -181,7 +88,8 @@
                                         </button>
                                     </form>
                                     {% else %}
-                                    <span class="text-zinc-300 cursor-not-allowed" title="No puedes eliminar tu propia cuenta">
+                                    <span class="text-zinc-300 cursor-not-allowed"
+                                        title="No puedes eliminar tu propia cuenta">
                                         <span class="material-symbols-outlined text-lg text-zinc-300">delete</span>
                                     </span>
                                     {% endif %}
@@ -190,55 +98,110 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="6"
-                                class="px-6 py-10 text-center text-zinc-500 font-label-mono text-xs uppercase tracking-widest">
+                            <td colspan="6" class="text-center text-zinc-500 font-label-mono text-xs uppercase">
                                 No hay usuarios registrados.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
 
-        <!-- Tarjetas de estadísticas responsivas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
-                <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Licencias Activas</p>
-                <h4 class="font-headline-md text-primary">{{ cant_activos }} / 150</h4>
-                <div class="w-full bg-zinc-200 h-1 mt-4">
-                    <div class="bg-secondary h-1" style="width: {{ (cant_activos / 150 * 100) | round }}%;"></div>
+        <!-- Formulario de registro de usuarios -->
+        <div class="col-span-12 lg:col-span-3 bento-card flex flex-col">
+            <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
+                <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nuevo Usuario</h2>
+                <span class="material-symbols-outlined text-on-surface-variant text-sm">person_add</span>
+            </div>
+            <form id="form-usuario" class="flex flex-col gap-6 flex-grow" method="POST" action="/usuarios">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="space-y-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Usuario
+                        (Único)</label>
+                    <input id="input-username" name="username" required class="input-swiss" placeholder="ej. jdoe88"
+                        type="text" />
                 </div>
-            </div>
-            <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
-                <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Roles Definidos</p>
-                <h4 class="font-headline-md text-primary">{{ cant_roles }} Tipos</h4>
-                <div class="flex gap-1 mt-4">
-                    <div class="w-2 h-2 bg-primary"></div>
-                    <div class="w-2 h-2 bg-secondary"></div>
-                    <div class="w-2 h-2 bg-zinc-300"></div>
+
+                <div class="space-y-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Contraseña</label>
+                    <input id="input-password" name="password" required class="input-swiss" placeholder="••••••••"
+                        type="password" />
+                    <p id="password-help" class="text-[10px] text-zinc-400 mt-1 hidden">Dejar en blanco para
+                        mantener la actual</p>
                 </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Nombre</label>
+                    <input id="input-nombre" name="nombre" required class="input-swiss" placeholder="Juan"
+                        type="text" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Apellido</label>
+                    <input id="input-apellido" name="apellido" required class="input-swiss" placeholder="Pérez"
+                        type="text" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Rol Asignado</label>
+                    <select id="select-rol" name="rol_id" required class="input-swiss appearance-none bg-transparent">
+                        <option value="">Seleccionar rol...</option>
+                        {% for rol in roles %}
+                        <option value="{{ rol.id }}">{{ rol.descripcion }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                    <span class="font-label-bold text-zinc-500 uppercase text-[10px]">Estado Activo</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input id="check-activo" name="activo" checked="" class="sr-only peer" type="checkbox"
+                            value="True" />
+                        <div
+                            class="w-11 h-6 bg-zinc-200 peer-focus:outline-none ring-0 rounded-none peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary">
+                        </div>
+                    </label>
+                </div>
+
+                <div class="flex flex-col gap-4 mt-auto pt-lg">
+                    <button id="btn-submit" class="btn-swiss btn-primary w-full justify-center" type="submit">
+                        CREAR USUARIO
+                    </button>
+                    <button id="btn-cancelar" type="button" onclick="cancelarEdicion()"
+                        class="hidden btn-swiss btn-outline w-full justify-center">
+                        CANCELAR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tarjetas de estadísticas responsivas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
+            <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Licencias Activas</p>
+            <h4 class="font-headline-md text-primary">{{ cant_activos }} / 150</h4>
+            <div class="w-full bg-zinc-200 h-1 mt-4">
+                <div class="bg-secondary h-1" style="width: {{ (cant_activos / 150 * 100) | round }}%;"></div>
             </div>
-            <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6 sm:col-span-2 lg:col-span-1">
-                <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Última Auditoría</p>
-                <h4 class="font-headline-md text-primary">{{ tiempo_auditoria }}</h4>
-                <p class="text-[10px] font-label-mono text-on-tertiary-container mt-4 uppercase">SISTEMA ESTABLE</p>
+        </div>
+        <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
+            <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Roles Definidos</p>
+            <h4 class="font-headline-md text-primary">{{ cant_roles }} Tipos</h4>
+            <div class="flex gap-1 mt-4">
+                <div class="w-2 h-2 bg-primary"></div>
+                <div class="w-2 h-2 bg-secondary"></div>
+                <div class="w-2 h-2 bg-zinc-300"></div>
             </div>
+        </div>
+        <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6 sm:col-span-2 lg:col-span-1">
+            <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Última Auditoría</p>
+            <h4 class="font-headline-md text-primary">{{ tiempo_auditoria }}</h4>
+            <p class="text-[10px] font-label-mono text-on-tertiary-container mt-4 uppercase">SISTEMA ESTABLE</p>
         </div>
     </div>
 </main>
-
-<!-- Footer Responsivo -->
-<footer class="p-6 md:p-10 border-t border-[#1A1A1A]/10 flex flex-col md:flex-row items-center justify-between gap-6">
-    <div class="flex flex-col sm:flex-row gap-4 md:gap-8 items-center text-center">
-        <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Protocolo de Seguridad
-            v4.0.2</span>
-        <span class="text-[10px] font-label-bold text-zinc-400 uppercase tracking-[0.3em]">Sesión Encriptada</span>
-    </div>
-    <div class="flex items-center gap-2">
-        <div class="w-2 h-2 bg-on-tertiary-container rounded-full animate-pulse"></div>
-        <span class="text-[10px] font-label-bold text-on-tertiary-container uppercase">Servidores Online</span>
-    </div>
-</footer>
 
 <script src="{{ url_for('static', filename='js/gestion_usuarios.js') }}"></script>
 

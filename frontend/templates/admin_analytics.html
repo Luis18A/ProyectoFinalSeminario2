@@ -1,40 +1,20 @@
-{% extends 'base.html' %}
+{% extends 'layout/base.html' %}
 {% block title %}Métricas y Análisis | TechFlow{% endblock %}
 {% block content %}
-
-<style>
-    @keyframes grow-horizontal {
-        from { width: 0%; }
-        to { width: var(--target-width); }
-    }
-    @keyframes grow-vertical {
-        from { height: 0%; }
-        to { height: var(--target-height); }
-    }
-    .animate-grow {
-        animation: grow-horizontal 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-    .animate-grow-v {
-        animation: grow-vertical 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-</style>
-
 <!-- CANVAS (Bento Grid Layout) -->
 <main class="flex-1 p-4 md:p-10 bg-background overflow-x-hidden">
     <!-- Page Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-lg gap-4">
         <div>
-            <h1 class="text-3xl md:text-4xl font-black text-on-surface uppercase tracking-tighter">Telemetría de la Plataforma
-            </h1>
-            <p class="font-body-md text-on-surface-variant max-w-2xl">Resumen global del estado del sistema, velocidad de incidentes y cumplimiento de auditorías.</p>
+            <h1 class="font-headline-xl text-primary mb-1">Telemetría de la Plataforma</h1>
+            <p class="font-body-md text-on-surface-variant max-w-2xl">Resumen global del estado del sistema, velocidad
+                de incidentes y cumplimiento de auditorías.</p>
         </div>
         <div class="flex flex-wrap gap-4 w-full md:w-auto">
             <a href="{{ url_for('admin.download_backup') }}"
-                class="flex-1 md:flex-none flex items-center justify-center gap-2 border border-emerald-500/20 bg-emerald-50/20 text-emerald-700 px-6 py-3 font-label-bold uppercase text-xs hover:bg-emerald-50 transition-all shadow-sm rounded-none">
+                class="btn-swiss bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 flex-1 md:flex-none justify-center">
                 <span class="material-symbols-outlined text-sm">download</span> Descargar Backup
             </a>
-            <button
-                class="flex-1 md:flex-none bg-primary text-white px-6 py-3 font-label-bold uppercase text-xs hover:bg-secondary transition-colors">Control del Sistema</button>
         </div>
     </div>
 
@@ -69,7 +49,8 @@
         <!-- KPI 3: Active Technicians -->
         <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Técnicos Activos</span>
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Técnicos
+                    Activos</span>
                 <span class="material-symbols-outlined text-zinc-400 text-lg">engineering</span>
             </div>
             <div>
@@ -80,13 +61,15 @@
         <!-- KPI 4: System Integrity -->
         <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-40">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Integridad del Sistema</span>
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Integridad del
+                    Sistema</span>
                 <span class="material-symbols-outlined text-[#0057FF] text-lg">verified_user</span>
             </div>
             <div>
                 <div class="text-4xl font-black text-on-surface">{{ system_integrity }}</div>
                 <div class="w-full h-[2px] bg-zinc-100 mt-4 relative">
-                    <div class="absolute left-0 top-0 h-full bg-[#0057FF] animate-grow" style="--target-width: {{ system_integrity }}; width: 0%;"></div>
+                    <div class="absolute left-0 top-0 h-full bg-[#0057FF] animate-grow"
+                        style="--target-width: {{ system_integrity }}; width: 0%;"></div>
                 </div>
             </div>
         </div>
@@ -94,7 +77,8 @@
         <!-- KPI 5: Total Revenue (Ingresos) -->
         <div class="bg-emerald-50/30 border border-emerald-500/20 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-emerald-600 uppercase tracking-widest">Ingresos Totales</span>
+                <span class="font-label-bold text-[10px] text-emerald-600 uppercase tracking-widest">Ingresos
+                    Totales</span>
                 <span class="material-symbols-outlined text-emerald-600 text-lg font-bold">payments</span>
             </div>
             <div>
@@ -102,7 +86,8 @@
                 <!-- Sparkline SVG -->
                 <div class="h-6 w-full mt-2 opacity-80 text-emerald-500">
                     <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                        <path d="M0,18 Q15,4 30,12 T60,8 T85,15 T100,2" fill="none" stroke="currentColor" stroke-width="2"></path>
+                        <path d="M0,18 Q15,4 30,12 T60,8 T85,15 T100,2" fill="none" stroke="currentColor"
+                            stroke-width="2"></path>
                     </svg>
                 </div>
                 <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
@@ -113,7 +98,8 @@
         <!-- KPI 6: Total Expenses (Egresos) -->
         <div class="bg-rose-50/30 border border-rose-500/20 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-rose-500 uppercase tracking-widest">Egresos Estimados</span>
+                <span class="font-label-bold text-[10px] text-rose-500 uppercase tracking-widest">Egresos
+                    Estimados</span>
                 <span class="material-symbols-outlined text-rose-500 text-lg">shopping_cart</span>
             </div>
             <div>
@@ -121,11 +107,13 @@
                 <!-- Sparkline SVG -->
                 <div class="h-6 w-full mt-2 opacity-80 text-rose-500">
                     <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                        <path d="M0,5 Q10,12 30,4 T60,18 T85,10 T100,15" fill="none" stroke="currentColor" stroke-width="2"></path>
+                        <path d="M0,5 Q10,12 30,4 T60,18 T85,10 T100,15" fill="none" stroke="currentColor"
+                            stroke-width="2"></path>
                     </svg>
                 </div>
                 <div class="font-label-mono text-[10px] text-rose-500 mt-2 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span> Repuestos e insumos ({{ "{:.1f}%".format(expense_percentage) }})
+                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span> Repuestos e insumos ({{
+                    "{:.1f}%".format(expense_percentage) }})
                 </div>
             </div>
         </div>
@@ -140,7 +128,8 @@
                 <!-- Sparkline SVG -->
                 <div class="h-6 w-full mt-2 opacity-80 text-blue-500">
                     <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                        <path d="M0,18 Q20,16 40,12 T70,5 T100,1" fill="none" stroke="currentColor" stroke-width="2"></path>
+                        <path d="M0,18 Q20,16 40,12 T70,5 T100,1" fill="none" stroke="currentColor" stroke-width="2">
+                        </path>
                     </svg>
                 </div>
                 <div class="font-label-mono text-[10px] text-blue-600 mt-2 flex items-center gap-1">
@@ -151,7 +140,8 @@
         <!-- KPI 8: MTTR -->
         <div class="bg-white border border-on-surface/10 p-6 flex flex-col justify-between h-48">
             <div class="flex justify-between items-start">
-                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Tiempo Promedio de Resolución</span>
+                <span class="font-label-bold text-[10px] text-zinc-400 uppercase tracking-widest">Tiempo Promedio de
+                    Resolución</span>
                 <span class="material-symbols-outlined text-zinc-400 text-lg">timer</span>
             </div>
             <div>
@@ -159,7 +149,8 @@
                 <!-- Sparkline SVG -->
                 <div class="h-6 w-full mt-2 opacity-80 text-zinc-300">
                     <svg class="h-full w-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                        <path d="M0,5 Q20,10 40,18 T70,12 T100,2" fill="none" stroke="currentColor" stroke-width="2"></path>
+                        <path d="M0,5 Q20,10 40,18 T70,12 T100,2" fill="none" stroke="currentColor" stroke-width="2">
+                        </path>
                     </svg>
                 </div>
                 <div class="font-label-mono text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
@@ -172,7 +163,8 @@
         <div
             class="col-span-1 sm:col-span-2 lg:col-span-3 bg-white border border-on-surface/10 p-6 min-h-[320px] flex flex-col">
             <div class="flex justify-between items-center mb-8 border-b border-on-surface/10 pb-4">
-                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Grilla de Velocidad de Incidentes</h2>
+                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Grilla de Velocidad de
+                    Incidentes</h2>
                 <div class="hidden sm:flex gap-2 font-label-mono text-[10px] text-zinc-400">
                     <button
                         class="px-2 py-1 border border-on-surface/10 hover:border-primary hover:text-primary transition-colors">24H</button>
@@ -236,13 +228,14 @@
             <div class="flex-1 flex flex-col justify-center gap-6">
                 {% for f in fault_logic %}
                 <div>
-                     <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
-                         <span>{{ f.nombre }}</span>
-                         <span>{{ f.porcentaje }}%</span>
-                     </div>
-                     <div class="w-full h-[2px] bg-zinc-100">
-                         <div class="h-full bg-primary animate-grow" style="--target-width: {{ f.porcentaje }}%; width: 0%;"></div>
-                     </div>
+                    <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
+                        <span>{{ f.nombre }}</span>
+                        <span>{{ f.porcentaje }}%</span>
+                    </div>
+                    <div class="w-full h-[2px] bg-zinc-100">
+                        <div class="h-full bg-primary animate-grow"
+                            style="--target-width: {{ f.porcentaje }}%; width: 0%;"></div>
+                    </div>
                 </div>
                 {% else %}
                 <p class="text-xs text-on-surface-variant font-label-mono">Sin datos disponibles.</p>
@@ -251,55 +244,73 @@
         </div>
 
         <!-- K-Means Client Segmentation Bento Box -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white border border-on-surface/10 overflow-hidden flex flex-col mt-6">
-            <div class="p-6 border-b border-on-surface/10 bg-zinc-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div
+            class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white border border-on-surface/10 overflow-hidden flex flex-col mt-6">
+            <div
+                class="p-6 border-b border-on-surface/10 bg-zinc-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary text-xl">analytics</span>
                         Minería de Datos: Segmentación de Clientes K-Means
                     </h2>
-                    <p class="text-xs text-on-surface-variant font-label-mono mt-1">Clasificación avanzada de aprendizaje automático basada en la frecuencia de servicio y aportes de facturación.</p>
+                    <p class="text-xs text-on-surface-variant font-label-mono mt-1">Clasificación avanzada de
+                        aprendizaje automático basada en la frecuencia de servicio y aportes de facturación.</p>
                 </div>
                 <div class="flex gap-2">
-                    <span class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold uppercase text-[9px] border border-emerald-100 flex items-center gap-1 rounded-none">
+                    <span
+                        class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold uppercase text-[9px] border border-emerald-100 flex items-center gap-1 rounded-none">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> K-Means Activo
                     </span>
-                    <span class="px-2 py-1 bg-zinc-100 text-zinc-600 font-bold uppercase text-[9px] border border-zinc-200 rounded-none">
+                    <span
+                        class="px-2 py-1 bg-zinc-100 text-zinc-600 font-bold uppercase text-[9px] border border-zinc-200 rounded-none">
                         Grupos: K=3
                     </span>
                 </div>
             </div>
-            
+
             <!-- Summary Stats of Clusters -->
             <div class="grid grid-cols-1 md:grid-cols-3 border-b border-zinc-100 bg-zinc-50/50">
                 <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
                     <div>
-                        <span class="font-label-bold text-[9px] text-emerald-600 uppercase tracking-widest block">Segmento Platinum</span>
-                        <span class="text-2xl font-black text-emerald-700 mt-2 block"> {{ kmeans_stats.get('Platinum', {'count': 0}).count }} Clientes </span>
+                        <span
+                            class="font-label-bold text-[9px] text-emerald-600 uppercase tracking-widest block">Segmento
+                            Platinum</span>
+                        <span class="text-2xl font-black text-emerald-700 mt-2 block"> {{ kmeans_stats.get('Platinum',
+                            {'count': 0}).count }} Clientes </span>
                     </div>
                     <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
-                        Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(kmeans_stats.Platinum.total_gasto) }}</span><br/>
-                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{ kmeans_stats.Platinum.avg_frecuencia }} reparaciones</span>
+                        Gasto Total: <span class="font-bold text-on-surface">${{
+                            "{:,.2f}".format(kmeans_stats.Platinum.total_gasto) }}</span><br />
+                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{
+                            kmeans_stats.Platinum.avg_frecuencia }} reparaciones</span>
                     </div>
                 </div>
                 <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
                     <div>
-                        <span class="font-label-bold text-[9px] text-blue-600 uppercase tracking-widest block">Segmento Activo</span>
-                        <span class="text-2xl font-black text-blue-700 mt-2 block">{{ kmeans_stats.Activo.count }} Clientes</span>
+                        <span class="font-label-bold text-[9px] text-blue-600 uppercase tracking-widest block">Segmento
+                            Activo</span>
+                        <span class="text-2xl font-black text-blue-700 mt-2 block">{{ kmeans_stats.Activo.count }}
+                            Clientes</span>
                     </div>
                     <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
-                        Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(kmeans_stats.Activo.total_gasto) }}</span><br/>
-                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{ kmeans_stats.Activo.avg_frecuencia }} reparaciones</span>
+                        Gasto Total: <span class="font-bold text-on-surface">${{
+                            "{:,.2f}".format(kmeans_stats.Activo.total_gasto) }}</span><br />
+                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{
+                            kmeans_stats.Activo.avg_frecuencia }} reparaciones</span>
                     </div>
                 </div>
                 <div class="p-6 flex flex-col justify-between">
                     <div>
-                        <span class="font-label-bold text-[9px] text-zinc-500 uppercase tracking-widest block">Segmento Casual / Nuevo</span>
-                        <span class="text-2xl font-black text-zinc-600 mt-2 block">{{ kmeans_stats.Casual.count }} Clientes</span>
+                        <span class="font-label-bold text-[9px] text-zinc-500 uppercase tracking-widest block">Segmento
+                            Casual / Nuevo</span>
+                        <span class="text-2xl font-black text-zinc-600 mt-2 block">{{ kmeans_stats.Casual.count }}
+                            Clientes</span>
                     </div>
                     <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
-                        Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(kmeans_stats.Casual.total_gasto) }}</span><br/>
-                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{ kmeans_stats.Casual.avg_frecuencia }} reparaciones</span>
+                        Gasto Total: <span class="font-bold text-on-surface">${{
+                            "{:,.2f}".format(kmeans_stats.Casual.total_gasto) }}</span><br />
+                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{
+                            kmeans_stats.Casual.avg_frecuencia }} reparaciones</span>
                     </div>
                 </div>
             </div>
@@ -309,11 +320,16 @@
                 <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr class="bg-zinc-50 border-b border-zinc-100">
-                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Cliente</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">DNI/CUIL</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Frecuencia</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Aporte Facturación</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Segmento Asignado</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Cliente
+                            </th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">DNI/CUIL
+                            </th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                Frecuencia</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Aporte
+                                Facturación</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Segmento
+                                Asignado</th>
                         </tr>
                     </thead>
                     <tbody class="text-xs">
@@ -348,12 +364,12 @@
             class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white border border-on-surface/10 overflow-hidden flex flex-col mt-4">
             <div
                 class="p-6 border-b border-on-surface/10 bg-zinc-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Registro de Auditoría del Sistema</h2>
+                <h2 class="text-xl font-bold text-on-surface uppercase tracking-tighter">Registro de Auditoría del
+                    Sistema</h2>
                 <div class="relative w-full sm:w-64">
                     <span
                         class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">search</span>
-                    <input id="audit-search-input"
-                        class="w-full border border-zinc-200 py-2 pl-9 pr-4 font-mono text-xs focus:border-primary focus:outline-none"
+                    <input id="audit-search-input" class="input-swiss pl-9 font-mono text-xs"
                         placeholder="BUSCAR_SISTEMA..." type="text" />
                 </div>
             </div>
@@ -363,7 +379,8 @@
                         <tr class="bg-zinc-50 border-b border-zinc-100">
                             <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                                 Fecha y Hora</th>
-                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">ID de Evento
+                            <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">ID de
+                                Evento
                             </th>
                             <th class="py-4 px-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Acción
                             </th>
@@ -374,30 +391,33 @@
                     <tbody class="text-xs" id="audit-table-body">
                         {% for h in recent_history %}
                         <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors cursor-pointer group">
-                             <td class="py-4 px-6 font-mono text-zinc-400">
-                                 {{ h.fecha_cambio.strftime('%d/%m/%Y %H:%M:%S') if h.fecha_cambio else '—' }}
-                             </td>
-                             <td class="py-4 px-6 font-mono text-primary group-hover:underline">
-                                 EVT-{{ "%04d" | format(h.id) }}
-                             </td>
-                             <td class="py-4 px-6">
-                                 Cambio de estado en ticket #{{ h.orden_id }} de 
-                                 <span class="font-bold text-zinc-600">"{{ h.estado_anterior if h.estado_anterior else '—' }}"</span> 
-                                 a 
-                                 <span class="font-bold text-primary">"{{ h.estado_nuevo if h.estado_nuevo else '—' }}"</span>.
-                             </td>
-                             <td class="py-4 px-6 flex items-center gap-2">
-                                 <div class="w-6 h-6 rounded-full bg-zinc-950 text-white flex items-center justify-center font-bold text-[8px] uppercase">
-                                     {{ h.usuario.username[:2] if h.usuario else 'SY' }}
-                                 </div>
-                                 {{ h.usuario.username if h.usuario else 'Sistema' }}
-                             </td>
+                            <td class="py-4 px-6 font-mono text-zinc-400">
+                                {{ h.fecha_cambio.strftime('%d/%m/%Y %H:%M:%S') if h.fecha_cambio else '—' }}
+                            </td>
+                            <td class="py-4 px-6 font-mono text-primary group-hover:underline">
+                                EVT-{{ "%04d" | format(h.id) }}
+                            </td>
+                            <td class="py-4 px-6">
+                                Cambio de estado en ticket #{{ h.orden_id }} de
+                                <span class="font-bold text-zinc-600">"{{ h.estado_anterior if h.estado_anterior else
+                                    '—' }}"</span>
+                                a
+                                <span class="font-bold text-primary">"{{ h.estado_nuevo if h.estado_nuevo else '—'
+                                    }}"</span>.
+                            </td>
+                            <td class="py-4 px-6 flex items-center gap-2">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-zinc-950 text-white flex items-center justify-center font-bold text-[8px] uppercase">
+                                    {{ h.usuario.username[:2] if h.usuario else 'SY' }}
+                                </div>
+                                {{ h.usuario.username if h.usuario else 'Sistema' }}
+                            </td>
                         </tr>
                         {% else %}
                         <tr>
-                             <td colspan="4" class="py-8 px-6 text-center text-zinc-400 font-mono">
-                                 Sin logs de auditoría registrados.
-                             </td>
+                            <td colspan="4" class="py-8 px-6 text-center text-zinc-400 font-mono">
+                                Sin logs de auditoría registrados.
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -406,32 +426,8 @@
         </div>
     </div>
 </main>
+{% endblock %}
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('audit-search-input');
-    const tableBody = document.getElementById('audit-table-body');
-    
-    if (searchInput && tableBody) {
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase().trim();
-            const rows = tableBody.querySelectorAll('tr');
-            
-            rows.forEach(row => {
-                // Si es la fila de estado vacío, no hacer nada
-                if (row.cells.length === 1 && row.cells[0].textContent.includes('Sin logs')) {
-                    return;
-                }
-                
-                const text = row.textContent.toLowerCase();
-                if (text.includes(query)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    }
-});
-</script>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin_analytics.js') }}" defer></script>
 {% endblock %}

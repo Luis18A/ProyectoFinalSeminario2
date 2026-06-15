@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'layout/base.html' %}
 {% block title %}Gestión de Órdenes | TechFlow{% endblock %}
 {% block content %}
-{% from 'macros.html' import badge_estado %}
+{% from 'layout/macros.html' import badge_estado %}
 
 <!-- Main Content Canvas -->
 <main class="flex-1 p-4 md:p-10 overflow-y-auto bg-background animate-in fade-in duration-300">
@@ -11,95 +11,92 @@
         <div class="flex justify-between items-end">
             <div>
                 <h1 class="font-headline-xl text-primary mb-1">Gestión de Órdenes</h1>
-                <p class="font-body-md text-on-surface-variant">Monitoreá y gestioná las transiciones de las órdenes activas en el taller.</p>
+                <p class="font-body-md text-on-surface-variant">Monitoreá y gestioná las transiciones de las órdenes
+                    activas en el taller.</p>
             </div>
-            <!-- Botón de acción rápida para scroll al formulario -->
-            <button onclick="const selCli = document.getElementById('select-cliente'); if(selCli) { selCli.scrollIntoView({ behavior: 'smooth' }); selCli.focus(); }" 
-                    class="btn-swiss py-3 px-5 flex items-center gap-2 bg-primary hover:bg-secondary text-white font-bold uppercase transition-colors text-xs font-['Space_Grotesk']">
-                <span class="material-symbols-outlined text-[16px]">add_circle</span> Nueva Orden
-            </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <!-- Tabla de Órdenes Activas -->
-            <div class="lg:col-span-8 bg-white border border-[#1A1A1A]/10 shadow-sm flex flex-col overflow-hidden h-fit">
+            <div class="col-span-12 lg:col-span-9 table-container">
                 <div class="p-6 border-b border-[#1A1A1A]/10 flex justify-between items-center bg-zinc-50">
-                    <h2 class="text-xl font-black uppercase tracking-tighter text-on-surface">Órdenes de Servicio en Taller</h2>
+                    <h2 class="text-xl font-black uppercase tracking-tighter text-on-surface">Órdenes de Servicio en
+                        Taller</h2>
                     <span class="font-mono text-[10px] bg-zinc-900 text-white px-3 py-1">
                         TOTAL ACTIVAS: {{ ordenes | length }}
                     </span>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[800px]">
-                        <thead>
-                            <tr class="border-b-2 border-zinc-100 bg-zinc-50/50">
-                                <th class="p-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest w-20">ID</th>
-                                <th class="p-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Cliente</th>
-                                <th class="p-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Equipo</th>
-                                <th class="p-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Estado</th>
-                                <th class="p-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-right w-44">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-xs divide-y divide-zinc-50">
-                            {% if ordenes %}
-                            {% for orden in ordenes %}
-                            {% set estado = orden.estado.value %}
-                            <tr class="hover:bg-zinc-50 transition-colors">
-                                <td class="p-4 font-mono text-zinc-400">TK-{{ "%04d"|format(orden.id) }}</td>
-                                <td class="p-4 font-bold">
-                                    {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                                </td>
-                                <td class="p-4 text-zinc-600">
-                                    {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                                </td>
-                                <td class="p-4">
-                                    {{ badge_estado(estado) }}
-                                </td>
-                                <td class="p-4 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                                           class="px-2 py-1.5 bg-zinc-100 border border-zinc-200 text-zinc-700 hover:bg-zinc-200 transition-colors uppercase text-[9px] font-bold flex items-center gap-1"
-                                           title="Ver Detalle / Historial">
-                                            <span class="material-symbols-outlined text-[12px]">visibility</span> Detalle
-                                        </a>
-                                        {% if estado == 'Presupuestado' %}
-                                        <button onclick="confirmarPresupuesto('{{ orden.id }}', '{{ orden.costo or 0.0 }}')"
-                                                class="px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
-                                                title="Confirmar aceptación del presupuesto">
-                                            <span class="material-symbols-outlined text-[12px]">check_circle</span> Aceptar
-                                        </button>
-                                        <button onclick="rechazarPresupuesto('{{ orden.id }}')"
-                                                class="px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
-                                                title="Rechazar presupuesto (volver a diagnóstico)">
-                                            <span class="material-symbols-outlined text-[12px]">cancel</span> Rechazar
-                                        </button>
-                                        {% elif estado == 'Listo' %}
-                                        <button onclick="entregarEquipo('{{ orden.id }}')"
-                                                class="px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
-                                                title="Entregar equipo al cliente (Finalizar ciclo)">
-                                            <span class="material-symbols-outlined text-[12px]">local_shipping</span> Entregar
-                                        </button>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% else %}
-                            <tr>
-                                <td colspan="5" class="p-10 text-center text-zinc-400">
-                                    No hay órdenes de servicio registradas.
-                                </td>
-                            </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table-swiss min-w-[800px]">
+                    <thead>
+                        <tr>
+                            <th class="w-20">ID</th>
+                            <th>Cliente</th>
+                            <th>Equipo</th>
+                            <th>Estado</th>
+                            <th class="text-right w-44">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if ordenes %}
+                        {% for orden in ordenes %}
+                        {% set estado = orden.estado.value %}
+                        <tr>
+                            <td class="font-mono text-zinc-400">TK-{{ "%04d"|format(orden.id) }}</td>
+                            <td class="font-bold">
+                                {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
+                            </td>
+                            <td class="text-zinc-600">
+                                {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
+                            </td>
+                            <td>
+                                {{ badge_estado(estado) }}
+                            </td>
+                            <td class="text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
+                                        class="px-2 py-1.5 bg-zinc-100 border border-zinc-200 text-zinc-700 hover:bg-zinc-200 transition-colors uppercase text-[9px] font-bold flex items-center gap-1"
+                                        title="Ver Detalle / Historial">
+                                        <span class="material-symbols-outlined text-[12px]">visibility</span> Detalle
+                                    </a>
+                                    {% if estado == 'Presupuestado' %}
+                                    <button onclick="confirmarPresupuesto('{{ orden.id }}', '{{ orden.costo or 0.0 }}')"
+                                        class="px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
+                                        title="Confirmar aceptación del presupuesto">
+                                        <span class="material-symbols-outlined text-[12px]">check_circle</span> Aceptar
+                                    </button>
+                                    <button onclick="rechazarPresupuesto('{{ orden.id }}')"
+                                        class="px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
+                                        title="Rechazar presupuesto (volver a diagnóstico)">
+                                        <span class="material-symbols-outlined text-[12px]">cancel</span> Rechazar
+                                    </button>
+                                    {% elif estado == 'Listo' %}
+                                    <button onclick="entregarEquipo('{{ orden.id }}')"
+                                        class="px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
+                                        title="Entregar equipo al cliente (Finalizar ciclo)">
+                                        <span class="material-symbols-outlined text-[12px]">local_shipping</span>
+                                        Entregar
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-zinc-400">
+                                No hay órdenes de servicio registradas.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
 
             <!-- Formulario de Registro de Orden -->
-            <div class="lg:col-span-4 bento-card flex flex-col h-fit sticky top-24">
+            <div class="col-span-12 lg:col-span-3 bento-card flex flex-col">
                 <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
-                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nueva Orden</h2>
+                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nueva Orden
+                    </h2>
                     <span class="material-symbols-outlined text-on-surface-variant text-sm">playlist_add</span>
                 </div>
 
@@ -116,14 +113,14 @@
                     <!-- 1. Seleccionar Cliente -->
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between items-center">
-                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">
+                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">
                                 Cliente *
                             </label>
-                            <span class="text-[9px] text-zinc-400 font-medium">(Si no existe, podés registrarlo rápido)</span>
+                            <span class="text-[9px] text-zinc-400 font-medium">(Si no existe, podés registrarlo
+                                rápido)</span>
                         </div>
                         <div class="flex gap-2">
-                            <select id="select-cliente" name="cliente_id" required
-                                class="input-swiss flex-grow">
+                            <select id="select-cliente" name="cliente_id" required class="input-swiss flex-grow">
                                 <option value="">— Seleccionar cliente —</option>
                                 {% for cliente in clientes %}
                                 <option value="{{ cliente.id }}">
@@ -132,8 +129,8 @@
                                 {% endfor %}
                             </select>
                             <button type="button" onclick="abrirCrearClienteRapido()"
-                                    class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center"
-                                    title="Registrar Cliente Nuevo Rápido">
+                                class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center"
+                                title="Registrar Cliente Nuevo Rápido">
                                 <span class="material-symbols-outlined text-[18px]">person_add</span>
                             </button>
                         </div>
@@ -142,19 +139,21 @@
                     <!-- 2. Seleccionar Equipo (carga dinámicamente vía AJAX) -->
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between items-center">
-                            <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">
+                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">
                                 Equipo *
                             </label>
-                            <span class="text-[9px] text-zinc-400 font-medium">(Seleccioná o registrá el dispositivo)</span>
+                            <span class="text-[9px] text-zinc-400 font-medium">(Seleccioná o registrá el
+                                dispositivo)</span>
                         </div>
                         <div class="flex gap-2">
                             <select id="select-equipo" name="equipo_id" required disabled
                                 class="input-swiss flex-grow disabled:opacity-40">
                                 <option value="">— Primero seleccione un cliente —</option>
                             </select>
-                            <button type="button" id="btn-nuevo-equipo-rapido" onclick="abrirCrearEquipoRapido()" disabled
-                                    class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center disabled:opacity-40"
-                                    title="Registrar Equipo Nuevo Rápido">
+                            <button type="button" id="btn-nuevo-equipo-rapido" onclick="abrirCrearEquipoRapido()"
+                                disabled
+                                class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center disabled:opacity-40"
+                                title="Registrar Equipo Nuevo Rápido">
                                 <span class="material-symbols-outlined text-[18px]">devices_other</span>
                             </button>
                         </div>
@@ -165,27 +164,26 @@
 
                     <!-- 3. Falla Reportada -->
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">
                             Falla Reportada *
                         </label>
                         <textarea name="falla_reportada" required minlength="5" rows="4" maxlength="100"
                             placeholder="Ej: No enciende, pantalla rota, teclado sin respuesta..."
-                            class="input-swiss border border-zinc-200 p-3 text-sm focus:ring-0 focus:border-primary transition-all outline-none resize-none mt-1"></textarea>
+                            class="input-swiss resize-none mt-1"></textarea>
                     </div>
 
                     <!-- 4. Accesorios -->
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">
                             Accesorios / Pertenencias
                         </label>
                         <input type="text" name="accesorios" value="Sin accesorios" maxlength="100"
-                            placeholder="Ej: cargador, funda, mouse..."
-                            class="input-swiss">
+                            placeholder="Ej: cargador, funda, mouse..." class="input-swiss">
                     </div>
 
                     <!-- 5. Costo estimado (opcional) -->
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">
                             Costo Estimado (opcional)
                         </label>
                         <input type="number" name="costo" step="0.01" min="0" placeholder="0.00"
@@ -206,52 +204,55 @@
 </main>
 
 <!-- Modal Registro Rápido de Cliente -->
-<div id="modal-cliente-rapido" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    <div class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+<div id="modal-cliente-rapido"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
         <div class="border-b border-[#1A1A1A]/10 p-6 flex justify-between items-center bg-zinc-50">
             <h2 class="text-lg font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">person_add</span>
                 Registrar Cliente Rápido
             </h2>
-            <button type="button" onclick="cerrarCrearClienteRapido()" class="text-zinc-400 hover:text-zinc-950 transition-colors">
+            <button type="button" onclick="cerrarCrearClienteRapido()"
+                class="text-zinc-400 hover:text-zinc-950 transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <form id="form-cliente-rapido" class="p-6 flex flex-col gap-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">DNI / CUIL *</label>
-                <input name="dni" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none font-label-mono" placeholder="Ej: 35123456">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">DNI / CUIL *</label>
+                <input name="dni" required class="input-swiss font-label-mono" placeholder="Ej: 35123456">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Nombre *</label>
-                    <input name="nombre" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Juan">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Nombre *</label>
+                    <input name="nombre" required class="input-swiss" placeholder="Juan">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Apellido *</label>
-                    <input name="apellido" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Pérez">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Apellido *</label>
+                    <input name="apellido" required class="input-swiss" placeholder="Pérez">
                 </div>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Teléfono *</label>
-                <input name="telefono" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="11 9876-5432">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Teléfono *</label>
+                <input name="telefono" required class="input-swiss" placeholder="11 9876-5432">
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Email (Opcional)</label>
-                <input name="email" class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="juan.perez@ejemplo.com">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Email (Opcional)</label>
+                <input name="email" class="input-swiss" placeholder="juan.perez@ejemplo.com">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Domicilio *</label>
-                    <input name="domicilio" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Av. Siempreviva 742">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Domicilio *</label>
+                    <input name="domicilio" required class="input-swiss" placeholder="Av. Siempreviva 742">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Localidad *</label>
-                    <input name="localidad" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="Springfield">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Localidad *</label>
+                    <input name="localidad" required class="input-swiss" placeholder="Springfield">
                 </div>
             </div>
-            <button type="submit" class="w-full bg-primary hover:bg-secondary text-white py-3 font-bold uppercase transition-colors flex items-center justify-center gap-2 mt-2">
+            <button type="submit" class="btn-swiss btn-primary w-full justify-center mt-2">
                 <span class="material-symbols-outlined text-sm">save</span>
                 Guardar Cliente
             </button>
@@ -260,28 +261,34 @@
 </div>
 
 <!-- Modal Registro Rápido de Equipo -->
-<div id="modal-equipo-rapido" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    <div class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+<div id="modal-equipo-rapido"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
         <div class="border-b border-[#1A1A1A]/10 p-6 flex justify-between items-center bg-zinc-50">
             <h2 class="text-lg font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">devices</span>
                 Registrar Equipo Rápido
             </h2>
-            <button type="button" onclick="cerrarCrearEquipoRapido()" class="text-zinc-400 hover:text-zinc-950 transition-colors">
+            <button type="button" onclick="cerrarCrearEquipoRapido()"
+                class="text-zinc-400 hover:text-zinc-950 transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <form id="form-equipo-rapido" class="p-6 flex flex-col gap-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" id="rapido-cliente-id" name="cliente_id">
-            
+
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-label-mono">Cliente Seleccionado</label>
-                <div id="rapido-cliente-nombre" class="font-bold text-sm bg-zinc-50 p-2 border border-zinc-100 text-zinc-600">Ninguno</div>
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Cliente
+                    Seleccionado</label>
+                <div id="rapido-cliente-nombre"
+                    class="font-bold text-sm bg-zinc-50 p-2 border border-zinc-100 text-zinc-600">Ninguno</div>
             </div>
-            
+
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest font-label-mono">Tipo de Dispositivo *</label>
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de Dispositivo
+                    *</label>
                 <div class="flex gap-2">
                     <select id="rapido-select-tipo" name="tipo_dispositivo_id" required class="input-swiss flex-grow">
                         <option value="">— Seleccionar tipo —</option>
@@ -290,35 +297,39 @@
                         {% endfor %}
                     </select>
                     <button type="button" onclick="abrirCrearTipoDispositivoRapido()"
-                            class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center"
-                            title="Registrar Nuevo Tipo de Dispositivo">
+                        class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center"
+                        title="Registrar Nuevo Tipo de Dispositivo">
                         <span class="material-symbols-outlined text-[18px]">add</span>
                     </button>
                 </div>
             </div>
-            
+
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Marca *</label>
-                    <input name="marca" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="HP, Asus, Lenovo...">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca *</label>
+                    <input name="marca" required class="input-swiss" placeholder="HP, Asus, Lenovo...">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Modelo *</label>
-                    <input name="modelo" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none" placeholder="ZenBook, ThinkPad...">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo *</label>
+                    <input name="modelo" required class="input-swiss" placeholder="ZenBook, ThinkPad...">
                 </div>
             </div>
-            
+
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Número de Serie *</label>
-                <input name="numero_serie" required class="bg-transparent border-0 border-b border-zinc-200 p-2 text-sm focus:ring-0 focus:border-primary transition-all outline-none font-label-mono uppercase" placeholder="S/N o Service Tag">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie
+                    *</label>
+                <input name="numero_serie" required class="input-swiss font-label-mono uppercase"
+                    placeholder="S/N o Service Tag">
             </div>
-            
+
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Descripción / Estado Inicial</label>
-                <textarea name="descripcion" rows="2" class="bg-zinc-50 border border-zinc-100 p-3 text-sm focus:ring-0 focus:border-primary transition-all outline-none resize-none mt-1" placeholder="Ej: Rayas en tapa, sin cargador..."></textarea>
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción / Estado
+                    Inicial</label>
+                <textarea name="descripcion" rows="2" class="input-swiss resize-none mt-1"
+                    placeholder="Ej: Rayas en tapa, sin cargador..."></textarea>
             </div>
-            
-            <button type="submit" class="w-full bg-primary hover:bg-secondary text-white py-3 font-bold uppercase transition-colors flex items-center justify-center gap-2 mt-2">
+
+            <button type="submit" class="btn-swiss btn-primary w-full justify-center mt-2">
                 <span class="material-symbols-outlined text-sm">save</span>
                 Guardar Equipo
             </button>
@@ -327,24 +338,29 @@
 </div>
 
 <!-- Modal Registro Rápido de Tipo de Dispositivo -->
-<div id="modal-tipo-dispositivo-rapido" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    <div class="bg-white w-full max-w-sm border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+<div id="modal-tipo-dispositivo-rapido"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-sm border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
         <div class="border-b border-[#1A1A1A]/10 p-6 flex justify-between items-center bg-zinc-50">
             <h2 class="text-sm font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">add_circle</span>
                 Nuevo Tipo de Dispositivo
             </h2>
-            <button type="button" onclick="cerrarCrearTipoDispositivoRapido()" class="text-zinc-400 hover:text-zinc-950 transition-colors">
+            <button type="button" onclick="cerrarCrearTipoDispositivoRapido()"
+                class="text-zinc-400 hover:text-zinc-950 transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <form id="form-tipo-dispositivo-rapido" class="p-6 flex flex-col gap-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Nombre del Tipo *</label>
-                <input name="descripcion" required class="input-swiss" placeholder="Ej: Consola de Videojuegos, Smartwatch">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Nombre del Tipo
+                    *</label>
+                <input name="descripcion" required class="input-swiss"
+                    placeholder="Ej: Consola de Videojuegos, Smartwatch">
             </div>
-            <button type="submit" class="w-full bg-primary hover:bg-secondary text-white py-3 font-bold uppercase transition-colors flex items-center justify-center gap-2 mt-2">
+            <button type="submit" class="btn-swiss btn-primary w-full justify-center mt-2">
                 <span class="material-symbols-outlined text-sm">save</span>
                 Guardar Tipo
             </button>
