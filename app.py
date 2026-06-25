@@ -79,7 +79,7 @@ def _configure_app(app):
     # Igual: la URI debe venir de variable de entorno en producción.
     db_uri = os.environ.get(
         'DATABASE_URL',
-        'postgresql://postgres:1234@localhost:5432/TechFlowDB'  # solo desarrollo
+        'postgresql://postgres:3536@localhost:5432/TechFlowDB'  # solo desarrollo
     )
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

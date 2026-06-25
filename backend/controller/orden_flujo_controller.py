@@ -17,6 +17,10 @@ class OrdenFlujoController:
             if not orden:
                 return False, "Orden no encontrada."
 
+            # REGLA: Secretario solo puede modificar la orden en estado PENDIENTE
+            if rol_actual == 'Secretario' and orden.estado != EstadoOrden.PENDIENTE:
+                return False, "La secretaría no tiene permitido modificar campos de la orden una vez que ha salido del estado Pendiente."
+
             estado_anterior_enum = orden.estado
 
             # Capturamos datos del formulario
@@ -350,7 +354,10 @@ class OrdenFlujoController:
                 'is_actual': e == orden.estado
             })
             
-        puede_editar = rol_actual in ('Técnico', 'Administrador', 'Secretario')
+        if rol_actual == 'Secretario':
+            puede_editar = (orden.estado == EstadoOrden.PENDIENTE)
+        else:
+            puede_editar = rol_actual in ('Técnico', 'Administrador')
         puede_editar_costos = orden.estado in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION)
         predicted_failures = PredictorService.predict_failures(orden.equipo_id)
         
@@ -364,4 +371,27 @@ class OrdenFlujoController:
             'puede_editar_costos': puede_editar_costos,
             'rol_actual': rol_actual,
             'predicted_failures': predicted_failures
+        }
+
+    @staticmethod
+    def obtener_config_json_ticket(orden_id, rol_actual, is_readonly=False):
+        """Genera el JSON de configuración para el frontend de gestión de ticket."""
+        datos = OrdenFlujoController.obtener_datos_gestion_ticket(orden_id, rol_actual)
+        if not datos:
+            return None
+            
+        if is_readonly:
+            datos.update({'puede_editar': False, 'puede_editar_costos': False})
+            
+        orden = datos['orden']
+        from flask import url_for
+        return {
+            'repuestosActivos': orden.repuestos or [],
+            'ordenId': orden.id,
+            'ordenCostoInicial': orden.costo or 0.0,
+            'puedeEditar': datos['puede_editar'],
+            'puedeEditarCostos': datos['puede_editar_costos'],
+            'rolActual': datos['rol_actual'],
+            'estadoActual': orden.estado.name,
+            'technicianUrl': url_for('vistas.technician')
         }

@@ -1,5 +1,25 @@
 // Lógica Interactiva para Técnicos (Presupuestos, Cálculos y Scraping)
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Obtener ordenId y query string de la URL
+    const match = window.location.pathname.match(/\/tablero-tickets\/(\d+)/);
+    const ordenIdUrl = match ? parseInt(match[1]) : null;
+    if (!ordenIdUrl) return;
+
+    const isReadonly = window.location.search.includes('readonly=true');
+    const configUrl = `/ordenServicio/${ordenIdUrl}/json-config` + (isReadonly ? '?readonly=true' : '');
+
+    // Fetch de la configuración desde la API
+    try {
+        const response = await fetch(configUrl);
+        if (!response.ok) {
+            throw new Error("No se pudo obtener la configuración del ticket.");
+        }
+        window.ticketConfig = await response.json();
+    } catch (err) {
+        console.error("Error al cargar la configuración:", err);
+        return;
+    }
+
     // Proteger las propiedades críticas de ticketConfig contra manipulación en consola
     if (window.ticketConfig) {
         try {
@@ -288,12 +308,44 @@ document.addEventListener('DOMContentLoaded', () => {
         btnBuscarRepuestos.addEventListener('click', buscarRepuestosTaller);
     }
 
-    // Vincular botón de solicitud de aprobación
-    const btnEnviarPresupuesto = document.querySelector('button[onclick="solicitarAprobacionPresupuesto()"]');
-    if (btnEnviarPresupuesto) {
-        // Reemplazar onclick inline por event listener
-        btnEnviarPresupuesto.removeAttribute('onclick');
-        btnEnviarPresupuesto.addEventListener('click', solicitarAprobacionPresupuesto);
+    // Interceptar el envío del formulario para validar e incrementar estado al siguiente paso
+    if (formActualizar) {
+        formActualizar.addEventListener('submit', (e) => {
+            const estadoActual = window.ticketConfig.estadoActual;
+            
+            // Caso DIAGNOSTICO -> PRESUPUESTADO
+            if (estadoActual === 'DIAGNOSTICO') {
+                if (!inputCostoTotal || !inputCostoTotal.value || parseFloat(inputCostoTotal.value) <= 0) {
+                    e.preventDefault();
+                    window.showToast('Por favor, ingresá un costo de reparación mayor a $0 primero.', 'error');
+                    return;
+                }
+                
+                if (!confirm('¿Guardar cambios y enviar el presupuesto actual para confirmación del cliente? El ticket pasará a estado PRESUPUESTADO.')) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Forzar el valor del select-estado a PRESUPUESTADO
+                const selectEstadoEl = document.getElementById('select-estado');
+                if (selectEstadoEl) {
+                    selectEstadoEl.value = 'PRESUPUESTADO';
+                }
+            }
+            // Caso REPARACION -> LISTO
+            else if (estadoActual === 'REPARACION') {
+                if (!confirm('¿Guardar cambios y marcar la reparación como finalizada? El ticket pasará a estado LISTO.')) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Forzar el valor del select-estado a LISTO
+                const selectEstadoEl = document.getElementById('select-estado');
+                if (selectEstadoEl) {
+                    selectEstadoEl.value = 'LISTO';
+                }
+            }
+        });
     }
 
     // Gestión de Repuestos (AJAX)
@@ -389,41 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function solicitarAprobacionPresupuesto() {
-        if (!inputCostoTotal || !inputCostoTotal.value || parseFloat(inputCostoTotal.value) <= 0) {
-            window.showToast('Por favor, ingresá un costo de reparación mayor a $0 en el formulario de arriba primero.', 'error');
-            return;
-        }
-        
-        if (!confirm('¿Enviar el presupuesto actual para confirmación del cliente? El ticket pasará a estado PRESUPUESTADO.')) {
-            return;
-        }
-        
-        try {
-            if (formActualizar) {
-                const formD = new FormData(formActualizar);
-                formD.set('estado', 'PRESUPUESTADO');
-                
-                const response = await fetch(formActualizar.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: formD
-                });
-                
-                if (response.ok) {
-                    window.showToast('Presupuesto enviado. Se notificará a secretaría en el panel.', 'success');
-                    setTimeout(() => window.location.href = technicianUrl, 1500);
-                } else {
-                    window.showToast('Error al procesar la actualización.', 'error');
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al guardar y enviar el presupuesto.', 'error');
-        }
-    }
+    // La lógica de avance de estado se trasladó directamente al evento submit del formulario
 
     // Buscador de Repuestos (Scraping)
     async function buscarRepuestosTaller() {
@@ -548,117 +566,12 @@ document.addEventListener('DOMContentLoaded', () => {
         inputManualPrecio.addEventListener('keydown', handleManualEnter);
     }
 
-    // Aceptar Presupuesto por parte de la Secretaria (desde vista detalle)
-    async function confirmarPresupuestoSecretaria() {
-        if (!confirm(`¿Confirmar que el cliente acepta el presupuesto de $${ordenCostoInicial.toFixed(2)} y empezar reparación?`)) {
-            return;
-        }
-        
-        try {
-            const formData = new FormData();
-            formData.append('estado', 'REPARACION');
-            formData.append('observaciones', 'Aprobado por el cliente por comunicación telefónica.');
-            
-            const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: formData
-            });
-            
-            const data = await resp.json();
-            if (data.success) {
-                window.showToast('Presupuesto aprobado. El técnico ya puede comenzar con la reparación.', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                window.showToast('Error: ' + data.message, 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al confirmar el presupuesto.', 'error');
-        }
-    }
-    window.confirmarPresupuestoSecretaria = confirmarPresupuestoSecretaria;
-
-    // Rechazar Presupuesto por parte de la Secretaria (desde vista detalle)
-    async function rechazarPresupuestoSecretaria() {
-        const motivo = prompt("Ingrese el motivo del rechazo del presupuesto (ej: Presupuesto muy elevado, el cliente retira el equipo):");
-        if (motivo === null) {
-            return;
-        }
-        
-        const motivoLimpio = motivo.trim();
-        if (!motivoLimpio) {
-            window.showToast('Debe ingresar un motivo para poder rechazar el presupuesto.', 'error');
-            return;
-        }
-        
-        try {
-            const formData = new FormData();
-            formData.append('estado', 'DIAGNOSTICO');
-            formData.append('observaciones', `Rechazado por el cliente. Motivo: ${motivoLimpio}`);
-            
-            const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: formData
-            });
-            
-            const data = await resp.json();
-            if (data.success) {
-                window.showToast('Presupuesto rechazado. La orden volvió al estado de diagnóstico.', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                window.showToast('Error: ' + data.message, 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al rechazar el presupuesto.', 'error');
-        }
-    }
-    window.rechazarPresupuestoSecretaria = rechazarPresupuestoSecretaria;
-
-    // Entregar Equipo por parte de la Secretaria (desde vista detalle)
-    async function entregarEquipoSecretaria() {
-        if (!confirm('¿Registrar la entrega formal del equipo y cerrar el ciclo de la orden?')) {
-            return;
-        }
-        
-        try {
-            const formData = new FormData();
-            formData.append('estado', 'ENTREGADO');
-            formData.append('observaciones', 'Equipo entregado formalmente al cliente. Ciclo de servicio finalizado.');
-            
-            const resp = await fetch(`/ordenServicio/${ordenId}/actualizar-estado-flujo`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: formData
-            });
-            
-            const data = await resp.json();
-            if (data.success) {
-                window.showToast('Equipo entregado y ciclo cerrado exitosamente.', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                window.showToast('Error: ' + data.message, 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast('Ocurrió un error al registrar la entrega del equipo.', 'error');
-        }
-    }
-    window.entregarEquipoSecretaria = entregarEquipoSecretaria;
+    // Las transiciones rápidas de estado (confirmarPresupuesto, rechazarPresupuesto, entregarEquipo) ahora son globales y residen en app.js
 
     // Lógica para mostrar/ocultar secciones de presupuesto según el estado seleccionado
     const selectEstado = document.getElementById('select-estado');
     const seccionAgregarManual = document.getElementById('seccion-agregar-manual');
     const seccionBuscadorRepuestos = document.getElementById('seccion-buscador-repuestos');
-    const contenedorEnviarPresupuesto = document.getElementById('contenedor-enviar-presupuesto');
 
     function actualizarVisibilidadPresupuesto() {
         if (selectEstado) {
@@ -668,12 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ocultar) {
                 if (seccionAgregarManual) seccionAgregarManual.classList.add('hidden');
                 if (seccionBuscadorRepuestos) seccionBuscadorRepuestos.classList.add('hidden');
-                if (contenedorEnviarPresupuesto) contenedorEnviarPresupuesto.classList.add('hidden');
                 if (inputManoObra) inputManoObra.disabled = true;
             } else {
                 if (seccionAgregarManual) seccionAgregarManual.classList.remove('hidden');
                 if (seccionBuscadorRepuestos) seccionBuscadorRepuestos.classList.remove('hidden');
-                if (contenedorEnviarPresupuesto) contenedorEnviarPresupuesto.classList.remove('hidden');
                 if (inputManoObra) inputManoObra.disabled = !(puedeEditar && puedeEditarCostos);
             }
         }

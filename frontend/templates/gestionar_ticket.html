@@ -10,7 +10,7 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between mb-xl gap-4">
         <div>
             <nav class="flex items-center text-on-surface-variant font-label-bold uppercase mb-2">
-                <a class="hover:text-tech-blue" href="{{ url_for('vistas.technician') }}">Tablero</a>
+                <a class="hover:text-tech-blue" href="{% if rol_actual == 'Técnico' %}{{ url_for('vistas.technician') }}{% elif rol_actual == 'Administrador' %}{{ url_for('vistas.dashboard') }}{% else %}{{ url_for('vistas.secretary') }}{% endif %}">Tablero</a>
                 <span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
                 <span class="text-on-surface">Ticket #{{ orden.id }}</span>
             </nav>
@@ -21,7 +21,7 @@
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 Comprobante
             </a>
-            <a href="{{ url_for('vistas.technician') }}" class="btn-swiss btn-outline">
+            <a href="{% if rol_actual == 'Técnico' %}{{ url_for('vistas.technician') }}{% elif rol_actual == 'Administrador' %}{{ url_for('vistas.dashboard') }}{% else %}{{ url_for('vistas.secretary') }}{% endif %}" class="btn-swiss btn-outline">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 Volver
             </a>
@@ -106,12 +106,6 @@
                             <span class="material-symbols-outlined text-emerald-600 text-[20px]">engineering</span>
                             Trabajo Técnico y Presupuesto
                         </span>
-                        {% if puede_editar %}
-                        <button class="btn-swiss bg-emerald-600 hover:bg-emerald-700 text-white" type="submit">
-                            <span class="material-symbols-outlined text-[16px]">save</span>
-                            Guardar Cambios
-                        </button>
-                        {% endif %}
                     </h3>
 
                     <!-- SECCIÓN: Estado y Diagnóstico -->
@@ -354,40 +348,9 @@
                             </div>
                         </div>
 
-                        <!-- Divider -->
-                        <div class="border-t border-[#1A1A1A]/10"></div>
-
                         <!-- Acciones -->
                         <div class="flex flex-col gap-3">
-                            {% if puede_editar %}
-                            <button
-                                class="btn-swiss bg-emerald-600 hover:bg-emerald-700 text-white w-full justify-center"
-                                type="submit">
-                                <span class="material-symbols-outlined text-[16px]">save</span>
-                                Guardar Cambios
-                            </button>
-                            {% if orden.estado.name in ('DIAGNOSTICO', 'REPARACION') %}
-                            <div id="contenedor-enviar-presupuesto" class="space-y-2">
-                                <button type="button" onclick="solicitarAprobacionPresupuesto()" <<<<<<< HEAD
-                                    class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-label-mono uppercase tracking-wider text-xs font-bold transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
-                                    <span class="material-symbols-outlined text-[16px]">send</span> Enviar Presupuesto
-                                    para
-                                    Aprobación
-                                    =======
-                                    class="btn-swiss bg-purple-600 hover:bg-purple-700 text-white w-full
-                                    justify-center">
-                                    <span class="material-symbols-outlined text-[16px]">send</span> Enviar Presupuesto
-                                    para Aprobación
-                                    >>>>>>> 3db00db1faefe87d3c70d29839bd2610e9e0eda6
-                                </button>
-                                <p class="text-[9px] text-zinc-400 leading-snug">
-                                    💡 Al presionar este botón, se guardará el presupuesto y se marcará como
-                                    <b>Presupuestado</b> para que la secretaria comunique y confirme la aceptación del
-                                    cliente.
-                                </p>
-                            </div>
-                            {% endif %}
-                            {% else %}
+                            {% if not puede_editar %}
                             <div class="bg-zinc-100 p-3 border border-zinc-200 text-[11px] text-zinc-600">
                                 <p class="font-bold mb-1">Información de Facturación</p>
                                 <p>Detalle actual de los costos cargados por el técnico. La secretaria puede visualizar
@@ -395,19 +358,19 @@
                             </div>
                             {% if orden.estado.name == 'PRESUPUESTADO' %}
                             <div class="flex flex-col sm:flex-row gap-3">
-                                <button type="button" onclick="confirmarPresupuestoSecretaria()"
+                                <button type="button" onclick="confirmarPresupuesto({{ orden.id }}, {{ orden.costo or 0.0 }})"
                                     class="btn-swiss bg-purple-600 hover:bg-purple-700 text-white flex-grow justify-center">
                                     <span class="material-symbols-outlined text-[16px]">check_circle</span> Aceptar
                                     Presupuesto
                                 </button>
-                                <button type="button" onclick="rechazarPresupuestoSecretaria()"
+                                <button type="button" onclick="rechazarPresupuesto({{ orden.id }})"
                                     class="btn-swiss bg-red-600 hover:bg-red-700 text-white flex-grow justify-center">
                                     <span class="material-symbols-outlined text-[16px]">cancel</span> Rechazar
                                 </button>
                             </div>
                             {% elif orden.estado.name == 'LISTO' %}
                             <div class="flex flex-col gap-3">
-                                <button type="button" onclick="entregarEquipoSecretaria()"
+                                <button type="button" onclick="entregarEquipo({{ orden.id }})"
                                     class="btn-swiss bg-green-600 hover:bg-green-700 text-white w-full justify-center">
                                     <span class="material-symbols-outlined text-[16px]">local_shipping</span> Registrar
                                     Entrega
@@ -417,7 +380,16 @@
                             {% endif %}
                         </div>
                     </div>
-
+                    {% if rol_actual != 'Secretario' or puede_editar %}
+                    <div class="mt-6">
+                        <button
+                            class="btn-swiss bg-emerald-600 hover:bg-emerald-700 text-white w-full justify-center py-2.5 font-bold uppercase text-xs"
+                            type="submit" id="btn-guardar-cambios">
+                            <span class="material-symbols-outlined text-[18px]">save</span>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                    {% endif %}
                     {% if puede_editar %}
                 </form>
                 {% endif %}
@@ -527,19 +499,6 @@
     </div>
 </main>
 
-
-<!-- Configuración para el script externo -->
-<script>
-    window.ticketConfig = {
-        repuestosActivos: {{ (orden.repuestos or[]) | tojson }},
-    ordenId: { { orden.id } },
-    ordenCostoInicial: { { orden.costo or 0.0 } },
-    puedeEditar: { { puede_editar | tojson } },
-    puedeEditarCostos: { { puede_editar_costos | tojson } },
-    rolActual: { { rol_actual | tojson } },
-    technicianUrl: "{{ url_for('vistas.technician') }}"
-    };
-</script>
 
 <!-- Cargar lógica desde el archivo estático JS -->
 <script src="{{ url_for('static', filename='js/gestionar_ticket.js') }}"></script>

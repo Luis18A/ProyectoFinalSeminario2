@@ -9,7 +9,7 @@
     <!-- Page Header -->
     <div class="flex justify-between items-end mb-10">
         <div>
-            <h1 class="font-headline-xl text-primary mb-2">Parque Tecnológico de: {{ cliente.nombre ~ ' ' ~
+            <h1 class="font-headline-xl text-primary mb-2">Mostrando equipos de: {{ cliente.nombre ~ ' ' ~
                 cliente.apellido if cliente else 'Cliente General' }}</h1>
             <p class="font-body-md text-on-surface-variant">Gestión de activos y registro de equipos vinculados.</p>
         </div>
@@ -21,91 +21,9 @@
 
     <!-- Bento Grid Structure -->
     <div class="grid grid-cols-12 gap-grid-gutter">
-        <!-- Left Column: Formularios de Registro -->
-        <div class="col-span-12 lg:col-span-3 flex flex-col gap-grid-gutter">
-            <!-- Registrar Dispositivo -->
-            <div class="bento-card p-6 flex flex-col">
-                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
-                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Dispositivo
-                    </h2>
-                    <span class="material-symbols-outlined text-on-surface-variant text-sm">devices</span>
-                </div>
-                <form class="flex flex-col gap-6 flex-1" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de
-                            Equipo</label>
-                        {% if cliente %}
-                        <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
-                        {% endif %}
-                        <select name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent" required>
-                            <option disabled selected value="">Seleccionar tipo</option>
-                            {% for tipo in tipo_dispositivos %}
-                            <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca
-                                *</label>
-                            <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo
-                                *</label>
-                            <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text"
-                                required />
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie
-                            * (S/N)</label>
-                        <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX"
-                            type="text" required />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción
-                            General</label>
-                        <textarea name="descripcion" class="input-swiss resize-none"
-                            placeholder="Detalles de estado, color, accesorios..." rows="3"></textarea>
-                    </div>
-                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
-                        Guardar Equipo
-                    </button>
-                </form>
-            </div>
-
-            <!-- Nuevo Tipo de Equipo -->
-            <div class="bento-card p-6 flex flex-col">
-                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
-                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Nuevo Tipo de Equipo</h2>
-                    <span class="material-symbols-outlined text-on-surface-variant text-sm">playlist_add</span>
-                </div>
-                <form class="flex flex-col gap-6 flex-1"
-                    action="{{ url_for('tipo_dispositivo.crear_tipo_dispositivo') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    {% if cliente %}
-                    <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
-                    {% endif %}
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Dispositivo
-                            *</label>
-                        <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->
-                        <input name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora"
-                            type="text" required />
-                    </div>
-
-                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
-                        Guardar Tipo de Dispositivo
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Right Column: Lista de Equipos -->
+        <!-- Left Column: Lista de Equipos -->
         <div class="col-span-12 lg:col-span-9">
-            <div class="table-container flex flex-col overflow-hidden h-full">
+            <div class="table-container flex flex-col overflow-hidden">
                 <div class="p-6 border-b border-border flex justify-between items-center bg-white">
                     <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Inventario del Cliente
                     </h2>
@@ -208,9 +126,68 @@
                 </div>
             </div>
         </div>
-        <div class="col-span-12 md:col-span-4 flex flex-col gap-grid-gutter">
-            <div class="bento-card p-6 h-full flex flex-col">
-                <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4">Nuevo Tipo de Equipo</h2>
+
+        <!-- Right Column: Formularios de Registro -->
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-grid-gutter self-start">
+            <!-- Registrar Dispositivo -->
+            <div class="bento-card p-6 flex flex-col">
+                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
+                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Dispositivo
+                    </h2>
+                    <span class="material-symbols-outlined text-on-surface-variant text-sm">devices</span>
+                </div>
+                <form class="flex flex-col gap-6 flex-1" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de
+                            Equipo</label>
+                        {% if cliente %}
+                        <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+                        {% endif %}
+                        <select name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent" required>
+                            <option disabled selected value="">Seleccionar tipo</option>
+                            {% for tipo in tipo_dispositivos %}
+                            <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca
+                                *</label>
+                            <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo
+                                *</label>
+                            <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text"
+                                required />
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie
+                            * (S/N)</label>
+                        <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX"
+                            type="text" required />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción
+                            General</label>
+                        <textarea name="descripcion" class="input-swiss resize-none"
+                            placeholder="Detalles de estado, color, accesorios..." rows="3"></textarea>
+                    </div>
+                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
+                        Guardar Equipo
+                    </button>
+                </form>
+            </div>
+
+            <!-- Nuevo Tipo de Equipo -->
+            <div class="bento-card p-6 flex flex-col">
+                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
+                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Nuevo Tipo de Equipo</h2>
+                    <span class="material-symbols-outlined text-on-surface-variant text-sm">playlist_add</span>
+                </div>
                 <form class="flex flex-col gap-6 flex-1"
                     action="{{ url_for('tipo_dispositivo.crear_tipo_dispositivo') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -218,70 +195,20 @@
                     <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
                     {% endif %}
                     <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-on-surface-variant uppercase text-[10px]">Dispositivo
+                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Dispositivo
                             *</label>
                         <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->
                         <input name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora"
                             type="text" required />
                     </div>
 
-                    <button class="btn-swiss btn-primary w-full justify-center py-4 mt-auto" type="submit">
+                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
                         Guardar Tipo de Dispositivo
                     </button>
                 </form>
             </div>
         </div>
-        <!-- Buscador de Repuestos (MercadoLibre y Megatone) 
-        <div class="col-span-12 flex flex-col gap-grid-gutter mt-8">
-            <div class="bento-card p-6">
-                <h2 class="font-headline-md text-primary mb-6 border-b border-border pb-4 flex items-center gap-2">
-                    <span class="material-symbols-outlined">search</span>
-                    Buscador de Repuestos
-                </h2>
 
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="flex-1 relative">
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                        <input id="ml-search-input" class="input-swiss w-full pl-10"
-                            placeholder="Buscar repuestos, pantallas, baterías..." type="text" />
-                    </div>
-                    <button id="ml-search-btn" type="button" class="btn-swiss btn-primary px-8">
-                        Buscar Ofertas
-                    </button>
-                </div>-->
-
-        <!-- Estado de Carga 
-                <div id="ml-loading"
-                    class="hidden py-8 flex flex-col items-center justify-center text-on-surface-variant">
-                    <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">sync</span>
-                    <p class="font-label-mono uppercase text-xs tracking-widest">Buscando en múltiples tiendas...</p>
-                </div>-->
-
-        <!-- Tabla de Resultados 
-                <div id="ml-results-container" class="hidden table-container border-none">
-                    <table class="table-swiss">
-                        <thead>
-                            <tr>
-                                <th>Tienda</th>
-                                <th>Producto</th>
-                                <th>Condición</th>
-                                <th class="text-right">Precio</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ml-results-body">-->
-        <!--Los resultados se insertarán aquí por JS 
-                        </tbody>
-                    </table>
-                </div>-->
-
-        <!-- Mensaje sin resultados     
-                <div id="ml-no-results" class="hidden py-8 text-center text-on-surface-variant">
-                    No se encontraron repuestos para tu búsqueda.
-                </div>
-            </div>
-        </div>-->
     </div>
 </main>
 
