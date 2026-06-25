@@ -1,35 +1,104 @@
 from database import db
 from backend.models.Equipo import Equipo
 from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.Usuario import Usuario
 
 class EquipoController:
     @staticmethod
-    def crear_equipo(datos_formulario):
-        equipo_existente = Equipo.get_por_numero_serie(datos_formulario.get('numero_serie'))
-        # Validaciones de negocio
-        if not datos_formulario.get('numero_serie'):
+    def procesar_datos(datos_formulario, is_edit=False, equipo_id=None):
+        # ── 1. EXTRACCIÓN BLINDADA ──
+        datos = {
+            'numero_serie': (datos_formulario.get('numero_serie') or '').strip().upper(),
+            'marca': (datos_formulario.get('marca') or '').strip(),
+            'modelo': (datos_formulario.get('modelo') or '').strip(),
+            'descripcion': (datos_formulario.get('descripcion') or '').strip() or None,
+        }
+
+        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS ──
+        if not datos['numero_serie']:
             return False, "El número de serie no puede estar vacío."
-        if not datos_formulario.get('marca'):
+        if not datos['marca']:
             return False, "La marca no puede estar vacía."
-        if not datos_formulario.get('modelo'):
+        if not datos['modelo']:
             return False, "El modelo no puede estar vacío."
-        #si existe el equipo con el numero de serie, no se puede crear
-        if equipo_existente:
-            return False, f"El número de serie {datos_formulario.get('numero_serie')} ya existe."
-       #creamos el equipo
+
+        # ── 3. VALIDACIÓN DE CLAVES FORÁNEAS (IDs) ──
         try:
-            Equipo.crear(
-                cliente_id=int(datos_formulario.get('cliente_id')),
-                tipo_id=int(datos_formulario.get('tipo_dispositivo_id')),
-                marca=datos_formulario.get('marca'),
-                modelo=datos_formulario.get('modelo'),
-                numero_serie=datos_formulario.get('numero_serie'),
-                descripcion=datos_formulario.get('descripcion'),
-            )
+            datos['tipo_id'] = int(datos_formulario.get('tipo_dispositivo_id'))
+            # El cliente solo es necesario al crearlo, no al editarlo
+            if not is_edit:
+                datos['cliente_id'] = int(datos_formulario.get('cliente_id'))
+        except (TypeError, ValueError):
+            return False, "Datos de cliente o tipo de dispositivo inválidos."
+
+        # ── 4. VALIDACIÓN DE UNICIDAD (NÚMERO DE SERIE) ──
+        existente = Equipo.get_por_numero_serie(datos['numero_serie'])
+        if existente and (not is_edit or existente.id != equipo_id):
+            return False, f"El número de serie {datos['numero_serie']} ya se encuentra registrado."
+
+        return True, datos
+
+    @staticmethod
+    def crear_equipo(datos_formulario):
+        try:
+            success, result = EquipoController.procesar_datos(datos_formulario, is_edit=False)
+            if not success:
+                return False, result # result contiene el mensaje de error
+
+            # Código limpio: Desempaquetado del diccionario validado
+            nuevo = Equipo(**result)
+            
+            db.session.add(nuevo)
+            db.session.commit()
             return True, "Equipo creado exitosamente."
-        except Exception as e:
-            return False, f"Error al crear el equipo: {str(e)}"
+
+        except Exception:
+            db.session.rollback()
+            return False, "Error al crear el equipo. Intentá de nuevo."
+
+    @staticmethod
+    def crear_equipo_rapido(datos_formulario):
+        """Intenta crear el equipo y devuelve el DTO formateado en un solo viaje."""
+        success, result = EquipoController.crear_equipo(datos_formulario)
+        if not success:
+            return False, result, None
+
+        # Limpiamos el número de serie de la misma forma que en procesar_datos (strip y upper)
+        clean_serial = (datos_formulario.get('numero_serie') or '').strip().upper()
+        equipo = Equipo.get_por_numero_serie(clean_serial)
+        if not equipo:
+            return False, "Error al recuperar el equipo tras la creación.", None
+
+        return True, result, {
+            'id': equipo.id,
+            'label': f"{equipo.marca} {equipo.modelo} (S/N: {equipo.numero_serie})"
+        }
+
+    @staticmethod
+    def editar_equipo(equipo_id, datos_formulario):
+        try:
+            equipo = Equipo.get_by_id(equipo_id)
+            if not equipo:
+                return False, "Equipo no encontrado."
+
+            success, result = EquipoController.procesar_datos(
+                datos_formulario, is_edit=True, equipo_id=equipo_id
+            )
+            if not success:
+                return False, result
+
+            # Actualizamos mapeando los campos desde el diccionario sanitizado
+            equipo.tipo_id      = result['tipo_id']
+            equipo.marca        = result['marca']
+            equipo.modelo       = result['modelo']
+            equipo.numero_serie = result['numero_serie']
+            equipo.descripcion  = result['descripcion']
+
+            db.session.commit()
+            return True, "Equipo actualizado exitosamente."
+
+        except Exception:
+            db.session.rollback()
+            return False, "Error al actualizar el equipo. Intentá de nuevo."
 
     @staticmethod
     def obtener_todos():
@@ -47,29 +116,15 @@ class EquipoController:
     @staticmethod
     def eliminar_equipo(equipo_id):
         equipo = Equipo.get_by_id(equipo_id)
-        if equipo:
-            equipo.eliminar()
-            return True
-        return False
-
-    @staticmethod
-    def editar_equipo(equipo_id, datos_formulario):
+        if not equipo:
+            return False
         try:
-            equipo = Equipo.get_by_id(equipo_id)
-            if not equipo:
-                return False, "Equipo no encontrado."
-            
-            equipo.tipo_dispositivo_id = int(datos_formulario.get('tipo_dispositivo_id'))
-            equipo.marca = datos_formulario.get('marca')
-            equipo.modelo = datos_formulario.get('modelo')
-            equipo.numero_serie = datos_formulario.get('numero_serie')
-            equipo.descripcion = datos_formulario.get('descripcion')
-            
+            db.session.delete(equipo)
             db.session.commit()
-            return True, "Equipo actualizado exitosamente."
-        except Exception as e:
+            return True
+        except Exception:
             db.session.rollback()
-            return False, f"Error al actualizar el equipo: {str(e)}"
+            return False
 
     @staticmethod
     def obtener_por_id(equipo_id):
@@ -81,26 +136,25 @@ class EquipoController:
 
     @staticmethod
     def buscar_equipos(termino):
-        """Busca equipos por marca, modelo o número de serie."""
         return Equipo.query.filter(
             (Equipo.marca.ilike(f"%{termino}%")) | 
             (Equipo.modelo.ilike(f"%{termino}%")) | 
             (Equipo.numero_serie.ilike(f"%{termino}%"))
-        ).all()
+        ).limit(50).all()
 
     @staticmethod
-    def obtener_datos_gestion(cliente_id):
-        """Unifica las consultas de equipos y clientes para el panel de gestión de equipos."""
-        from backend.controller.tipoDispositivo_controller import TipoDispositivoController
-        from backend.models.Cliente import Cliente
-        
-        tipo_dispositivos = TipoDispositivoController.obtener_todos()
-        cliente = None
-        equipos = []
+    def obtener_por_numero_serie(numero_serie):
+        return Equipo.get_por_numero_serie(numero_serie)
 
-        if cliente_id:
-            cliente = Cliente.query.get(cliente_id)
-            if cliente:
-                equipos = Equipo.get_por_cliente(cliente_id)
-                
-        return tipo_dispositivos, cliente, equipos
+    @staticmethod
+    def obtener_equipos_cliente_json(cliente_id):
+        """Obtiene equipos de un cliente en formato JSON (para AJAX)."""
+        from backend.models.Cliente import Cliente
+        cliente = Cliente.get_by_id(cliente_id)
+        if not cliente:
+            return None
+        equipos = Equipo.get_por_cliente(cliente_id)
+        return [{
+            'id': e.id,
+            'label': f"{e.marca} {e.modelo} (S/N: {e.numero_serie})"
+        } for e in equipos]

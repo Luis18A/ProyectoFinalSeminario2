@@ -67,14 +67,14 @@ tailwind.config = {
                 "grid-gutter": "16px"
             },
             "fontFamily": {
-                "label-mono": ["Space Grotesk"],
-                "headline-lg": ["Space Grotesk"],
+                "label-mono": ["Inter"],
+                "headline-lg": ["Inter"],
                 "body-sm": ["Inter"],
                 "body-lg": ["Inter"],
-                "headline-md": ["Space Grotesk"],
+                "headline-md": ["Inter"],
                 "label-bold": ["Inter"],
                 "body-md": ["Inter"],
-                "headline-xl": ["Space Grotesk"]
+                "headline-xl": ["Inter"]
             },
             "fontSize": {
                 "label-mono": ["13px", { "lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500" }],
@@ -85,6 +85,20 @@ tailwind.config = {
                 "label-bold": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }],
                 "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
                 "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+            },
+            "keyframes": {
+                "grow-horizontal": {
+                    "from": { "width": "0%" },
+                    "to": { "width": "var(--target-width)" }
+                },
+                "grow-vertical": {
+                    "from": { "height": "0%" },
+                    "to": { "height": "var(--target-height)" }
+                }
+            },
+            "animation": {
+                "grow": "grow-horizontal 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+                "grow-v": "grow-vertical 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards"
             }
         },
     },

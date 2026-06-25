@@ -1,40 +1,42 @@
-from backend.controller.equipo_controller import EquipoController
-from backend.models.Equipo import Equipo
 from flask import Blueprint, request, render_template, url_for, flash, redirect, jsonify
+from backend.controller import equipo_controller
+from backend.controller import dashboard_controller
 from backend.utils.decorators import login_required, role_required
 
 equipo_bp = Blueprint('equipo', __name__)
 
-@equipo_bp.route('/equipo', methods=['POST'])
+@equipo_bp.post('/equipo')
 @login_required
+@role_required('Administrador', 'Secretario')
 def crear_equipo():
-    success, message = EquipoController.crear_equipo(request.form)
-    if success:
-        flash(message, 'success')
-    else:
-        flash(message, 'error')
     cliente_id = request.form.get('cliente_id')
-    return redirect(url_for('equipo.gestion_equipos', cliente_id=cliente_id))
+    success, message = equipo_controller.crear_equipo(request.form)
+    flash(message, 'success' if success else 'error')
+    
+    # Estandarización de redirección
+    destino = url_for('equipo.gestion_equipos', cliente_id=cliente_id) if cliente_id else url_for('clientes.gestion_cliente')
+    return redirect(destino)
 
 @equipo_bp.post('/equipo/editar/<int:id>')
 @login_required
+@role_required('Administrador', 'Secretario')
 def editar_equipo(id):
-    success, message = EquipoController.editar_equipo(id, request.form)
-    if success:
-        flash(message, 'success')
-    else:
-        flash(message, 'error')
     cliente_id = request.form.get('cliente_id')
-    return redirect(url_for('equipo.gestion_equipos', cliente_id=cliente_id))
+    success, message = equipo_controller.editar_equipo(id, request.form)
+    flash(message, 'success' if success else 'error')
+    
+    destino = url_for('equipo.gestion_equipos', cliente_id=cliente_id) if cliente_id else url_for('clientes.gestion_cliente')
+    return redirect(destino)
 
-@equipo_bp.route('/equipos/<int:cliente_id>')
+@equipo_bp.get('/equipos/<int:cliente_id>')
 @login_required
-@role_required('Administrador', 'Administrdor', 'Secretario', 'Secretaria')
+@role_required('Administrador', 'Secretario')
 def gestion_equipos(cliente_id):
-    tipo_dispositivos, cliente, equipos = EquipoController.obtener_datos_gestion(cliente_id)
+    tipo_dispositivos, cliente, equipos = dashboard_controller.obtener_datos_gestion_cliente(cliente_id)
     if not cliente:
         flash("Cliente no encontrado para gestionar sus equipos.", "error")
         return redirect(url_for('clientes.gestion_cliente'))
+        
     return render_template('gestion_equipos.html',
                            tipo_dispositivos=tipo_dispositivos,
                            cliente=cliente,
@@ -42,18 +44,22 @@ def gestion_equipos(cliente_id):
 
 @equipo_bp.post('/equipo/rapido')
 @login_required
+@role_required('Administrador', 'Secretario')
 def crear_equipo_rapido():
-    success, message = EquipoController.crear_equipo(request.form)
-    if success:
-        serie = request.form.get('numero_serie')
-        equipo = Equipo.get_por_numero_serie(serie)
-        return jsonify({
-            'success': True,
-            'message': message,
-            'equipo': {
-                'id': equipo.id,
-                'label': f"{equipo.marca} {equipo.modelo} (S/N: {equipo.numero_serie})"
-            }
-        })
-    else:
+    success, message, equipo_data = equipo_controller.crear_equipo_rapido(request.form)
+    
+    if not success:
         return jsonify({'success': False, 'message': message}), 400
+
+    return jsonify({
+        'success': True,
+        'message': message,
+        'equipo': equipo_data
+    })
+
+@equipo_bp.get('/clientes/<int:cliente_id>/equipos')
+@login_required
+@role_required('Administrador', 'Secretario')
+def equipos_por_cliente(cliente_id):
+    equipos = equipo_controller.obtener_equipos_cliente_json(cliente_id)
+    return jsonify(equipos if equipos is not None else {'error': 'Cliente no encontrado.'}), (200 if equipos is not None else 404)

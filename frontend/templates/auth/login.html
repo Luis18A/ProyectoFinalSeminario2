@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Plataforma ITSM - Autenticación</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+                rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap"
+                rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+                rel="stylesheet" />
+        <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body
+        class="bg-background text-on-surface flex items-center justify-center min-h-screen p-container-margin antialiased">
+        <!-- Minimalist Bento Card Container -->
+        <main
+                class="w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant p-container-margin relative flex flex-col shadow-[0px_8px_0px_rgba(26,28,29,0.05)]">
+                <!-- Strict geometric anchor -->
+                <div class="absolute top-0 left-0 w-full h-xs bg-primary"></div>
+                <!-- Header -->
+                <header class="mb-xl">
+                        <span
+                                class="font-label-mono text-label-mono uppercase text-on-surface-variant tracking-widest block mb-sm">Terminal del
+                                Sistema</span>
+                        <h1 class="font-headline-xl text-headline-xl text-primary">Inicio Sesión</h1>
+                </header>
+                <!-- Authentication Form -->
+                <form class="flex flex-col gap-lg flex-grow" action="{{ url_for('vistas.login_post') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        {% if error %}
+                        <div
+                                class="bg-error-container text-on-error-container p-sm rounded text-center font-body-sm mb-sm">
+                                {{ error }}
+                        </div>
+                        {% endif %}
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="space-y-2 mb-sm">
+                                {% for category, message in messages %}
+                                <div class="p-sm text-center font-body-sm {% if category == 'success' %}bg-emerald-100 text-emerald-800{% else %}bg-error-container text-on-error-container{% endif %}">
+                                        {{ message }}
+                                </div>
+                                {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <!-- Operator ID Input -->
+                        <div class="flex flex-col relative group">
+                                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5"
+                                        for="username">Usuario</label>
+                                <input class="input-swiss font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md"
+                                        id="username" name="username" placeholder="Ingrese usuario" required=""
+                                        type="text" autocomplete="username" />
+                        </div>
+                        <!-- Passcode Input -->
+                        <div class="flex flex-col relative group">
+                                <div class="flex justify-between items-end mb-sm">
+                                        <label class="font-label-bold text-zinc-500 uppercase text-[10px]"
+                                                for="password" name="password">Contraseña</label>
+                                        <a class="font-label-mono text-label-mono text-secondary hover:text-on-secondary-fixed-variant transition-colors uppercase tracking-widest"
+                                                href="#">Recuperar</a>
+                                </div>
+                                <div class="relative flex items-center">
+                                        <input class="input-swiss pr-xl font-body-lg text-body-lg text-primary placeholder:text-outline-variant placeholder:font-body-md tracking-[0.2em]"
+                                                id="password" name="password" placeholder="••••••••" required=""
+                                                type="password" autocomplete="current-password" />
+                                        <button aria-label="Toggle password visibility"
+                                                class="absolute right-0 bottom-sm text-outline hover:text-primary transition-colors flex items-center justify-center focus:outline-none"
+                                                type="button">
+                                                <span
+                                                        class="material-symbols-outlined text-[20px]">visibility_off</span>
+                                        </button>
+                                </div>
+                        </div>
+                        <!-- Action Area -->
+                        <div class="mt-md">
+                                <button class="btn-swiss btn-primary w-full justify-between group"
+                                        type="submit">
+                                        <span>Ingresar</span>
+                                        <span class="material-symbols-outlined transform group-hover:translate-x-1 transition-transform"
+                                                style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+                                </button>
+                        </div>
+                </form>
+                <!-- Technical Footer -->
+                <footer class="mt-xl pt-md border-t border-outline-variant flex justify-between items-center">
+                        <div class="flex items-center gap-xs text-outline">
+                                <span class="material-symbols-outlined text-[14px]">lock</span>
+                                <span
+                                        class="font-label-mono text-label-mono uppercase tracking-widest text-[10px]">Encriptado</span>
+                        </div>
+                        <span
+                                class="font-label-mono text-label-mono text-outline uppercase tracking-widest text-[10px]">Versión
+                                4.9.2</span>
+                </footer>
+        </main>
+        <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+
+</html>

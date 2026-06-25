@@ -1,138 +1,261 @@
-{% include 'header.html' %}
+<!DOCTYPE html>
+<html class="light" lang="es">
 
-<!-- Actions Bar (Non-printing) -->
-<div class="no-print sticky top-0 z-50 bg-white border-b-2 border-primary/10 px-container-margin py-md flex justify-between items-center shadow-sm">
-    <a href="{{ url_for('usuarios.technician') }}" class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors">
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span class="font-label-mono uppercase text-xs">Volver al sistema</span>
-    </a>
-    <div class="flex gap-md">
-        <button onclick="window.print()" class="btn-swiss btn-outline">
-            <span class="material-symbols-outlined text-sm">download</span>
-            PDF
-        </button>
-        <button onclick="window.print()" class="btn-swiss btn-primary">
-            <span class="material-symbols-outlined text-sm">print</span>
-            IMPRIMIR
-        </button>
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Comprobante de Servicio Técnico - TECHFLOW</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/comprobante.css') }}">
+</head>
+
+<body class="bg-zinc-100 p-4 md:p-8">
+
+    {% set ns = namespace(total_repuestos=0.0) %}
+    {% for r in orden.repuestos or [] %}
+    {% set ns.total_repuestos = ns.total_repuestos + r.precio %}
+    {% endfor %}
+    {% if orden.costo is not none %}
+    {% set mano_obra = (orden.costo | float) - (ns.total_repuestos | float) %}
+    {% else %}
+    {% set mano_obra = 0.0 %}
+    {% endif %}
+
+    <!-- Actions Bar (Non-printing) -->
+    <div
+        class="no-print max-w-4xl mx-auto mb-4 bg-white border border-zinc-200 p-4 flex justify-between items-center shadow-sm">
+        <a href="{{ url_for('vistas.technician') }}" class="btn-swiss btn-outline">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            Volver al sistema
+        </a>
+        <div class="flex gap-2">
+            <button onclick="window.print()" class="btn-swiss btn-outline">
+                <span class="material-symbols-outlined text-sm">download</span>
+                PDF
+            </button>
+            <button onclick="window.print()" class="btn-swiss btn-primary">
+                <span class="material-symbols-outlined text-sm">print</span>
+                IMPRIMIR
+            </button>
+        </div>
     </div>
-</div>
 
-<!-- Main Document Container -->
-<main class="py-xl flex justify-center">
-    <div class="print-container w-full max-w-4xl bg-white p-container-margin border border-primary/10 mx-container-margin shadow-sm">
-        <!-- Header -->
-        <header class="flex justify-between items-start border-b-2 border-primary pb-xl mb-xl">
-            <div>
-                <h1 class="font-headline-lg text-primary uppercase tracking-tighter mb-unit">TechFlow</h1>
-                <p class="font-label-mono text-on-surface-variant tracking-widest uppercase text-xs">Servicio Técnico Informático</p>
-            </div>
-            <div class="text-right">
-                <div class="font-label-mono text-on-surface-variant mb-unit text-xs uppercase">Orden de Trabajo</div>
-                <div class="font-headline-md text-accent">#{{ orden.id }}</div>
-                <div class="font-body-sm text-on-surface-variant mt-sm">Fecha: {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}</div>
-            </div>
-        </header>
+    <!-- Main Document Container -->
+    <main class="py-4 flex justify-center receipt-wrapper">
+        <div class="print-container w-full max-w-4xl">
 
-        <!-- Customer Data Bento -->
-        <section class="grid grid-cols-12 gap-grid-gutter mb-xl bento-card bg-background">
-            <div class="col-span-12 font-label-bold text-primary uppercase border-b border-primary/10 pb-sm mb-sm text-xs">Datos del Cliente</div>
-            <div class="col-span-12 md:col-span-4">
-                <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">Nombre y Apellido</span>
-                <span class="font-body-md text-primary">{{ orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</span>
-            </div>
-            <div class="col-span-12 md:col-span-4">
-                <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">DNI/CUIL</span>
-                <span class="font-body-md text-primary">{{ orden.equipo.cliente.dni_cuil }}</span>
-            </div>
-            <div class="col-span-12 md:col-span-4">
-                <span class="block font-label-bold text-on-surface-variant mb-unit text-[10px] uppercase">Teléfono</span>
-                <span class="font-body-md text-primary">{{ orden.equipo.cliente.telefono or '—' }}</span>
-            </div>
-        </section>
+            <!-- Header Block -->
+            <header class="receipt-header">
+                <div class="header-left">
+                    <div class="company-title">TECHFLOW</div>
+                    <div class="company-subtitle">Servicio Técnico Informático</div>
+                    <div class="company-details">
+                        <strong>Dirección:</strong> Av. Corrientes 1234, Piso 4, CABA, Argentina<br>
+                        <strong>Teléfono:</strong> +54 11 5234-5678 | <strong>Email:</strong>
+                        contacto@techflow.com.ar<br>
+                        <strong>CUIT:</strong> 30-76543210-9
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="ticket-box">
+                        <div class="ticket-title">Orden de Trabajo</div>
+                        <div class="ticket-number">#{{ orden.id }}</div>
+                        <div class="ticket-meta">
+                            Fecha Ingreso: {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else
+                            '—' }}<br>
+                            Estado:
+                            {% if orden.estado.value in ['Listo', 'Entregado'] %}
+                            <span class="badge-delivered">{{ orden.estado.value | upper }}</span>
+                            {% else %}
+                            <span class="badge-pending">{{ orden.estado.value | upper }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-        <!-- Equipment Data -->
-        <section class="mb-xl">
-            <h2 class="font-label-bold text-primary uppercase mb-sm text-xs">Detalles del Equipo</h2>
-            <div class="table-container">
-                <table class="table-swiss">
+            <!-- Bloque 1 - Cliente -->
+            <div class="section-box">
+                <div class="section-header-bar">Datos del Cliente</div>
+                <table class="form-table">
                     <thead>
                         <tr>
-                            <th class="w-1/3">Tipo de Dispositivo</th>
-                            <th class="w-1/3">Marca / Modelo</th>
-                            <th>Número de Serie</th>
+                            <th style="width: 35%;">Nombre y Apellido</th>
+                            <th style="width: 20%;">DNI / CUIL</th>
+                            <th style="width: 20%;">Teléfono</th>
+                            <th style="width: 25%;">Email</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{{ orden.equipo.tipo.descripcion if orden.equipo.tipo else 'Dispositivo' }}</td>
-                            <td>{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</td>
-                            <td class="font-label-mono text-on-surface-variant uppercase">{{ orden.equipo.numero_serie }}</td>
+                            <td><strong>{{ orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</strong>
+                            </td>
+                            <td style="font-family: monospace;">{{ orden.equipo.cliente.dni_cuil }}</td>
+                            <td>{{ orden.equipo.cliente.telefono or '—' }}</td>
+                            <td>{{ orden.equipo.cliente.email or '[No especificado]' }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </section>
 
-        <!-- Technical Info -->
-        <section class="grid grid-cols-12 gap-grid-gutter mb-xl">
-            <div class="col-span-12 md:col-span-6 bento-card bg-background">
-                <h3 class="font-label-bold text-primary uppercase mb-sm border-b border-primary/10 pb-sm text-xs">Falla Reportada</h3>
-                <p class="font-body-md text-on-surface-variant">{{ orden.falla_reportada }}</p>
+            <!-- Bloque 3 - Equipo -->
+            <div class="section-box">
+                <div class="section-header-bar">Detalles del Dispositivo</div>
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Tipo de Dispositivo</th>
+                            <th style="width: 40%;">Marca / Modelo</th>
+                            <th style="width: 30%;">Número de Serie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ orden.equipo.tipo.descripcion if (orden.equipo and orden.equipo.tipo) else
+                                'Dispositivo' }}</td>
+                            <td><strong>{{ orden.equipo.marca if orden.equipo else '—' }} {{ orden.equipo.modelo if
+                                    orden.equipo else '' }}</strong></td>
+                            <td style="font-family: monospace; text-transform: uppercase;">{{ orden.equipo.numero_serie
+                                if orden.equipo else '—' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="col-span-12 md:col-span-6 bento-card bg-background">
-                <h3 class="font-label-bold text-primary uppercase mb-sm border-b border-primary/10 pb-sm text-xs">Accesorios Recibidos</h3>
-                <p class="font-body-md text-on-surface-variant">{{ orden.accesorios or 'Ninguno' }}</p>
-            </div>
-        </section>
 
-        <!-- Technical Resolution Box -->
-        <section class="mb-xl border-2 border-accent p-lg bg-background">
-            <div class="flex items-center gap-sm mb-md border-b-2 border-accent/20 pb-sm">
-                <span class="material-symbols-outlined text-accent" style="font-variation-settings: 'FILL' 1;">build</span>
-                <h2 class="font-headline-md text-primary">Diagnóstico y Resolución Técnica</h2>
-            </div>
-            <p class="font-body-md text-primary leading-relaxed">
-                {{ orden.estado_diagnostico if orden.estado_diagnostico else 'Sin diagnóstico cargado aún en el sistema.' }}
-            </p>
-            <div class="mt-md inline-flex items-center px-sm py-1 {% if orden.estado.value in ['Listo', 'Entregado'] %}bg-green-100 text-green-800 border border-green-200{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %} font-label-bold uppercase text-[10px]">
-                {{ orden.estado.value }}
-            </div>
-        </section>
-
-        <!-- Financials & Signatures Area -->
-        <div class="grid grid-cols-12 gap-xl mb-xl">
-            <!-- Signatures -->
-            <div class="col-span-12 md:col-span-8 flex justify-between pt-xl mt-xl border-t border-primary/10">
-                <div class="w-2/5 text-center">
-                    <div class="border-b border-primary mb-sm pt-xl"></div>
-                    <span class="font-label-bold text-on-surface-variant uppercase text-[10px]">Firma Técnico Responsable</span>
+            <!-- Bloque 2 - Falla y Resolución -->
+            <div class="flex-row-boxes">
+                <div class="flex-col-box" style="width: 25%;">
+                    <div class="box-title">Falla Reportada</div>
+                    <p style="font-style: italic; color: #b91c1c; font-weight: bold;">"{{ orden.falla_reportada }}"</p>
                 </div>
-                <div class="w-2/5 text-center">
-                    <div class="border-b border-primary mb-sm pt-xl"></div>
-                    <span class="font-label-bold text-on-surface-variant uppercase text-[10px]">Firma Conformidad del Cliente</span>
+                <div class="flex-col-box" style="width: 25%;">
+                    <div class="box-title">Accesorios Recibidos</div>
+                    <p>{{ orden.accesorios or 'Ninguno' }}</p>
                 </div>
-            </div>
-            <!-- Financials -->
-            <div class="col-span-12 md:col-span-4 bento-card bg-background flex flex-col justify-end">
-                <div class="font-label-bold text-on-surface-variant uppercase mb-unit text-[10px]">Costo Total del Servicio</div>
-                <div class="font-headline-xl text-primary">
-                    {% if orden.costo is not none %}
-                        ${{ "%.2f"|format(orden.costo) }}
-                    {% else %}
-                        Pendiente
-                    {% endif %}
+                <div class="flex-col-box" style="width: 50%;">
+                    <div class="box-title">Diagnóstico y Resolución Técnica</div>
+                    <p>{{ orden.estado_diagnostico if orden.estado_diagnostico else 'Sin diagnóstico cargado aún en el
+                        sistema.' }}</p>
                 </div>
             </div>
+
+            <!-- Bloque 4 - Desglose de Costos -->
+            <div class="section-box" style="margin-bottom: 4px;">
+                <div class="section-header-bar">Desglose de Costos de Servicio</div>
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th class="col-qty">Cant.</th>
+                            <th class="col-desc">Concepto / Descripción del Trabajo y Materiales</th>
+                            <th class="col-price" style="text-align: right;">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-qty">1</td>
+                            <td class="col-desc">Mano de Obra (Diagnóstico, Labor Técnica)</td>
+                            <td class="col-price">
+                                {% if orden.costo is not none %}
+                                ${{ "%.2f"|format(mano_obra) }}
+                                {% else %}
+                                Pendiente de presupuesto
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% for r in orden.repuestos or [] %}
+                        <tr>
+                            <td class="col-qty">1</td>
+                            <td class="col-desc">Repuesto: {{ r.titulo }} ({{ r.tienda }})</td>
+                            <td class="col-price">${{ "%.2f"|format(r.precio) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="col-qty">—</td>
+                            <td class="col-desc" style="color: #6b7280; font-style: italic;">Sin repuestos adicionales
+                                utilizados en esta reparación.</td>
+                            <td class="col-price" style="color: #6b7280; text-align: right;">$0.00</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals Section -->
+            <div class="totals-box">
+                <div class="totals-left">
+                    * Comprobante válido para el reclamo de la garantía sobre el servicio técnico ejecutado.
+                </div>
+                <div class="totals-right">
+                    <div class="total-row">
+                        <div class="total-label">Subtotal Materiales:</div>
+                        <div class="total-val">${{ "%.2f"|format(ns.total_repuestos) }}</div>
+                    </div>
+                    <div class="total-row">
+                        <div class="total-label">Subtotal Mano de Obra:</div>
+                        <div class="total-val">
+                            {% if orden.costo is not none %}
+                            ${{ "%.2f"|format(mano_obra) }}
+                            {% else %}
+                            Pendiente de presupuesto
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="total-row grand-total">
+                        <div class="total-label">TOTAL FACTURADO:</div>
+                        <div class="total-val">
+                            {% if orden.costo is not none %}
+                            ${{ "%.2f"|format(orden.costo) }}
+                            {% else %}
+                            Pendiente de presupuesto
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloque 5 - Términos y Garantía -->
+            <div class="legal-block">
+                <div class="legal-title">Términos del Servicio & Garantía Limitada</div>
+                <p><strong>1. Cobertura de Garantía:</strong> TechFlow otorga una garantía de servicio técnico limitada
+                    por un plazo de <strong>treinta (30) días corridos</strong> desde la entrega del equipo. Esta cubre
+                    exclusivamente vicios y fallas del ensamblado y mano de obra realizada en esta intervención.</p>
+                <p><strong>2. Exclusiones:</strong> Quedan excluidos daños por caídas, golpes, humedad, derrame de
+                    líquidos, problemas de suministro eléctrico externo, sobretensión, manipulación de fajas de garantía
+                    de TechFlow por personal no autorizado, o software dañado por virus posterior a la fecha de egreso.
+                </p>
+                <p><strong>3. Procedimiento:</strong> Es obligatorio presentar este comprobante físico para hacer valer
+                    la garantía. El taller evaluará previamente el estado general para verificar que las condiciones del
+                    equipo concuerden con el servicio original.</p>
+                <p><strong>4. Retiro y Abandono:</strong> Si pasados noventa (90) días del aviso de retiro el equipo no
+                    es reclamado, se considerará legalmente abandonado. TechFlow podrá disponer del mismo para cubrir
+                    los costos de almacenamiento e insumos invertidos.</p>
+            </div>
+
+            <!-- Bloque 6 - Firmas -->
+            <div class="signature-table">
+                <div class="signature-cell">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Firma Técnico Responsable</div>
+                    <div class="signature-sub">TechFlow Soporte Técnico</div>
+                </div>
+                <div class="signature-spacer"></div>
+                <div class="signature-cell">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Firma Conformidad Cliente</div>
+                    <div class="signature-sub">Recibido de conformidad y a satisfacción</div>
+                </div>
+            </div>
+
         </div>
+    </main>
 
-        <!-- Footer -->
-        <footer class="border-t-2 border-primary/10 pt-md text-center">
-            <p class="font-label-mono text-on-surface-variant text-[10px] uppercase">Garantía del servicio: 30 días a partir de la fecha de entrega. No cubre daños por mal uso, golpes o derrame de líquidos.</p>
-        </footer>
-    </div>
-</main>
-
-</div> <!-- Cierre de #main-content (abierto en header.html) -->
 </body>
+
 </html>

@@ -1,194 +1,152 @@
+from datetime import datetime
 from database import db
 from backend.models.Usuario import Usuario
+from backend.models.Rol import Rol
+from backend.models.HistorialEstado import HistorialEstado
 
 class UsuarioController:
+
+    @staticmethod
+    def procesar_datos(datos_formulario, is_edit=False, usuario_id=None):
+        """
+        Extrae, sanitiza y valida las reglas de negocio del usuario.
+        Retorna: (True, dict_con_datos_limpios) o (False, mensaje_de_error)
+        """
+        # ── 1. EXTRACCIÓN BLINDADA ──
+        datos = {
+            'username': (datos_formulario.get('username') or '').strip().lower(),
+            'nombre': (datos_formulario.get('nombre') or '').strip(),
+            'apellido': (datos_formulario.get('apellido') or '').strip(),
+            'rol_id': datos_formulario.get('rol_id'),
+            'activo': bool(datos_formulario.get('activo', True))
+        }
+        password_crudo = (datos_formulario.get('password') or '').strip()
+
+        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS ──
+        if not datos['username']: return False, "El nombre de usuario es requerido."
+        if not datos['nombre']: return False, "El nombre es requerido."
+        if not datos['apellido']: return False, "El apellido es requerido."
+        if not datos['rol_id']: return False, "El rol es requerido."
+
+        try:
+            datos['rol_id'] = int(datos['rol_id'])
+        except (ValueError, TypeError):
+            return False, "El rol provisto no es válido."
+
+        # ── 3. UNICIDAD DE USERNAME ──
+        existente = Usuario.get_por_username(datos['username'])
+        if existente and (not is_edit or existente.id != usuario_id):
+            return False, "El nombre de usuario ya está en uso."
+
+        # ── 4. MANEJO DE CONTRASEÑA Y HASHING ──
+        try:
+            if not is_edit:
+                if not password_crudo:
+                    return False, "La contraseña es requerida para un nuevo usuario."
+                datos['password'] = Usuario.hashear_password(password_crudo)
+            else:
+                if password_crudo:  # Solo se actualiza si se envió una nueva
+                    datos['password'] = Usuario.hashear_password(password_crudo)
+        except ValueError as e:
+            # Captura validaciones de longitud desde el modelo (ej. pass muy corto)
+            return False, str(e)
+
+        return True, datos
+
     @staticmethod
     def crear_usuario(datos_formulario):
-        """
-        Recibe los datos del formulario (request.form) y crea el usuario en la BD.
-        """
         try:
-            Usuario.crear(
-                username=datos_formulario.get('username'),
-                password=datos_formulario.get('password'),
-                nombre=datos_formulario.get('nombre'),
-                apellido=datos_formulario.get('apellido'),
-                rol_id=int(datos_formulario.get('rol_id')),
-                activo=True if datos_formulario.get('activo') else False
-            )
-            return True, "Usuario creado correctamente."
-        except Exception as e:
-            db.session.rollback()
-            return False, f"Error al crear el usuario: {str(e)}"
+            success, result = UsuarioController.procesar_datos(datos_formulario, is_edit=False)
+            if not success:
+                return False, result # result es el mensaje de error
 
-    @staticmethod
-    def obtener_todos():
-        """
-        Retorna la lista de todos los usuarios de la base de datos.
-        """
-        return Usuario.obtener_todos()
-
-    @staticmethod
-    def toggle_estado(usuario_id):
-        usuario = Usuario.obtener_por_id(usuario_id)
-        if usuario:
-            usuario.activo = not usuario.activo # Cambia de True a False y viceversa
+            # Desempaquetado limpio directamente al modelo
+            nuevo_usuario = Usuario(**result)
+            db.session.add(nuevo_usuario)
             db.session.commit()
-            return True
-        return False
+            return True, "Usuario creado correctamente."
+        except Exception:
+            db.session.rollback()
+            return False, "Error al crear el usuario. Intentá de nuevo."
 
-    @staticmethod
-    def eliminar_usuario(usuario_id):
-        usuario = Usuario.obtener_por_id(usuario_id)
-        if usuario:
-            usuario.eliminar()
-            return True
-        return False
 
     @staticmethod
     def actualizar_usuario(usuario_id, datos_formulario):
-        usuario = Usuario.obtener_por_id(usuario_id)
-        if usuario:
-            usuario.username = datos_formulario.get('username')
-            usuario.nombre = datos_formulario.get('nombre')
-            usuario.apellido = datos_formulario.get('apellido')
-            usuario.rol_id = int(datos_formulario.get('rol_id'))
-            usuario.activo = True if datos_formulario.get('activo') else False
-            
-            # Solo actualizar contraseña si no viene vacía
-            password = datos_formulario.get('password')
-            if password and password.strip():
-                from werkzeug.security import generate_password_hash
-                usuario.password = generate_password_hash(password)
-            
+        try:
+            usuario = Usuario.get_by_id(usuario_id)
+            if not usuario:
+                return False, "Usuario no encontrado."
+
+            success, result = UsuarioController.procesar_datos(
+                datos_formulario, is_edit=True, usuario_id=usuario_id
+            )
+            if not success:
+                return False, result
+
+            # Actualizamos los campos desde el diccionario sanitizado
+            usuario.username = result['username']
+            usuario.nombre   = result['nombre']
+            usuario.apellido = result['apellido']
+            usuario.rol_id   = result['rol_id']
+            usuario.activo   = result['activo']
+
+            if 'password' in result:
+                usuario.password = result['password']
+
             db.session.commit()
-            return True
-        return False
+            return True, "Usuario actualizado correctamente."
+        
+        except Exception:
+            db.session.rollback()
+            return False, "Error al actualizar el usuario. Intentá de nuevo."
 
     @staticmethod
-    def obtener_datos_analytics():
-        """Obtiene y calcula toda la información analítica de KPIs, incidentes y segmentación K-Means."""
-        from backend.models.OrdenServicio import OrdenServicio
-        from backend.models.Cliente import Cliente
-        from backend.models.Usuario import Usuario
-        from backend.models.HistorialEstado import HistorialEstado
-        from backend.models.EstadoOrden import EstadoOrden
-        from database import db
-        from collections import Counter
-        from backend.utils.kmeans_service import KMeansService
-        
-        # KPIs
-        ordenes = OrdenServicio.get_all()
-        total_ordenes = len(ordenes)
-        
-        # 1. Critical Failures (PENDIENTE, DIAGNOSTICO, REPARACION, PRESUPUESTADO)
-        critical_failures = sum(1 for o in ordenes if o.estado in (EstadoOrden.PENDIENTE, EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION, EstadoOrden.PRESUPUESTADO))
-        
-        # 2. Active Technicians
-        tecnicos = Usuario.query.filter_by(activo=True).all()
-        active_tecnicos_count = sum(1 for u in tecnicos if u.rol and u.rol.descripcion == 'Técnico')
-        if active_tecnicos_count == 0:
-            active_tecnicos_count = len(tecnicos)
-        
-        # 3. Mean Time to Resolve (MTTR)
-        mttr = "3.8h"
-        
-        # 4. System Integrity
-        system_integrity = "99.8%"
+    def obtener_todos():
+        return Usuario.get_all()
 
-        # 5. Incident Velocity Grid: Distribution of tickets by weekday
-        weekday_counts = [0] * 7
-        for o in ordenes:
-            if o.fecha_recepcion:
-                weekday_counts[o.fecha_recepcion.weekday()] += 1
-                 
-        max_count = max(weekday_counts) if max(weekday_counts) > 0 else 1
-        weekday_percentages = [int((c / max_count) * 100) for c in weekday_counts]
-        if sum(weekday_counts) == 0:
-            weekday_percentages = [80, 35, 55, 90, 65, 45, 20]
-         
-        # 6. Fault Logic (percentages per device type)
-        tipos_equipos = [o.equipo.tipo.descripcion for o in ordenes if o.equipo and o.equipo.tipo]
-        tipo_counts = Counter(tipos_equipos)
-        total_equipos = sum(tipo_counts.values()) or 1
-         
-        fault_logic = []
-        for tipo, count in tipo_counts.items():
-            fault_logic.append({
-                "nombre": tipo,
-                "porcentaje": int((count / total_equipos) * 100)
-            })
-        fault_logic = sorted(fault_logic, key=lambda x: x["porcentaje"], reverse=True)
-        if not fault_logic:
-            fault_logic = [
-                {"nombre": "Dell Notebooks & Servers", "porcentaje": 42},
-                {"nombre": "Cisco Network Devices", "porcentaje": 38},
-                {"nombre": "Lenovo ThinkCentre", "porcentaje": 20}
-            ]
-             
-        # 7. Recent Audit Logs
-        recent_history = HistorialEstado.query.order_by(HistorialEstado.fecha_cambio.desc()).limit(10).all()
+    @staticmethod
+    def toggle_estado(usuario_id):
+        usuario = Usuario.get_by_id(usuario_id)
+        if not usuario:
+            return False
+        usuario.activo = not usuario.activo
+        db.session.commit()
+        return True
 
-        # 8. Financial Calculations
-        total_revenue = db.session.query(db.func.sum(OrdenServicio.costo)).filter(
-            OrdenServicio.estado.in_([EstadoOrden.LISTO, EstadoOrden.ENTREGADO])
-        ).scalar() or 0.0
-        if total_revenue == 0.0 and total_ordenes > 0:
-            total_revenue = 85250.0  # Fallback to look premium
-        total_expenses = total_revenue * 0.35
-        net_profit = total_revenue - total_expenses
+    @staticmethod
+    def eliminar_usuario(usuario_id, usuario_actual_id):
+        if usuario_id == usuario_actual_id:
+            return False, "No puedes eliminar tu propia cuenta."
+        usuario = Usuario.get_by_id(usuario_id)
+        if not usuario:
+            return False, "Usuario no encontrado."
+        try:
+            db.session.delete(usuario)
+            db.session.commit()
+            return True, "Usuario eliminado correctamente."
+        except Exception:
+            db.session.rollback()
+            return False, "Error al eliminar el usuario."
+
+    @staticmethod
+    def obtener_datos_gestion_usuarios():
+        usuarios_lista = Usuario.get_all()
+        roles_lista = Rol.get_all()
         
-        # 9. Active Tickets Count (overall)
-        active_tickets_count = sum(1 for o in ordenes if o.estado in (EstadoOrden.PENDIENTE, EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION, EstadoOrden.PRESUPUESTADO, EstadoOrden.LISTO))
-
-        # 10. Data Mining: K-Means Client Segmentation
-        segmented_clients, kmeans_stats = KMeansService.get_client_segments()
+        # Lógica de auditoría movida desde la ruta
+        last_audit = HistorialEstado.query.order_by(HistorialEstado.fecha_cambio.desc()).first()
+        tiempo_auditoria = "Sin registros"
+        
+        if last_audit:
+            diff = datetime.now() - last_audit.fecha_cambio
+            if diff.days > 0: tiempo_auditoria = f"Hace {diff.days}d"
+            elif diff.seconds // 3600 > 0: tiempo_auditoria = f"Hace {diff.seconds // 3600}h"
+            else: tiempo_auditoria = "Hace instantes"
 
         return {
-            'critical_failures': critical_failures,
-            'active_tecnicos_count': active_tecnicos_count,
-            'mttr': mttr,
-            'system_integrity': system_integrity,
-            'weekday_percentages': weekday_percentages,
-            'fault_logic': fault_logic,
-            'recent_history': recent_history,
-            'total_revenue': total_revenue,
-            'total_expenses': total_expenses,
-            'net_profit': net_profit,
-            'active_tickets_count': active_tickets_count,
-            'segmented_clients': segmented_clients,
-            'kmeans_stats': kmeans_stats
+            'usuarios': usuarios_lista,
+            'roles': roles_lista,
+            'cant_activos': sum(1 for u in usuarios_lista if u.activo),
+            'cant_roles': len(roles_lista),
+            'tiempo_auditoria': tiempo_auditoria
         }
-
-    @staticmethod
-    def generar_backup(usuario_id):
-        """Dispara la exportación de respaldo y registra auditoría en el historial."""
-        from backend.utils.backup_service import BackupService
-        from backend.models.HistorialEstado import HistorialEstado
-        from backend.models.OrdenServicio import OrdenServicio
-        
-        backup_dict = BackupService.generate_backup_dict()
-        
-        # Registrar auditoría en historial si hay una orden vinculable
-        first_orden = OrdenServicio.query.first()
-        if first_orden:
-            HistorialEstado.add_registro(
-                orden_id=first_orden.id,
-                estado_anterior="System Backup",
-                estado_nuevo="System Backup",
-                usuario_id=usuario_id,
-                observacion_tecnica="Exportación de respaldo de base de datos completa descargado por Administrador."
-            )
-        return backup_dict
-
-    @staticmethod
-    def obtener_datos_secretaria():
-        """Obtiene de forma unificada clientes, usuarios activos y ordenes para la vista de secretaria."""
-        from backend.models.Cliente import Cliente
-        from backend.models.Usuario import Usuario
-        from backend.models.OrdenServicio import OrdenServicio
-        clientes = Cliente.query.all()
-        usuarios = Usuario.query.filter_by(activo=True).all()
-        ordenes  = OrdenServicio.get_all()
-        return clientes, usuarios, ordenes
-

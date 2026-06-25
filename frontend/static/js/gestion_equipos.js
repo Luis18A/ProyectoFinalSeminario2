@@ -12,6 +12,7 @@ function abrirEditar(id, tipo_id, marca, modelo, serie, descripcion) {
     form.action = `/equipo/editar/${id}`;
 
     // Cargar datos en los inputs
+    document.getElementById('edit-id').value = id;
     document.getElementById('edit-tipo').value = tipo_id;
     document.getElementById('edit-marca').value = marca;
     document.getElementById('edit-modelo').value = modelo;
@@ -31,12 +32,42 @@ function cerrarModal() {
     document.body.style.overflow = 'auto';
 }
 
+function mostrarOrdenesEquipo(equipoId, equipoNombre) {
+    const modal = document.getElementById('modal-ver-ordenes');
+    const title = document.getElementById('modal-equipo-nombre');
+    const content = document.getElementById('modal-ordenes-contenido');
+    const source = document.getElementById(`ordenes-equipo-${equipoId}`);
+
+    if (modal && title && content && source) {
+        title.textContent = equipoNombre;
+        content.innerHTML = source.innerHTML;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function cerrarModalOrdenes() {
+    const modal = document.getElementById('modal-ver-ordenes');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    document.body.style.overflow = 'auto';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Cerrar modal al hacer clic fuera
     const modalEditar = document.getElementById('modal-editar-equipo');
     if (modalEditar) {
         modalEditar.addEventListener('click', function (e) {
             if (e.target === this) cerrarModal();
+        });
+    }
+
+    // Cerrar modal de órdenes al hacer clic fuera
+    const modalOrdenes = document.getElementById('modal-ver-ordenes');
+    if (modalOrdenes) {
+        modalOrdenes.addEventListener('click', function (e) {
+            if (e.target === this) cerrarModalOrdenes();
         });
     }
 
@@ -66,8 +97,9 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsBody.innerHTML = '';
 
         try {
-            // Hacer petición al microservicio FastAPI en el puerto 8000
-            const response = await fetch(`http://localhost:8000/search?q=${encodeURIComponent(query)}`);
+            // Hacer petición al microservicio FastAPI en el puerto 8000 (usando la misma IP de acceso)
+            const scraperHost = window.location.hostname;
+            const response = await fetch(`http://${scraperHost}:8000/search?q=${encodeURIComponent(query)}`);
 
             if (!response.ok) {
                 throw new Error('Error en el servidor de scraping');
