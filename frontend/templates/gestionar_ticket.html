@@ -10,7 +10,8 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between mb-xl gap-4">
         <div>
             <nav class="flex items-center text-on-surface-variant font-label-bold uppercase mb-2">
-                <a class="hover:text-tech-blue" href="{% if rol_actual == 'Técnico' %}{{ url_for('vistas.technician') }}{% elif rol_actual == 'Administrador' %}{{ url_for('vistas.dashboard') }}{% else %}{{ url_for('vistas.secretary') }}{% endif %}">Tablero</a>
+                <a class="hover:text-tech-blue"
+                    href="{% if rol_actual == 'Técnico' %}{{ url_for('vistas.technician') }}{% elif rol_actual == 'Administrador' %}{{ url_for('vistas.dashboard') }}{% else %}{{ url_for('vistas.secretary') }}{% endif %}">Tablero</a>
                 <span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
                 <span class="text-on-surface">Ticket #{{ orden.id }}</span>
             </nav>
@@ -21,7 +22,8 @@
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 Comprobante
             </a>
-            <a href="{% if rol_actual == 'Técnico' %}{{ url_for('vistas.technician') }}{% elif rol_actual == 'Administrador' %}{{ url_for('vistas.dashboard') }}{% else %}{{ url_for('vistas.secretary') }}{% endif %}" class="btn-swiss btn-outline">
+            <a href="{% if rol_actual == 'Técnico' %}{{ url_for('vistas.technician') }}{% elif rol_actual == 'Administrador' %}{{ url_for('vistas.dashboard') }}{% else %}{{ url_for('vistas.secretary') }}{% endif %}"
+                class="btn-swiss btn-outline">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 Volver
             </a>
@@ -358,7 +360,8 @@
                             </div>
                             {% if orden.estado.name == 'PRESUPUESTADO' %}
                             <div class="flex flex-col sm:flex-row gap-3">
-                                <button type="button" onclick="confirmarPresupuesto({{ orden.id }}, {{ orden.costo or 0.0 }})"
+                                <button type="button"
+                                    onclick="confirmarPresupuesto({{ orden.id }}, {{ orden.costo or 0.0 }})"
                                     class="btn-swiss bg-purple-600 hover:bg-purple-700 text-white flex-grow justify-center">
                                     <span class="material-symbols-outlined text-[16px]">check_circle</span> Aceptar
                                     Presupuesto
@@ -439,6 +442,12 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    {% else %}
+                    <div class="border border-dashed border-[#1A1A1A]/20 p-6 text-center bg-white">
+                        <span class="material-symbols-outlined text-zinc-400 text-3xl mb-2 block">info</span>
+                        <p class="text-xs font-label-bold text-zinc-500 uppercase tracking-wider">Aún no hay suficientes
+                            registros para realizar predicciones</p>
                     </div>
                     {% endfor %}
                 </div>

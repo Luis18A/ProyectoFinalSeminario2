@@ -27,6 +27,7 @@ class KMeansService:
 
         K se adapta dinámicamente a la cantidad de clientes disponibles (mínimo 1, máximo 3).
         No se agregan datos sintéticos — si hay pocos clientes, se segmenta con K reducido.
+        Eje X: Ordenes de servico, Eje Y: Gasto total de ordenes de servico
         """
         # Caché con TTL de 5 minutos
         # CORRECCIÓN: datetime.now(timezone.utc) reemplaza utcnow() deprecado en Python 3.12+

@@ -158,3 +158,12 @@ class EquipoController:
             'id': e.id,
             'label': f"{e.marca} {e.modelo} (S/N: {e.numero_serie})"
         } for e in equipos]
+
+    @staticmethod
+    def obtener_datos_gestion_cliente(cliente_id):
+        """Unifica las consultas para el panel de gestión mediante delegación."""
+        from backend.models.Cliente import Cliente
+        tipo_dispositivos = TipoDispositivo.get_all()
+        cliente = db.session.get(Cliente, cliente_id) if cliente_id else None
+        equipos = Equipo.get_por_cliente(cliente_id) if cliente else []
+        return tipo_dispositivos, cliente, equipos

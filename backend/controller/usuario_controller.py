@@ -18,7 +18,7 @@ class UsuarioController:
             'nombre': (datos_formulario.get('nombre') or '').strip(),
             'apellido': (datos_formulario.get('apellido') or '').strip(),
             'rol_id': datos_formulario.get('rol_id'),
-            'activo': bool(datos_formulario.get('activo', True))
+            'activo': datos_formulario.get('activo') in [True, 'True', 'on', '1']
         }
         password_crudo = (datos_formulario.get('password') or '').strip()
 
@@ -148,5 +148,6 @@ class UsuarioController:
             'roles': roles_lista,
             'cant_activos': sum(1 for u in usuarios_lista if u.activo),
             'cant_roles': len(roles_lista),
-            'tiempo_auditoria': tiempo_auditoria
+            'tiempo_auditoria': tiempo_auditoria,
+            'cant_usuarios': Usuario.query.count()
         }
