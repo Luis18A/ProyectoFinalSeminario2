@@ -25,15 +25,55 @@
                 class="w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant p-container-margin relative flex flex-col shadow-[0px_8px_0px_rgba(26,28,29,0.05)]">
                 <!-- Strict geometric anchor -->
                 <div class="absolute top-0 left-0 w-full h-xs bg-primary"></div>
-                <!-- Header -->
-                <header class="mb-xl">
-                        <span
-                                class="font-label-mono text-label-mono uppercase text-on-surface-variant tracking-widest block mb-sm">Terminal del
-                                Sistema</span>
-                        <h1 class="font-headline-xl text-headline-xl text-primary">Inicio Sesión</h1>
-                </header>
-                <!-- Authentication Form -->
-                <form class="flex flex-col gap-lg flex-grow" action="{{ url_for('vistas.login_post') }}" method="POST">
+                 <!-- Header -->
+                 <header class="mb-xl flex justify-between items-start">
+                         <div>
+                                 <span
+                                         class="font-label-mono text-label-mono uppercase text-on-surface-variant tracking-widest block mb-sm">Terminal del
+                                         Sistema</span>
+                                 <h1 class="font-headline-xl text-headline-xl text-primary">Inicio Sesión</h1>
+                         </div>
+                         <button id="help-btn" class="p-2 text-zinc-400 hover:text-[#0057FF] transition-colors focus:outline-none" title="Ver credenciales de demostración" type="button">
+                                 <span class="material-symbols-outlined text-2xl">help_outline</span>
+                         </button>
+                 </header>
+                 
+                 <!-- Credenciales de Demo (Acordeón de Ayuda) -->
+                 <div id="demo-credentials-box" class="hidden mb-lg p-4 bg-zinc-50 border border-zinc-200 animate-in fade-in slide-in-from-top-4 duration-300">
+                         <div class="flex justify-between items-center mb-2 pb-2 border-b border-zinc-200">
+                                 <span class="font-label-bold text-zinc-500 uppercase text-[9px] tracking-widest">Acceso de Demostración</span>
+                                 <button id="close-help-btn" class="text-zinc-400 hover:text-zinc-600 focus:outline-none" type="button">
+                                         <span class="material-symbols-outlined text-sm">close</span>
+                                 </button>
+                         </div>
+                         <div class="space-y-2 text-xs">
+                                 <div class="flex justify-between items-center py-1 border-b border-dashed border-zinc-100 hover:bg-zinc-100/50 p-1 cursor-pointer" onclick="fillCredentials('admin', 'administrador')">
+                                         <div>
+                                                 <span class="font-bold text-zinc-800">Administrador:</span>
+                                                 <code class="font-mono bg-zinc-200 px-1 py-0.5 rounded text-[10px]">admin</code> / <code class="font-mono bg-zinc-200 px-1 py-0.5 rounded text-[10px]">administrador</code>
+                                         </div>
+                                         <span class="material-symbols-outlined text-zinc-400 text-sm">login</span>
+                                 </div>
+                                 <div class="flex justify-between items-center py-1 border-b border-dashed border-zinc-100 hover:bg-zinc-100/50 p-1 cursor-pointer" onclick="fillCredentials('tecnico', 'tecnico')">
+                                         <div>
+                                                 <span class="font-bold text-zinc-800">Técnico:</span>
+                                                 <code class="font-mono bg-zinc-200 px-1 py-0.5 rounded text-[10px]">tecnico</code> / <code class="font-mono bg-zinc-200 px-1 py-0.5 rounded text-[10px]">tecnico</code>
+                                         </div>
+                                         <span class="material-symbols-outlined text-zinc-400 text-sm">login</span>
+                                 </div>
+                                 <div class="flex justify-between items-center py-1 hover:bg-zinc-100/50 p-1 cursor-pointer" onclick="fillCredentials('secretario', 'secretario')">
+                                         <div>
+                                                 <span class="font-bold text-zinc-800">Secretario:</span>
+                                                 <code class="font-mono bg-zinc-200 px-1 py-0.5 rounded text-[10px]">secretario</code> / <code class="font-mono bg-zinc-200 px-1 py-0.5 rounded text-[10px]">secretario</code>
+                                         </div>
+                                         <span class="material-symbols-outlined text-zinc-400 text-sm">login</span>
+                                 </div>
+                         </div>
+                         <p class="text-[9px] text-zinc-400 mt-2 italic text-center">Haz clic en cualquier fila para autocompletar rápidamente.</p>
+                 </div>
+
+                 <!-- Authentication Form -->
+                 <form class="flex flex-col gap-lg flex-grow" action="{{ url_for('vistas.login_post') }}" method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         {% if error %}
                         <div
@@ -91,6 +131,41 @@
                                 </button>
                         </div>
                 </form>
+
+                <!-- Botón para mostrar info de la plataforma -->
+                <div class="mt-md text-center">
+                        <button id="about-btn" class="font-label-mono text-label-mono text-secondary hover:text-primary transition-colors uppercase tracking-widest text-[9px] flex items-center justify-center gap-1 mx-auto focus:outline-none" type="button">
+                                <span class="material-symbols-outlined text-[14px]">info</span>
+                                ¿Cómo funciona la plataforma?
+                        </button>
+                </div>
+                
+                <!-- Información de la Plataforma -->
+                <div id="about-box" class="hidden mt-lg p-4 bg-zinc-50 border border-zinc-200 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-zinc-200">
+                                <span class="font-label-bold text-zinc-500 uppercase text-[9px] tracking-widest">Guía del Sistema</span>
+                                <button id="close-about-btn" class="text-zinc-400 hover:text-zinc-600 focus:outline-none" type="button">
+                                        <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
+                        </div>
+                        <div class="space-y-3 text-[11px] leading-relaxed text-zinc-600">
+                                <p><strong>TechFlow</strong> es un ecosistema ITSM diseñado para la gestión operativa y análisis de talleres de servicio técnico.</p>
+                                
+                                <div class="space-y-1">
+                                        <h4 class="font-bold text-zinc-800 uppercase text-[9px] tracking-wider">Perfiles de Acceso:</h4>
+                                        <p>• <strong>Administrador:</strong> Ver estadísticas globales, segmentación ML <strong>K-Means</strong> de clientes y backups.</p>
+                                        <p>• <strong>Técnico:</strong> Diagnosticar, reparar y registrar observaciones técnicas en sus órdenes.</p>
+                                        <p>• <strong>Secretario:</strong> Crear clientes, registrar equipos e imprimir comprobantes de entrega.</p>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                        <h4 class="font-bold text-zinc-800 uppercase text-[9px] tracking-wider">Módulos de Inteligencia:</h4>
+                                        <p>• <strong>Predictor de fallas:</strong> Inteligencia que sugiere diagnósticos basados en patrones históricos similares.</p>
+                                        <p>• <strong>Segmentación K-Means:</strong> Clasificación matemática que agrupa a los clientes en Platinum, Activo o Casual.</p>
+                                </div>
+                        </div>
+                </div>
+
                 <!-- Technical Footer -->
                 <footer class="mt-xl pt-md border-t border-outline-variant flex justify-between items-center">
                         <div class="flex items-center gap-xs text-outline">
