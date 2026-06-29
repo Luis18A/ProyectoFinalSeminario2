@@ -507,8 +507,35 @@
         </div>
     </div>
 </main>
+{% endblock %}
 
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Ficha de Gestión de Ticket</h3>
+    <p>Esta pantalla centraliza el diagnóstico técnico, la cotización de repuestos, los cambios de estado y el historial de auditoría de un ticket individual.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Acciones Técnicas:</p>
+        <p class="pl-3 text-zinc-500">
+            - <strong>Actualizar Diagnóstico/Falla:</strong> Permite describir los problemas encontrados.
+            <br>- <strong>Predictor de Fallas IA:</strong> Analiza tu descripción de falla e indica la probabilidad de fallas comunes basándose en registros históricos del taller.
+            <br>- <strong>Transición de Estado:</strong> Botones rápidos para avanzar el ticket (ej: "Iniciar Reparación" o "Marcar como Listo").
+        </p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Presupuesto de Repuestos:</p>
+        <p class="pl-3 text-zinc-500">En el panel derecho, agregá los repuestos necesarios y su precio. Se calculará el costo total del servicio técnico y los materiales automáticamente.</p>
+    </div>
 
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Registro de Auditoría (Historial):</p>
+        <p class="pl-3 text-zinc-500">El feed inferior detalla cronológicamente qué operador cambió de estado el ticket, cuándo, y qué observaciones técnicas registró en cada paso.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <!-- Cargar lógica desde el archivo estático JS -->
 <script src="{{ url_for('static', filename='js/gestionar_ticket.js') }}"></script>
 {% endblock %}

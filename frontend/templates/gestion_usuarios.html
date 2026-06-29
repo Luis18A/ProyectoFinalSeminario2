@@ -203,7 +203,34 @@
         </div>
     </div>
 </main>
+{% endblock %}
 
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Gestión de Usuarios</h3>
+    <p>Esta pantalla permite administrar las cuentas de los operadores que acceden al sistema.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Registrar Usuario:</p>
+        <p class="pl-3 text-zinc-500">Utilizá el formulario lateral "Crear Nuevo Operador". Requiere un nombre de usuario único, contraseña base, nombre, apellido y asignar un rol.</p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Roles Disponibles:</p>
+        <p class="pl-3 text-zinc-500">
+            - <strong>Administrador:</strong> Acceso completo (módulos, analíticas, BD).
+            <br>- <strong>Técnico:</strong> Acceso exclusivo al panel técnico asignado.
+            <br>- <strong>Secretario:</strong> Registro inicial de dispositivos y clientes.
+        </p>
+    </div>
+
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Habilitar / Deshabilitar Cuentas:</p>
+        <p class="pl-3 text-zinc-500">El botón de lápiz permite editar los datos de un usuario y marcar o desmarcar la casilla de "Activo" para bloquear temporalmente su acceso sin borrar su historial operativo.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script src="{{ url_for('static', filename='js/gestion_usuarios.js') }}"></script>
-
 {% endblock %}

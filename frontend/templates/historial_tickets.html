@@ -119,6 +119,27 @@
             class="p-4 bg-zinc-50 flex justify-between items-center border-t border-border text-[10px] text-on-surface-variant font-label-mono uppercase">
             <span>Total: {{ ordenes|length if ordenes else 0 }} tickets registrados en el historial</span>
         </div>
-    </div>
 </main>
+{% endblock %}
+
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Historial de Tickets</h3>
+    <p>Esta pantalla permite realizar auditorías globales, buscar tickets archivados (entregados) y exportar los registros.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Buscador y Filtros:</p>
+        <p class="pl-3 text-zinc-500">Filtrá los registros ingresando parte del <strong>ID de Ticket (ej. TK-0025)</strong>, nombre/teléfono del cliente, o tipo/marca del equipo. Luego presioná "Filtrar".</p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Exportación a CSV:</p>
+        <p class="pl-3 text-zinc-500">El botón "Exportar" descarga en un archivo CSV de Excel los tickets actualmente filtrados en la pantalla, facilitando el análisis externo de planillas de cálculo.</p>
+    </div>
+
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Comprobantes de Impresión:</p>
+        <p class="pl-3 text-zinc-500">El icono de impresora (<span class="material-symbols-outlined text-[12px]">print</span>) abre una pestaña con el comprobante de entrega en formato A4 optimizado, listo para imprimir físicamente o guardar como PDF.</p>
+    </div>
+</div>
 {% endblock %}

@@ -46,7 +46,7 @@ class ClienteController:
         if not datos['apellido'] or len(datos['apellido']) < 2: return False, "El apellido debe tener al menos 2 caracteres."
         if len(datos['apellido']) > 50: return False, "El apellido es demasiado largo."
         
-        patron_texto = r"^[azAZáéíóúÁÉÍÓÚñÑüÜs]+$"
+        patron_texto = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-]+$"
         if not re.match(patron_texto, datos['nombre']): return False, "El nombre solo debe contener letras, espacios o guiones."
         if not re.match(patron_texto, datos['apellido']): return False, "El apellido solo debe contener letras, espacios o guiones."
 

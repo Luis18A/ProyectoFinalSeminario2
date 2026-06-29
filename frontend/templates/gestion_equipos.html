@@ -308,6 +308,30 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/gestion_equipos.js') }}"></script>
+{% endblock %}
 
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Gestión de Equipos y Activos</h3>
+    <p>Esta sección centraliza el inventario de dispositivos vinculados a un cliente particular.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Registrar Dispositivo:</p>
+        <p class="pl-3 text-zinc-500">Utilizá el formulario lateral "Registrar Dispositivo". Requiere elegir el tipo de dispositivo, marca, modelo y <strong>Número de Serie (S/N)</strong> único.</p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Crear Ticket de Servicio:</p>
+        <p class="pl-3 text-zinc-500">En el panel lateral inferior "Registrar Nueva Orden", seleccioná un equipo del cliente, describí la falla que reporta y los accesorios que deja para iniciar un ticket en el taller.</p>
+    </div>
+
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Historial del Dispositivo:</p>
+        <p class="pl-3 text-zinc-500">Hacé clic en el botón de historial (<span class="material-symbols-outlined text-[12px]">history</span>) en la fila de un equipo para abrir el modal flotante que muestra todas las órdenes de servicio que ha tenido (activas o finalizadas).</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/gestion_equipos.js') }}"></script>
 {% endblock %}
