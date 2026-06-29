@@ -44,6 +44,20 @@ def gestionar_ticket(orden_id):
         
     return render_template('gestionar_ticket.html', **datos)
 
+@orden_servicio_bp.get('/ordenServicio/<int:orden_id>/json-config')
+@login_required
+@role_required('Administrador', 'Secretario', 'Técnico')
+def obtener_config_json(orden_id):
+    is_readonly = request.args.get('readonly') == 'true'
+    config = orden_flujo_controller.obtener_config_json_ticket(
+        orden_id, 
+        session.get('rol_descripcion', ''), 
+        is_readonly
+    )
+    if not config:
+        return jsonify({'error': 'Ticket no encontrado'}), 404
+    return jsonify(config)
+
 # --- RUTAS DE REPUESTOS (Delegación total al controlador) ---
 @orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/agregar')
 @login_required

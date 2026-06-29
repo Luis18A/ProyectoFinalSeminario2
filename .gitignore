@@ -25,4 +25,10 @@ Thumbs.db
 scratch/
 
 # Documentos a ignorar
-PROYECTO SEMINARIO 2.pdf
+PROYECTO SEMINARIO 2.pdf
+
+# SQLite / Local DBs
+instance/
+*.db
+*.sqlite
+

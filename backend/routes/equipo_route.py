@@ -1,6 +1,5 @@
 from flask import Blueprint, request, render_template, url_for, flash, redirect, jsonify
 from backend.controller import equipo_controller
-from backend.controller import dashboard_controller
 from backend.utils.decorators import login_required, role_required
 
 equipo_bp = Blueprint('equipo', __name__)
@@ -32,7 +31,7 @@ def editar_equipo(id):
 @login_required
 @role_required('Administrador', 'Secretario')
 def gestion_equipos(cliente_id):
-    tipo_dispositivos, cliente, equipos = dashboard_controller.obtener_datos_gestion_cliente(cliente_id)
+    tipo_dispositivos, cliente, equipos = equipo_controller.obtener_datos_gestion_cliente(cliente_id)
     if not cliente:
         flash("Cliente no encontrado para gestionar sus equipos.", "error")
         return redirect(url_for('clientes.gestion_cliente'))

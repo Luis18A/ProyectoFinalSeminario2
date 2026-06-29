@@ -46,7 +46,11 @@ class AnalyticsController:
                 (o.fecha_entrega - o.fecha_recepcion).total_seconds()
                 for o in resueltas
             ) / len(resueltas)
-            mttr = f"{avg_segundos / 3600:.1f}h"
+            dias = avg_segundos / 86400
+            if round(dias, 1) == 1.0:
+                mttr = "1.0 día"
+            else:
+                mttr = f"{dias:.1f} días"
         else:
             # CORRECCIÓN: sin inventar un número, mostrar estado real
             mttr = "Sin datos aún"
@@ -64,16 +68,34 @@ class AnalyticsController:
         else:
             system_integrity = "Sin datos aún"
 
-        # ── 5. Incident Velocity (distribución por día de semana) ─────
+        # ── 5. Incident Velocity (distribución por día de semana - Estilo Pareto) ─────
+        dias_semana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
         weekday_counts = [0] * 7
         for o in ordenes:
             if o.fecha_recepcion:
                 weekday_counts[o.fecha_recepcion.weekday()] += 1
 
-        max_c = max(weekday_counts) if any(weekday_counts) else 1
-        weekday_percentages = [int((c / max_c) * 100) for c in weekday_counts]
-        # CORRECCIÓN: sin datos inventados — si no hay órdenes, todo en cero
-        # El template debe manejar el caso de lista en ceros
+        total_incidentes = sum(weekday_counts)
+        pareto_data = []
+        for i, count in enumerate(weekday_counts):
+            pct = (count / total_incidentes * 100) if total_incidentes > 0 else 0.0
+            pareto_data.append({
+                'dia': dias_semana[i],
+                'cantidad': count,
+                'porcentaje': round(pct, 1)
+            })
+
+        # Ordenar de mayor a menor por cantidad
+        pareto_data = sorted(pareto_data, key=lambda x: x['cantidad'], reverse=True)
+
+        # Calcular porcentaje acumulado basado en conteos acumulados para evitar errores de redondeo
+        running_count = 0
+        for item in pareto_data:
+            if total_incidentes > 0:
+                running_count += item['cantidad']
+                item['acumulado'] = round((running_count / total_incidentes) * 100, 1)
+            else:
+                item['acumulado'] = 0.0
 
         # ── 6. Fault Logic (por tipo de dispositivo) ──────────────────
         tipos = [
@@ -133,7 +155,7 @@ class AnalyticsController:
             'active_tecnicos_count':  active_tecnicos_count,
             'mttr':                   mttr,
             'system_integrity':       system_integrity,
-            'weekday_percentages':    weekday_percentages,
+            'pareto_data':            pareto_data,
             'fault_logic':            fault_logic,
             'recent_history':         recent_history,
             'total_revenue':          total_revenue,

@@ -16,7 +16,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Tabla de Usuarios -->
-        <div class="col-span-12 lg:col-span-9 bg-white border border-[#1A1A1A]/10 shadow-sm flex flex-col overflow-hidden">
+        <div
+            class="col-span-12 lg:col-span-9 bg-white border border-[#1A1A1A]/10 shadow-sm flex flex-col overflow-hidden">
             <div class="p-6 border-b border-[#1A1A1A]/10 flex justify-between items-center bg-zinc-50">
                 <h2 class="text-xl font-black uppercase tracking-tighter text-on-surface flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">group</span>
@@ -28,7 +29,7 @@
                     </span>
                 </div>
             </div>
-            <div class="overflow-x-auto">
+            <div class="table-scroll-container !border-none">
                 <table class="table-swiss min-w-[800px]">
                     <thead>
                         <tr>
@@ -108,7 +109,7 @@
         </div>
 
         <!-- Formulario de registro de usuarios -->
-        <div class="col-span-12 lg:col-span-3 bento-card flex flex-col">
+        <div class="col-span-12 lg:col-span-3 bento-card flex flex-col self-start">
             <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
                 <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nuevo Usuario</h2>
                 <span class="material-symbols-outlined text-on-surface-variant text-sm">person_add</span>
@@ -180,10 +181,10 @@
     <!-- Tarjetas de estadísticas responsivas -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">
-            <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Licencias Activas</p>
-            <h4 class="font-headline-md text-primary">{{ cant_activos }} / 150</h4>
+            <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Usuarios Activos</p>
+            <h4 class="font-headline-md text-primary">{{ cant_activos }} / {{cant_usuarios}}</h4>
             <div class="w-full bg-zinc-200 h-1 mt-4">
-                <div class="bg-secondary h-1" style="width: {{ (cant_activos / 150 * 100) | round }}%;"></div>
+                <div class="bg-secondary h-1" style="width: {{ (cant_activos / cant_usuarios*100) | round }}%;"></div>
             </div>
         </div>
         <div class="bg-zinc-50 border border-[#1A1A1A]/10 p-6">

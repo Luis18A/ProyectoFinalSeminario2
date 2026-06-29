@@ -10,4 +10,3 @@ from .equipo_controller import EquipoController as equipo_controller
 from .search_controller import SearchController as search_controller
 from .admin_controller import AdminController as admin_controller
 from .notificacion_controller import NotificacionController as notificacion_controller
-from .dashboard_controller import DashboardController as dashboard_controller

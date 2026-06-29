@@ -183,3 +183,32 @@ input:focus, select:focus, textarea:focus {
         break-inside: avoid;
     }
 }
+
+/* Vertical scroll container with sticky headers for large tables */
+.table-scroll-container {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+    position: relative;
+    border: 1px solid var(--border);
+    background: white;
+    width: 100%;
+}
+
+.table-scroll-container table {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-scroll-container th {
+    position: sticky !important;
+    top: 0;
+    z-index: 10;
+    background-color: #F1F1F3 !important;
+    box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.table-scroll-container td {
+    border-bottom: 1px solid var(--border);
+}

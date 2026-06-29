@@ -13,7 +13,6 @@
         rel="stylesheet" />
     <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     {% block extra_css %}{% endblock %}
@@ -57,7 +56,7 @@
                 <!-- Secciones Filtros de Rol -->
 
                 {% if user_role in ('Secretario', 'Administrador') %}
-                <a class="px-6 py-4 flex items-center gap-4 text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'orden_servicio.listar_ordenes_view' or endpoint == 'orden_servicio.crear_orden_view' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
+                <a class="px-6 py-4 flex items-center gap-4 text-xs font-medium uppercase tracking-wider hover:bg-zinc-50 hover:text-[#1A1A1A] transition-all {% if endpoint == 'orden_servicio.listar_ordenes_view' %}bg-zinc-100 border-l-4 border-[#0057FF] text-[#0057FF]{% else %}text-zinc-500{% endif %}"
                     href="{{ url_for('orden_servicio.listar_ordenes_view') }}">
                     <span class="material-symbols-outlined">receipt_long</span> Gestión de Órdenes
                 </a>

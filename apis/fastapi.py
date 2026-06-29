@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from scrappers.mercadoLibre import MercadoLibreScraper
 from scrappers.megatone import MegatoneScraper
 from scrappers.fravega import FravegaScraper
+from scrappers.infopartes import InfoPartesScraper
+from scrappers.fullstore import FullstoreScraper
 
 # Reconfigurar salida estándar en Windows para evitar UnicodeEncodeError
 if sys.platform.startswith('win'):
@@ -26,38 +28,30 @@ app.add_middleware(
 
 @app.get("/search")
 async def search(q: str):
-    ml_scraper = MercadoLibreScraper()
-    mega_scraper = MegatoneScraper()
-    fravega_scraper = FravegaScraper()
+    scrapers = [
+        ("MercadoLibre", MercadoLibreScraper()),
+        ("Megatone", MegatoneScraper()),
+        ("Fravega", FravegaScraper()),
+        ("InfoPartes", InfoPartesScraper()),
+        ("Fullstore", FullstoreScraper())
+    ]
     
     # Todos los scrapers son síncronos (def), así que los envolvemos en to_thread para no bloquear.
     tasks = [
-        asyncio.to_thread(ml_scraper.search, q),
-        asyncio.to_thread(mega_scraper.search, q),
-        asyncio.to_thread(fravega_scraper.search, q)
+        asyncio.to_thread(scraper.search, q)
+        for _, scraper in scrapers
     ]
     
     responses = await asyncio.gather(*tasks, return_exceptions=True)
     
     combined_results = []
     
-    # Procesamos MercadoLibre
-    if not isinstance(responses[0], Exception):
-        combined_results.extend(responses[0])
-    else:
-        print(f"Error en MercadoLibre: {responses[0]}")
-    
-    # Procesamos Megatone
-    if not isinstance(responses[1], Exception):
-        combined_results.extend(responses[1])
-    else:
-        print(f"Error en Megatone: {responses[1]}")
-
-    # Procesamos Fravega
-    if not isinstance(responses[2], Exception):
-        combined_results.extend(responses[2])
-    else:
-        print(f"Error en Fravega: {responses[2]}")
+    # Procesamos las respuestas asociándolas con cada scraper
+    for (name, _), response in zip(scrapers, responses):
+        if not isinstance(response, Exception):
+            combined_results.extend(response)
+        else:
+            print(f"Error en {name}: {response}")
     
     # Ordenamos por precio
     combined_results.sort(key=lambda x: x.get('precio', 0))

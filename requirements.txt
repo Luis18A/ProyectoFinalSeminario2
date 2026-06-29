@@ -9,3 +9,4 @@ patchright
 curl_cffi
 browserforge
 flask-wtf
+gunicorn

@@ -55,9 +55,9 @@ with app.app_context():
     ROLES = ["Administrador", "Técnico", "Secretario"]
 
     USUARIOS = [
-        {"username": "admin",      "password": "Admin1234!",     "nombre": "Brian",  "apellido": "Teran",     "rol": "Administrador"},
-        {"username": "tecnico",    "password": "Tecnico1234!",   "nombre": "Juan",   "apellido": "Técnico",   "rol": "Técnico"},
-        {"username": "secretario", "password": "Secretario1234!","nombre": "Ana",    "apellido": "Secretaria","rol": "Secretario"},
+        {"username": "admin",      "password": "administrador",     "nombre": "administrador",  "apellido": "administrador", "rol": "Administrador"},
+        {"username": "tecnico",    "password": "tecnico",   "nombre": "tecnico",   "apellido": "tecnico",   "rol": "Técnico"},
+        {"username": "secretario", "password": "secretario","nombre": "secretario",    "apellido": "secretario","rol": "Secretario"},
     ]
 
     TIPOS_DISPOSITIVO = ["Notebook", "PC Escritorio", "Impresora", "Servidor", "Consola"]

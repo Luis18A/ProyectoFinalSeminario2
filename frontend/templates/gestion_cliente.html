@@ -28,7 +28,8 @@
 
         <!-- Data Table Container -->
         <div class="col-span-12 lg:col-span-9 table-container flex flex-col">
-            <table class="table-swiss">
+            <div class="table-scroll-container !border-none">
+                <table class="table-swiss">
                 <thead>
                     <tr>
                         <th>Cliente</th>
@@ -83,10 +84,11 @@
                     {% endif %}
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Registration Form -->
-        <div class="col-span-12 lg:col-span-3 bento-card flex flex-col">
+        <div class="col-span-12 lg:col-span-3 bento-card flex flex-col self-start">
             <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
                 <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nuevo Cliente</h2>
                 <span class="material-symbols-outlined text-on-surface-variant text-sm">person_add</span>
