@@ -26,7 +26,8 @@
                         TOTAL ACTIVAS: {{ ordenes | length }}
                     </span>
                 </div>
-                <table class="table-swiss min-w-[800px]">
+                <div class="table-scroll-container !border-none">
+                    <table class="table-swiss min-w-[800px]">
                     <thead>
                         <tr>
                             <th class="w-20">ID</th>
@@ -90,6 +91,7 @@
                         {% endif %}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Formulario de Registro de Orden -->

@@ -29,7 +29,8 @@
                     </h2>
                     <span class="font-label-mono text-[10px] text-zinc-400">Total: {{ equipos|length }} Activo(s)</span>
                 </div>
-                <table class="table-swiss">
+                <div class="table-scroll-container !border-none">
+                    <table class="table-swiss">
                     <thead>
                         <tr>
                             <th>Equipo</th>
@@ -120,6 +121,7 @@
                         {% endif %}
                     </tbody>
                 </table>
+                </div>
                 <div
                     class="p-4 bg-zinc-50 flex justify-between items-center text-[10px] text-on-surface-variant font-label-mono uppercase">
                     <span>Mostrando {{ equipos|length }} dispositivo(s)</span>
