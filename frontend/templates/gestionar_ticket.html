@@ -532,12 +532,12 @@
 <script>
     window.ticketConfig = {
         repuestosActivos: {{ (orden.repuestos or[]) | tojson }},
-    ordenId: { { orden.id } },
-    ordenCostoInicial: { { orden.costo or 0.0 } },
-    puedeEditar: { { puede_editar | tojson } },
-    puedeEditarCostos: { { puede_editar_costos | tojson } },
-    rolActual: { { rol_actual | tojson } },
-    technicianUrl: "{{ url_for('vistas.technician') }}"
+        ordenId: {{ orden.id }},
+        ordenCostoInicial: {{ orden.costo or 0.0 }},
+        puedeEditar: {{ puede_editar | tojson }},
+        puedeEditarCostos: {{ puede_editar_costos | tojson }},
+        rolActual: {{ rol_actual | tojson }},
+        technicianUrl: "{{ url_for('vistas.technician') }}"
     };
 </script>
 

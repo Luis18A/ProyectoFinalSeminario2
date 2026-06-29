@@ -1,35 +1,17 @@
 from database import db
 from backend.utils.backup_service import BackupService
-from backend.models.HistorialEstado import HistorialEstado
 from backend.models.Usuario import Usuario
 
 class AdminController:
 
     @staticmethod
     def generar_backup(usuario_id):
-        """Genera el backup y registra la auditoría como evento de sistema."""
+        """Genera el backup y registra el evento a nivel de infraestructura."""
         backup_dict = BackupService.generate_backup_dict()
 
-        try:
-            # 1. Crear el registro de auditoría
-            # Nota: orden_id=None es aceptado por el modelo actual (nullable=True)
-            registro = HistorialEstado(
-                orden_id=None,
-                estado_anterior="Sistema",
-                estado_nuevo="Backup generado",
-                usuario_id=usuario_id,
-                observacion_tecnica="Exportación de respaldo completa descargada por Administrador."
-            )
-            
-            # 2. Persistir en base de datos
-            db.session.add(registro)
-            db.session.commit()
-            
-        except Exception as e:
-            # Si falla la auditoría, no queremos que falle la descarga del backup.
-            # Solo logueamos el error y permitimos que el backup se entregue.
-            db.session.rollback()
-            print(f"Error registrando auditoría de backup: {str(e)}")
+        # En lugar de ensuciar la tabla de reparaciones de hardware, 
+        # registramos el evento de infraestructura en los logs del servidor.
+        print(f"[AUDITORIA DE SISTEMA] Usuario ID: {usuario_id} ha generado y descargado un backup completo de la base de datos.")
 
         return backup_dict
 

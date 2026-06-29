@@ -269,6 +269,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
             }
         });
+
+        formActualizar.addEventListener('submit', (e) => {
+            const selectEstadoEl = document.getElementById('select-estado');
+            const inputDiagEl = document.getElementsByName('estado_diagnostico')[0];
+
+            const estadoDestino = selectEstadoEl ? selectEstadoEl.value : '';
+            const diagVal = inputDiagEl ? inputDiagEl.value.trim() : '';
+
+            if (estadoDestino && estadoDestino !== 'PENDIENTE' && !diagVal) {
+                e.preventDefault();
+                window.showToast('El diagnóstico técnico es obligatorio para el estado seleccionado o actual.', 'error');
+            }
+        });
     }
 
     // Si se presiona Enter en el input de búsqueda de repuestos, iniciar búsqueda
@@ -392,6 +405,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function solicitarAprobacionPresupuesto() {
         if (!inputCostoTotal || !inputCostoTotal.value || parseFloat(inputCostoTotal.value) <= 0) {
             window.showToast('Por favor, ingresá un costo de reparación mayor a $0 en el formulario de arriba primero.', 'error');
+            return;
+        }
+
+        const inputDiagEl = document.getElementsByName('estado_diagnostico')[0];
+        const diagVal = inputDiagEl ? inputDiagEl.value.trim() : '';
+        if (!diagVal) {
+            window.showToast('El diagnóstico técnico es obligatorio para poder enviar el presupuesto.', 'error');
             return;
         }
         

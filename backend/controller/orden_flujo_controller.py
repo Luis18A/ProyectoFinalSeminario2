@@ -97,9 +97,26 @@ class OrdenFlujoController:
                 except ValueError:
                     return False, "El costo total debe ser un número válido."
                 
+            # Validar que si el estado final no es PENDIENTE, el diagnóstico no esté vacío
+            estado_final = orden.estado
+            if nuevo_estado_id:
+                try:
+                    estado_final = EstadoOrden[nuevo_estado_id]
+                except KeyError:
+                    pass
+
+            if estado_final != EstadoOrden.PENDIENTE:
+                diag_campo = datos_formulario.get('estado_diagnostico')
+                if diag_campo is not None:
+                    if not str(diag_campo).strip():
+                        return False, "El diagnóstico técnico es obligatorio para el estado seleccionado."
+                else:
+                    if not (orden.estado_diagnostico or '').strip():
+                        return False, "El diagnóstico técnico es obligatorio para el estado seleccionado."
+
             # Actualizamos otros campos técnicos
             if datos_formulario.get('estado_diagnostico') is not None:
-                new_diag = datos_formulario.get('estado_diagnostico')
+                new_diag = datos_formulario.get('estado_diagnostico').strip()
                 if new_diag != (orden.estado_diagnostico or ''):
                     orden.estado_diagnostico = new_diag
                     hubo_cambios = True
@@ -254,6 +271,10 @@ class OrdenFlujoController:
             permitidos = EstadoOrden.transiciones_permitidas(orden.estado)
             if nuevo_estado not in permitidos:
                 return False, f"Transición no permitida: {orden.estado.value} → {nuevo_estado.value}."
+
+            # ── Diagnóstico obligatorio para estados distintos de PENDIENTE ──
+            if nuevo_estado != EstadoOrden.PENDIENTE and not (orden.estado_diagnostico or '').strip():
+                return False, "La orden de servicio debe tener un diagnóstico técnico registrado para cambiar al estado seleccionado."
 
             # ── Observación obligatoria en retrocesos ─────────────────
             es_retroceso = (
