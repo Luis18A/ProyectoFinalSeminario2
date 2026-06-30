@@ -97,57 +97,94 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsBody.innerHTML = '';
 
         try {
-            // Hacer petición al microservicio FastAPI en el puerto 8000 (usando la misma IP de acceso)
-            const scraperHost = window.location.hostname;
-            const response = await fetch(`http://${scraperHost}:8000/search?q=${encodeURIComponent(query)}`);
+            // 1. Iniciar la tarea en segundo plano en el servidor
+            const startResp = await fetch('/api/buscar-repuestos/iniciar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ q: query })
+            });
 
-            if (!response.ok) {
-                throw new Error('Error en el servidor de scraping');
+            if (!startResp.ok) {
+                const errData = await startResp.json().catch(() => ({}));
+                throw new Error(errData.error || 'No se pudo iniciar la búsqueda');
             }
 
-            const data = await response.json();
+            const { task_id } = await startResp.json();
 
-            if (data.length === 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-background transition-colors';
-
-                    let tiendaHtml = '';
-                    if (item.tienda === 'MercadoLibre') {
-                        tiendaHtml = `<span class="px-2 py-1 bg-yellow-100 text-yellow-800 border border-yellow-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">Mercado Libre</span>`;
-                    } else if (item.tienda === 'Megatone') {
-                        tiendaHtml = `<span class="px-2 py-1 bg-red-100 text-red-800 border border-red-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">Megatone</span>`;
-                    } else if (item.tienda === 'Fravega') {
-                        tiendaHtml = `<span class="px-2 py-1 bg-purple-100 text-purple-800 border border-purple-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">Fravega</span>`;
-                    } else {
-                        tiendaHtml = `<span class="px-2 py-1 bg-gray-100 text-gray-800 border border-gray-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">${item.tienda}</span>`;
+            // 2. Función de sondeo (polling)
+            const pollTask = async () => {
+                try {
+                    const statusResp = await fetch(`/api/buscar-repuestos/estado/${task_id}`);
+                    if (!statusResp.ok) {
+                        throw new Error('Error al consultar el estado de la búsqueda');
                     }
 
-                    let condicionText = item.condicion === 'new' ? 'Nuevo' : (item.condicion === 'used' ? 'Usado' : item.condicion);
+                    const statusData = await statusResp.json();
 
-                    tr.innerHTML = `
-                        <td>${tiendaHtml}</td>
-                        <td class="text-sm text-primary max-w-xs truncate" title="${item.titulo}">${item.titulo}</td>
-                        <td class="text-xs text-on-surface-variant uppercase">${condicionText}</td>
-                        <td class="text-right font-label-mono font-bold text-accent">${formatCurrency(item.precio)}</td>
-                        <td class="text-center">
-                            <a href="${item.link}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 hover:bg-secondary hover:text-white transition-colors text-primary mx-auto" title="Ver publicación">
-                                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
-                            </a>
-                        </td>
-                    `;
-                    resultsBody.appendChild(tr);
-                });
-                resultsContainer.classList.remove('hidden');
-            }
+                    if (statusData.status === 'completed') {
+                        loading.classList.add('hidden');
+                        const data = statusData.results || [];
+                        if (data.length === 0) {
+                            noResults.textContent = "No se encontraron repuestos para tu búsqueda.";
+                            noResults.classList.remove('hidden');
+                        } else {
+                            data.forEach(item => {
+                                const tr = document.createElement('tr');
+                                tr.className = 'hover:bg-background transition-colors';
+
+                                let tiendaHtml = '';
+                                if (item.tienda === 'MercadoLibre') {
+                                    tiendaHtml = `<span class="px-2 py-1 bg-yellow-100 text-yellow-800 border border-yellow-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">Mercado Libre</span>`;
+                                } else if (item.tienda === 'Megatone') {
+                                    tiendaHtml = `<span class="px-2 py-1 bg-red-100 text-red-800 border border-red-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">Megatone</span>`;
+                                } else if (item.tienda === 'Fravega') {
+                                    tiendaHtml = `<span class="px-2 py-1 bg-purple-100 text-purple-800 border border-purple-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">Fravega</span>`;
+                                } else {
+                                    tiendaHtml = `<span class="px-2 py-1 bg-gray-100 text-gray-800 border border-gray-200 font-label-bold text-[10px] uppercase tracking-wider text-center flex items-center justify-center">${item.tienda}</span>`;
+                                }
+
+                                let condicionText = item.condicion === 'new' ? 'Nuevo' : (item.condicion === 'used' ? 'Usado' : item.condicion);
+
+                                tr.innerHTML = `
+                                    <td>${tiendaHtml}</td>
+                                    <td class="text-sm text-primary max-w-xs truncate" title="${item.titulo}">${item.titulo}</td>
+                                    <td class="text-xs text-on-surface-variant uppercase">${condicionText}</td>
+                                    <td class="text-right font-label-mono font-bold text-accent">${formatCurrency(item.precio)}</td>
+                                    <td class="text-center">
+                                        <a href="${item.link}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 hover:bg-secondary hover:text-white transition-colors text-primary mx-auto" title="Ver publicación">
+                                            <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                                        </a>
+                                    </td>
+                                `;
+                                resultsBody.appendChild(tr);
+                            });
+                            resultsContainer.classList.remove('hidden');
+                        }
+                    } else if (statusData.status === 'running') {
+                        // Reintentar en 1.5 segundos
+                        setTimeout(pollTask, 1500);
+                    } else {
+                        throw new Error(statusData.error || 'La tarea falló');
+                    }
+                } catch (pollErr) {
+                    console.error(pollErr);
+                    loading.classList.add('hidden');
+                    noResults.textContent = "Error al sondear el resultado de búsqueda: " + pollErr.message;
+                    noResults.classList.remove('hidden');
+                }
+            };
+
+            // Iniciar sondeo inicial
+            setTimeout(pollTask, 500);
+
         } catch (error) {
             console.error('Error al buscar repuestos:', error);
-            noResults.textContent = "Ocurrió un error al buscar los repuestos. Verifica que el servidor de FastAPI esté encendido.";
-            noResults.classList.remove('hidden');
-        } finally {
             loading.classList.add('hidden');
+            noResults.textContent = "Ocurrió un error al buscar los repuestos. Verifica la cola Celery.";
+            noResults.classList.remove('hidden');
         }
     }
 

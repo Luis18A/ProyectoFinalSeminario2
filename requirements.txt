@@ -1,8 +1,8 @@
 Flask==3.0.0
 flask-sqlalchemy
 psycopg2-binary
-fastapi
-uvicorn
+celery
+redis
 scrapling
 playwright
 patchright

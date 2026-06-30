@@ -141,3 +141,25 @@ def cambiar_estado_flujo(orden_id):
 def listar_ordenes_view():
     # Delegación total: la ruta no sabe qué datos se necesitan, solo los renderiza.
     return render_template('listar_ordenes.html', **orden_servicio_controller.obtener_datos_lista_activas())
+
+
+@orden_servicio_bp.post('/api/buscar-repuestos/iniciar')
+@login_required
+def iniciar_busqueda_repuestos():
+    q = request.form.get('q', '').strip()
+    if not q and request.is_json:
+        q = (request.json.get('q') or '').strip()
+        
+    success, result = orden_presupuesto_controller.iniciar_busqueda_repuestos(q)
+    if not success:
+        return jsonify({'error': result}), 400 if result == 'El término de búsqueda está vacío' else 500
+    return jsonify(result)
+
+
+@orden_servicio_bp.get('/api/buscar-repuestos/estado/<task_id>')
+@login_required
+def obtener_estado_busqueda_repuestos(task_id):
+    success, result = orden_presupuesto_controller.obtener_estado_busqueda_repuestos(task_id)
+    if not success:
+        return jsonify({'status': 'failed', 'error': result}), 500
+    return jsonify(result)

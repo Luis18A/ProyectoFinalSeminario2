@@ -146,3 +146,34 @@ class OrdenPresupuestoController:
         except Exception as e:
             db.session.rollback()
             return False, f"Error al eliminar repuesto: {str(e)}"
+
+    @staticmethod
+    def iniciar_busqueda_repuestos(q):
+        """Inicia la tarea asíncrona en Celery y retorna el ID de la tarea."""
+        from backend.tasks import buscar_repuestos_async
+        q = (q or '').strip()
+        if not q:
+            return False, 'El término de búsqueda está vacío'
+        try:
+            task = buscar_repuestos_async.delay(q)
+            return True, {'task_id': task.id, 'status': 'pending'}
+        except Exception as e:
+            print(f"[Controller] Error al iniciar tarea Celery: {e}")
+            return False, str(e)
+
+    @staticmethod
+    def obtener_estado_busqueda_repuestos(task_id):
+        """Consulta el estado de una tarea Celery y retorna su resultado o estado."""
+        from backend.tasks import celery
+        try:
+            res = celery.AsyncResult(task_id)
+            if res.state == 'SUCCESS':
+                return True, {'status': 'completed', 'results': res.result}
+            elif res.state in ('PENDING', 'STARTED', 'PROGRESS', 'RETRY'):
+                return True, {'status': 'running'}
+            else:
+                error_msg = str(res.info) if res.info else 'Error en la ejecución de la tarea'
+                return False, error_msg
+        except Exception as e:
+            print(f"[Controller] Error al consultar estado Celery: {e}")
+            return False, str(e)
