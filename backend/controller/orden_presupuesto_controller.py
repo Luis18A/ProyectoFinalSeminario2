@@ -2,14 +2,12 @@ from backend.models.OrdenServicio import OrdenServicio
 from backend.models.EstadoOrden import EstadoOrden
 from backend.models.Repuesto import Repuesto
 from backend.models.OrdenRepuesto import OrdenRepuesto
+from backend.models.TareaBusqueda import TareaBusqueda
 from database import db
 from sqlalchemy.orm.attributes import flag_modified
 import uuid
 import threading
 import asyncio
-
-# Almacén de tareas de búsqueda en memoria para simular Celery localmente
-_tareas_busqueda = {}
 
 class OrdenPresupuestoController:
     @staticmethod
@@ -198,41 +196,67 @@ class OrdenPresupuestoController:
 
     @staticmethod
     def iniciar_busqueda_repuestos(q):
-        """Inicia la búsqueda en un hilo de fondo simulando Celery localmente."""
+        """Inicia la búsqueda en un hilo de fondo guardando el estado en la base de datos para soporte multi-proceso."""
         q = (q or '').strip()
         if not q:
             return False, 'El término de búsqueda está vacío'
         
         task_id = str(uuid.uuid4())
-        _tareas_busqueda[task_id] = {'status': 'running', 'results': []}
+        
+        try:
+            # Crear y guardar la tarea inicial
+            nueva_tarea = TareaBusqueda(id=task_id, status='running', resultados_json=[])
+            db.session.add(nueva_tarea)
+            db.session.commit()
+        except Exception as db_err:
+            db.session.rollback()
+            print(f"[Controller] Error al guardar tarea de búsqueda: {db_err}")
+            return False, f"Error al inicializar la tarea: {db_err}"
 
-        # Ejecutamos la búsqueda en un hilo separado
-        def run_search():
-            try:
-                from backend.tasks import _ejecutar_scrapers
-                # Ya que _ejecutar_scrapers es asíncrono, creamos un nuevo event loop en este hilo
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                results = loop.run_until_complete(_ejecutar_scrapers(q))
-                loop.close()
-                _tareas_busqueda[task_id] = {'status': 'completed', 'results': results}
-            except Exception as e:
-                print(f"[Scraper Thread] Error al ejecutar búsqueda: {e}")
-                _tareas_busqueda[task_id] = {'status': 'failed', 'error': str(e)}
+        from app import app
 
-        threading.Thread(target=run_search, daemon=True).start()
+        # Ejecutamos la búsqueda en un hilo separado pasando el contexto de la aplicación
+        def run_search(app_context):
+            with app_context:
+                try:
+                    from backend.tasks import _ejecutar_scrapers
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    results = loop.run_until_complete(_ejecutar_scrapers(q))
+                    loop.close()
+                    
+                    # Actualizar tarea a completada
+                    tarea = db.session.get(TareaBusqueda, task_id)
+                    if tarea:
+                        tarea.status = 'completed'
+                        tarea.resultados_json = results
+                        db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"[Scraper Thread] Error al ejecutar búsqueda: {e}")
+                    tarea = db.session.get(TareaBusqueda, task_id)
+                    if tarea:
+                        tarea.status = 'failed'
+                        tarea.error = str(e)
+                        db.session.commit()
+
+        threading.Thread(target=run_search, args=(app.app_context(),), daemon=True).start()
         return True, {'task_id': task_id, 'status': 'pending'}
 
     @staticmethod
     def obtener_estado_busqueda_repuestos(task_id):
-        """Consulta el estado de la tarea en memoria."""
-        task = _tareas_busqueda.get(task_id)
-        if not task:
-            return False, 'Tarea no encontrada'
-        
-        if task['status'] == 'completed':
-            return True, {'status': 'completed', 'results': task['results']}
-        elif task['status'] == 'failed':
-            return False, task.get('error', 'Error en la búsqueda del repuesto')
-        else:
-            return True, {'status': 'running'}
+        """Consulta el estado de la tarea en la base de datos."""
+        try:
+            task = db.session.get(TareaBusqueda, task_id)
+            if not task:
+                return False, 'Tarea no encontrada'
+            
+            if task.status == 'completed':
+                return True, {'status': 'completed', 'results': task.resultados_json}
+            elif task.status == 'failed':
+                return False, task.error or 'Error en la búsqueda del repuesto'
+            else:
+                return True, {'status': 'running'}
+        except Exception as e:
+            print(f"[Controller] Error al consultar tarea {task_id}: {e}")
+            return False, str(e)
