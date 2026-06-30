@@ -1,5 +1,6 @@
-import math
+import numpy as np
 from datetime import datetime, timedelta, timezone
+from sklearn.cluster import KMeans
 
 from backend.models.Cliente import Cliente
 from backend.models.OrdenServicio import OrdenServicio
@@ -101,39 +102,13 @@ class KMeansService:
             for d in raw_data
         ]
 
-        # ── 3. Inicialización determinista de centroides ──────────────────────
-        # Se toman K centroides equidistantes del eje diagonal para reproducibilidad
-        step = 1.0 / (K + 1)
-        centroids = [(step * (i + 1), step * (i + 1)) for i in range(K)]
-
-        assignments = [0] * len(raw_data)
-
-        # ── 4. Iteraciones K-Means ────────────────────────────────────────────
-        for _ in range(15):
-            # Asignar cada punto al centroide más cercano
-            for i, p in enumerate(scaled_points):
-                best_c  = min(
-                    range(K),
-                    key=lambda c_idx: math.sqrt(
-                        (p[0] - centroids[c_idx][0]) ** 2 +
-                        (p[1] - centroids[c_idx][1]) ** 2
-                    )
-                )
-                assignments[i] = best_c
-
-            # Recalcular centroides
-            sums   = [(0.0, 0.0)] * K
-            counts = [0] * K
-            for i, c_idx in enumerate(assignments):
-                p = scaled_points[i]
-                sums[c_idx]   = (sums[c_idx][0] + p[0], sums[c_idx][1] + p[1])
-                counts[c_idx] += 1
-
-            centroids = [
-                (sums[c][0] / counts[c], sums[c][1] / counts[c])
-                if counts[c] > 0 else centroids[c]
-                for c in range(K)
-            ]
+        # ── 3. Ajuste de K-Means con scikit-learn ──────────────────────────────
+        X = np.array(scaled_points)
+        
+        # random_state=42 para reproducibilidad en la asignación de clústeres
+        kmeans = KMeans(n_clusters=K, random_state=42, n_init=10)
+        kmeans.fit(X)
+        assignments = kmeans.labels_.tolist()
 
         # ── 5. Mapear clústeres a etiquetas según gasto promedio ──────────────
         cluster_gasto_sum = [0.0] * K

@@ -10,3 +10,4 @@ curl_cffi
 browserforge
 flask-wtf
 gunicorn
+scikit-learn
