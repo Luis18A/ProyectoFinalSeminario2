@@ -11,3 +11,4 @@ browserforge
 flask-wtf
 gunicorn
 scikit-learn
+msgspec
