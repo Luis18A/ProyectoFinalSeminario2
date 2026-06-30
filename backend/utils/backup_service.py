@@ -1,4 +1,5 @@
 import re
+import uuid
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash
 
@@ -8,6 +9,8 @@ from backend.models.Equipo import Equipo
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.HistorialEstado import HistorialEstado
 from backend.models.EstadoOrden import EstadoOrden
+from backend.models.Repuesto import Repuesto
+from backend.models.OrdenRepuesto import OrdenRepuesto
 from database import db
 from sqlalchemy import text
 
@@ -189,8 +192,7 @@ class BackupService:
                     usuario_id=o["usuario_id"],
                     falla_reportada=o["falla_reportada"],
                     accesorios=o["accesorios"],
-                    costo=o.get("costo"),
-                    repuestos=o.get("repuestos", []),  # CORRECCIÓN: restaurar repuestos
+                    costo=o.get("costo")
                 )
                 nuevo_o.id               = o["id"]
                 nuevo_o.estado           = estado_enum
@@ -199,6 +201,41 @@ class BackupService:
                 nuevo_o.fecha_entrega    = fecha_ent
                 nuevo_o.observaciones    = o.get("observaciones")
                 db.session.add(nuevo_o)
+                db.session.flush()
+
+                # Restaurar repuestos en la base de datos relacional
+                repuestos_json = o.get("repuestos", [])
+                for rep in repuestos_json:
+                    titulo = rep.get('titulo') or rep.get('nombre')
+                    if not titulo:
+                        continue
+                    precio = float(rep.get('precio') or 0.0)
+                    tienda = rep.get('tienda') or 'Manual'
+
+                    # Buscar o registrar repuesto en catálogo
+                    rep_db = Repuesto.query.filter_by(descripcion=titulo).first()
+                    if not rep_db:
+                        codigo = f"REP-{uuid.uuid4().hex[:12].upper()}"
+                        rep_db = Repuesto(
+                            codigo=codigo,
+                            descripcion=titulo,
+                            categoria="Hardware",
+                            precio_promedio=precio,
+                            proveedor=tienda
+                        )
+                        db.session.add(rep_db)
+                        db.session.flush()
+
+                    # Asociar a la orden si no está ya asociado
+                    existe_rel = OrdenRepuesto.query.filter_by(orden_id=nuevo_o.id, repuesto_id=rep_db.id).first()
+                    if not existe_rel:
+                        orden_rep = OrdenRepuesto(
+                            orden_id=nuevo_o.id,
+                            repuesto_id=rep_db.id,
+                            cantidad=1,
+                            precio_unitario=precio
+                        )
+                        db.session.add(orden_rep)
 
             # ── 6. Historial de Estados ───────────────────────────────────────
             for h in json_data.get("historial_estados", []):

@@ -14,6 +14,9 @@ from backend.models.Equipo import Equipo
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.TipoDispositivo import TipoDispositivo
 from backend.models.Notificacion import Notificacion
+from backend.models.Repuesto import Repuesto
+from backend.models.OrdenRepuesto import OrdenRepuesto
+
 
 # ─────────────────────────────────────────────
 # IMPORTS de Blueprints

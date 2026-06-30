@@ -63,22 +63,24 @@ def obtener_config_json(orden_id):
 @login_required
 @role_required('Administrador', 'Técnico')
 def agregar_repuesto(orden_id):
-    success, message = orden_presupuesto_controller.agregar_repuesto(orden_id, **request.form.to_dict())
-    return jsonify({'success': success, 'message': message}), (200 if success else 400)
+    success, result = orden_presupuesto_controller.agregar_repuesto(orden_id, **request.form.to_dict())
+    if success:
+        return jsonify({'success': True, 'message': 'Repuesto agregado correctamente.', 'repuesto': result})
+    else:
+        return jsonify({'success': False, 'message': result}), 400
 
-@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/editar/<int:idx>')
+@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/editar/<int:orden_repuesto_id>')
 @login_required
 @role_required('Administrador', 'Técnico')
-def editar_repuesto(orden_id, idx):
-    # La validación de que sea un número y el título no sea vacío se movió al controller
-    success, message = orden_presupuesto_controller.editar_repuesto(orden_id, idx, **request.form.to_dict())
+def editar_repuesto(orden_id, orden_repuesto_id):
+    success, message = orden_presupuesto_controller.editar_repuesto(orden_id, orden_repuesto_id, **request.form.to_dict())
     return jsonify({'success': success, 'message': message}), (200 if success else 400)
 
-@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/eliminar/<int:idx>')
+@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/eliminar/<int:orden_repuesto_id>')
 @login_required
 @role_required('Administrador', 'Técnico')
-def eliminar_repuesto(orden_id, idx):
-    success, message = orden_presupuesto_controller.eliminar_repuesto(orden_id, idx)
+def eliminar_repuesto(orden_id, orden_repuesto_id):
+    success, message = orden_presupuesto_controller.eliminar_repuesto(orden_id, orden_repuesto_id)
     return jsonify({'success': success, 'message': message}), (200 if success else 400)
 
 

@@ -130,9 +130,9 @@ class AnalyticsController:
 
         total_expenses = 0.0
         for o in ordenes:
-            if o.estado in (EstadoOrden.LISTO, EstadoOrden.ENTREGADO) and o.repuestos:
-                for r in o.repuestos:
-                    total_expenses += float(r.get('precio', 0.0))
+            if o.estado in (EstadoOrden.LISTO, EstadoOrden.ENTREGADO):
+                for orp in o.orden_repuestos:
+                    total_expenses += float(orp.precio_unitario) * orp.cantidad
 
         net_profit = total_revenue - total_expenses
         expense_percentage = (total_expenses / total_revenue * 100) if total_revenue > 0 else 0.0

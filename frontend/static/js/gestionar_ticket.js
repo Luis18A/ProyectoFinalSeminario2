@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button" class="btn-guardar-repuesto text-emerald-600 hover:text-emerald-800 transition-colors" data-idx="${idx}" title="Guardar cambios">
+                                <button type="button" class="btn-guardar-repuesto text-emerald-600 hover:text-emerald-800 transition-colors" data-idx="${idx}" data-id="${r.id}" title="Guardar cambios">
                                     <span class="material-symbols-outlined text-[18px]">check_circle</span>
                                 </button>
                                 <button type="button" class="btn-cancelar-repuesto text-zinc-500 hover:text-zinc-700 transition-colors" data-idx="${idx}" title="Cancelar">
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <button type="button" class="btn-editar-repuesto text-blue-500 hover:text-blue-700 transition-colors" data-idx="${idx}" title="Editar repuesto">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <button type="button" class="btn-eliminar-repuesto text-red-500 hover:text-red-700 transition-colors" data-idx="${idx}" title="Remover repuesto">
+                                <button type="button" class="btn-eliminar-repuesto text-red-500 hover:text-red-700 transition-colors" data-idx="${idx}" data-id="${r.id}" title="Remover repuesto">
                                     <span class="material-symbols-outlined text-[18px]">delete</span>
                                 </button>
                             </div>
@@ -205,8 +205,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Bind click events on newly rendered delete buttons
         container.querySelectorAll('.btn-eliminar-repuesto').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const idx = parseInt(btn.getAttribute('data-idx'));
-                eliminarRepuesto(idx);
+                const id = parseInt(btn.getAttribute('data-id'));
+                eliminarRepuesto(id);
             });
         });
 
@@ -228,6 +228,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.querySelectorAll('.btn-guardar-repuesto').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const idx = parseInt(btn.getAttribute('data-idx'));
+                const id = parseInt(btn.getAttribute('data-id'));
                 const inputTitulo = document.getElementById(`edit-repuesto-titulo-${idx}`);
                 const inputPrecio = document.getElementById(`edit-repuesto-precio-${idx}`);
                 if (inputTitulo && inputPrecio) {
@@ -242,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return;
                     }
                     const nuevoPrecio = parseFloat(nuevoPrecioRaw);
-                    await guardarEdicionRepuesto(idx, nuevoTitulo, nuevoPrecio);
+                    await guardarEdicionRepuesto(id, nuevoTitulo, nuevoPrecio);
                 }
             });
         });
@@ -366,12 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await resp.json();
             if (data.success) {
-                repuestosActivos.push({
-                    titulo: titulo,
-                    precio: parseFloat(precio),
-                    link: link,
-                    tienda: tienda
-                });
+                repuestosActivos.push(data.repuesto);
                 renderRepuestos();
                 window.showToast('Repuesto agregado al presupuesto con éxito.', 'success');
             } else {
@@ -386,13 +382,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Exponer agregarRepuestoAlPresupuesto globalmente para el botón '+ Cotizar' inyectado dinámicamente
     window.agregarRepuestoAlPresupuesto = agregarRepuestoAlPresupuesto;
 
-    async function eliminarRepuesto(idx) {
+    async function eliminarRepuesto(id) {
         if (!confirm('¿Seguro que querés remover este repuesto del presupuesto?')) {
             return;
         }
         
         try {
-            const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/eliminar/${idx}`, {
+            const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/eliminar/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
@@ -400,7 +396,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await resp.json();
             if (data.success) {
-                repuestosActivos.splice(idx, 1);
+                const idx = repuestosActivos.findIndex(r => r.id === id);
+                if (idx !== -1) {
+                    repuestosActivos.splice(idx, 1);
+                }
                 renderRepuestos();
                 window.showToast('Repuesto eliminado y presupuesto actualizado.', 'success');
             } else {
@@ -412,13 +411,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function guardarEdicionRepuesto(idx, titulo, precio) {
+    async function guardarEdicionRepuesto(id, titulo, precio) {
         try {
             const formData = new FormData();
             formData.append('titulo', titulo);
             formData.append('precio', precio);
             
-            const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/editar/${idx}`, {
+            const resp = await fetch(`/ordenServicio/${ordenId}/repuesto/editar/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
@@ -427,8 +426,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await resp.json();
             if (data.success) {
-                repuestosActivos[idx].titulo = titulo;
-                repuestosActivos[idx].precio = precio;
+                const item = repuestosActivos.find(r => r.id === id);
+                if (item) {
+                    item.titulo = titulo;
+                    item.precio = precio;
+                }
                 editIdx = null;
                 renderRepuestos();
                 window.showToast('Repuesto actualizado con éxito.', 'success');
