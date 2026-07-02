@@ -15,7 +15,6 @@ from backend.models.HistorialEstado import HistorialEstado
 from backend.models.Notificacion import Notificacion
 from backend.models.Repuesto import Repuesto
 from backend.models.OrdenRepuesto import OrdenRepuesto
-from backend.models.TareaBusqueda import TareaBusqueda
 
 
 
@@ -110,7 +109,6 @@ def limpiar_tablas():
     db.session.query(Notificacion).delete()
     db.session.query(OrdenRepuesto).delete()
     db.session.query(Repuesto).delete()
-    db.session.query(TareaBusqueda).delete()
     db.session.query(OrdenServicio).delete()
     db.session.query(Equipo).delete()
     db.session.query(Cliente).delete()
