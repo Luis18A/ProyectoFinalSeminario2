@@ -509,19 +509,6 @@
 </main>
 
 
-<!-- Configuración para el script externo -->
-<script>
-    window.ticketConfig = {
-        repuestosActivos: {{ (orden.repuestos or[]) | tojson }},
-    ordenId: { { orden.id } },
-    ordenCostoInicial: { { orden.costo or 0.0 } },
-    puedeEditar: { { puede_editar | tojson } },
-    puedeEditarCostos: { { puede_editar_costos | tojson } },
-    rolActual: { { rol_actual | tojson } },
-    technicianUrl: "{{ url_for('vistas.technician') }}"
-    };
-</script>
-
 <!-- Cargar lógica desde el archivo estático JS -->
 <script src="{{ url_for('static', filename='js/gestionar_ticket.js') }}"></script>
 {% endblock %}

@@ -63,22 +63,24 @@ def obtener_config_json(orden_id):
 @login_required
 @role_required('Administrador', 'Técnico')
 def agregar_repuesto(orden_id):
-    success, message = orden_presupuesto_controller.agregar_repuesto(orden_id, **request.form.to_dict())
-    return jsonify({'success': success, 'message': message}), (200 if success else 400)
+    success, result = orden_presupuesto_controller.agregar_repuesto(orden_id, **request.form.to_dict())
+    if success:
+        return jsonify({'success': True, 'message': 'Repuesto agregado correctamente.', 'repuesto': result})
+    else:
+        return jsonify({'success': False, 'message': result}), 400
 
-@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/editar/<int:idx>')
+@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/editar/<int:orden_repuesto_id>')
 @login_required
 @role_required('Administrador', 'Técnico')
-def editar_repuesto(orden_id, idx):
-    # La validación de que sea un número y el título no sea vacío se movió al controller
-    success, message = orden_presupuesto_controller.editar_repuesto(orden_id, idx, **request.form.to_dict())
+def editar_repuesto(orden_id, orden_repuesto_id):
+    success, message = orden_presupuesto_controller.editar_repuesto(orden_id, orden_repuesto_id, **request.form.to_dict())
     return jsonify({'success': success, 'message': message}), (200 if success else 400)
 
-@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/eliminar/<int:idx>')
+@orden_servicio_bp.post('/ordenServicio/<int:orden_id>/repuesto/eliminar/<int:orden_repuesto_id>')
 @login_required
 @role_required('Administrador', 'Técnico')
-def eliminar_repuesto(orden_id, idx):
-    success, message = orden_presupuesto_controller.eliminar_repuesto(orden_id, idx)
+def eliminar_repuesto(orden_id, orden_repuesto_id):
+    success, message = orden_presupuesto_controller.eliminar_repuesto(orden_id, orden_repuesto_id)
     return jsonify({'success': success, 'message': message}), (200 if success else 400)
 
 
@@ -141,3 +143,25 @@ def cambiar_estado_flujo(orden_id):
 def listar_ordenes_view():
     # Delegación total: la ruta no sabe qué datos se necesitan, solo los renderiza.
     return render_template('listar_ordenes.html', **orden_servicio_controller.obtener_datos_lista_activas())
+
+
+@orden_servicio_bp.post('/api/buscar-repuestos/iniciar')
+@login_required
+def iniciar_busqueda_repuestos():
+    q = request.form.get('q', '').strip()
+    if not q and request.is_json:
+        q = (request.json.get('q') or '').strip()
+        
+    success, result = orden_presupuesto_controller.iniciar_busqueda_repuestos(q)
+    if not success:
+        return jsonify({'error': result}), 400 if result == 'El término de búsqueda está vacío' else 500
+    return jsonify(result)
+
+
+@orden_servicio_bp.get('/api/buscar-repuestos/estado/<task_id>')
+@login_required
+def obtener_estado_busqueda_repuestos(task_id):
+    success, result = orden_presupuesto_controller.obtener_estado_busqueda_repuestos(task_id)
+    if not success:
+        return jsonify({'status': 'failed', 'error': result}), 500
+    return jsonify(result)

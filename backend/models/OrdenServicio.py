@@ -1,4 +1,3 @@
-from sqlalchemy.ext.mutable import MutableList
 from .EstadoOrden import EstadoOrden
 from .HistorialEstado import HistorialEstado
 from database import db
@@ -19,11 +18,30 @@ class OrdenServicio(db.Model):
     costo              = db.Column(db.Numeric(10, 2), nullable=True)
     observaciones      = db.Column(db.String(500), nullable=True)
 
-    repuestos          = db.Column(MutableList.as_mutable(db.JSON), nullable=True, default=list)
+    orden_repuestos    = db.relationship('OrdenRepuesto', back_populates='orden', cascade='all, delete-orphan')
 
     usuario   = db.relationship('Usuario', foreign_keys=[usuario_id])
     equipo    = db.relationship('Equipo', foreign_keys=[equipo_id])
     historial = db.relationship('HistorialEstado', backref='orden', lazy=True)
+
+    @property
+    def repuestos(self):
+        """
+        Retorna la lista de repuestos en formato JSON/dict compatible con el frontend existente.
+        """
+        return [
+            {
+                'id': orp.id,
+                'repuesto_id': orp.repuesto_id,
+                'codigo': orp.repuesto.codigo,
+                'titulo': orp.repuesto.descripcion,
+                'precio': float(orp.precio_unitario),
+                'cantidad': orp.cantidad,
+                'link': '#',
+                'tienda': orp.repuesto.proveedor or 'Manual'
+            }
+            for orp in self.orden_repuestos
+        ]
 
     def __init__(self, usuario_id, equipo_id, falla_reportada, accesorios,
                  fecha_recepcion=None, estado=EstadoOrden.PENDIENTE,
@@ -39,7 +57,8 @@ class OrdenServicio(db.Model):
         self.fecha_entrega      = fecha_entrega
         self.costo              = costo
         self.observaciones      = observaciones
-        self.repuestos          = repuestos if repuestos is not None else []
+        # repuestos se maneja ahora a través del modelo OrdenRepuesto
+
 
     # ── Lógica de dominio ──────────────────────────────────────────
 

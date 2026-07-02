@@ -230,6 +230,47 @@ document.addEventListener('DOMContentLoaded', () => {
         globalSearchResults.classList.remove('hidden');
     }
 
+    // ─── LÓGICA DE CAJÓN DE AYUDA DE PÁGINA (HELP DRAWER) ─────────────────
+    const helpBtn = document.getElementById('page-help-btn');
+    const closeHelpBtn = document.getElementById('close-help-drawer');
+    const helpOverlay = document.getElementById('help-drawer-overlay');
+    const helpDrawer = document.getElementById('help-drawer');
+    const helpContentDest = document.getElementById('help-drawer-content');
+    const helpContentSrc = document.getElementById('page-help-source');
+
+    if (helpBtn && helpDrawer && helpContentDest && helpContentSrc) {
+        helpContentDest.innerHTML = helpContentSrc.innerHTML;
+
+        const openHelpDrawer = () => {
+            helpDrawer.classList.remove('translate-x-full');
+            if (helpOverlay) {
+                helpOverlay.classList.remove('hidden');
+                setTimeout(() => helpOverlay.classList.add('opacity-100'), 10);
+            }
+        };
+
+        const closeHelpDrawer = () => {
+            helpDrawer.classList.add('translate-x-full');
+            if (helpOverlay) {
+                helpOverlay.classList.remove('opacity-100');
+                setTimeout(() => helpOverlay.classList.add('hidden'), 300);
+            }
+        };
+
+        helpBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openHelpDrawer();
+        });
+
+        if (closeHelpBtn) {
+            closeHelpBtn.addEventListener('click', closeHelpDrawer);
+        }
+
+        if (helpOverlay) {
+            helpOverlay.addEventListener('click', closeHelpDrawer);
+        }
+    }
+
     console.log('TechFlow Responsive Terminal initialized with Global Search.');
 });
 

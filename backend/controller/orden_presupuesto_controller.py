@@ -1,7 +1,15 @@
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.EstadoOrden import EstadoOrden
+from backend.models.Repuesto import Repuesto
+from backend.models.OrdenRepuesto import OrdenRepuesto
 from database import db
 from sqlalchemy.orm.attributes import flag_modified
+import uuid
+import threading
+import asyncio
+
+# Almacén de tareas de búsqueda en memoria para simular Celery localmente
+_tareas_busqueda = {}
 
 class OrdenPresupuestoController:
     @staticmethod
@@ -41,8 +49,7 @@ class OrdenPresupuestoController:
     @staticmethod
     def _recalcular_costo(orden, mano_obra):
         """Calcula el costo total sumando todos los repuestos y la mano de obra para evitar errores de redondeo."""
-        repuestos = orden.repuestos or []
-        total_repuestos = sum(float(r.get('precio', 0.0)) for r in repuestos)
+        total_repuestos = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
         orden.costo = max(0.0, mano_obra + total_repuestos)
 
     @staticmethod
@@ -60,27 +67,68 @@ class OrdenPresupuestoController:
             if not success:
                 return False, result
 
-            actuales = list(orden.repuestos or [])
-            
             # Calcular mano de obra previa para preservarla
-            old_sum = sum(float(r.get('precio', 0.0)) for r in actuales)
+            old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
             mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
 
-            actuales.append(result)
-            orden.repuestos = actuales
-            flag_modified(orden, 'repuestos')
+            # Buscar o crear Repuesto en el catálogo
+            titulo = result['titulo']
+            precio = result['precio']
+            tienda = result.get('tienda', 'Manual')
+            rep_db = Repuesto.query.filter_by(descripcion=titulo).first()
+            if not rep_db:
+                # Generar código único para el catálogo
+                codigo = f"REP-{uuid.uuid4().hex[:12].upper()}"
+                rep_db = Repuesto(
+                    codigo=codigo,
+                    descripcion=titulo,
+                    categoria="Hardware",
+                    precio_promedio=precio,
+                    proveedor=tienda,
+                    activo=True
+                )
+                db.session.add(rep_db)
+                db.session.flush()
+
+            # Verificar si ya existe este repuesto asociado en la orden
+            orden_rep = OrdenRepuesto.query.filter_by(orden_id=orden_id, repuesto_id=rep_db.id).first()
+            if orden_rep:
+                orden_rep.cantidad += 1
+                orden_rep.precio_unitario = precio
+            else:
+                orden_rep = OrdenRepuesto(
+                    orden_id=orden.id,
+                    repuesto_id=rep_db.id,
+                    cantidad=1,
+                    precio_unitario=precio
+                )
+                db.session.add(orden_rep)
             
+            db.session.flush()
+
             # Recalcular costo consolidado
             OrdenPresupuestoController._recalcular_costo(orden, mano_obra)
             
             db.session.commit()
-            return True, "Repuesto agregado correctamente."
+
+            # Devolver el repuesto insertado/actualizado para que el frontend actualice su array
+            rep_json = {
+                'id': orden_rep.id,
+                'repuesto_id': rep_db.id,
+                'codigo': rep_db.codigo,
+                'titulo': rep_db.descripcion,
+                'precio': float(orden_rep.precio_unitario),
+                'cantidad': orden_rep.cantidad,
+                'link': result.get('link', '#'),
+                'tienda': rep_db.proveedor or 'Manual'
+            }
+            return True, rep_json
         except Exception as e:
             db.session.rollback()
             return False, f"Error al agregar repuesto: {str(e)}"
 
     @staticmethod
-    def editar_repuesto(orden_id, idx, **datos_formulario):
+    def editar_repuesto(orden_id, orden_repuesto_id, **datos_formulario):
         """Modifica un repuesto del presupuesto del ticket y actualiza el costo total."""
         try:
             orden = OrdenServicio.get_by_id(orden_id)
@@ -94,30 +142,30 @@ class OrdenPresupuestoController:
             if not success:
                 return False, result
 
-            actuales = list(orden.repuestos or [])
-            if 0 <= idx < len(actuales):
-                # Calcular mano de obra previa para preservarla
-                old_sum = sum(float(r.get('precio', 0.0)) for r in actuales)
-                mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
+            orden_rep = OrdenRepuesto.query.filter_by(id=orden_repuesto_id, orden_id=orden_id).first()
+            if not orden_rep:
+                return False, "Relación de repuesto no encontrada."
 
-                repuesto_data = dict(actuales[idx])
-                repuesto_data.update(result)
-                actuales[idx] = repuesto_data
-                orden.repuestos = actuales
-                flag_modified(orden, 'repuestos')
+            # Calcular mano de obra previa para preservarla
+            old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
+            mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
 
-                # Recalcular costo consolidado
-                OrdenPresupuestoController._recalcular_costo(orden, mano_obra)
-                
-                db.session.commit()
-                return True, "Repuesto editado correctamente."
-            return False, "Índice de repuesto inválido."
+            # Actualizar
+            orden_rep.precio_unitario = result['precio']
+            orden_rep.repuesto.descripcion = result['titulo']
+            orden_rep.repuesto.precio_promedio = result['precio']
+
+            # Recalcular costo consolidado
+            OrdenPresupuestoController._recalcular_costo(orden, mano_obra)
+            
+            db.session.commit()
+            return True, "Repuesto editado correctamente."
         except Exception as e:
             db.session.rollback()
             return False, f"Error al editar repuesto: {str(e)}"
 
     @staticmethod
-    def eliminar_repuesto(orden_id, idx):
+    def eliminar_repuesto(orden_id, orden_repuesto_id):
         """Elimina un repuesto del presupuesto del ticket y decrementa el costo total."""
         try:
             orden = OrdenServicio.get_by_id(orden_id)
@@ -126,23 +174,65 @@ class OrdenPresupuestoController:
             
             if orden.estado not in (EstadoOrden.DIAGNOSTICO, EstadoOrden.REPARACION):
                 return False, "No se pueden modificar repuestos en este estado del ticket."
+
+            orden_rep = OrdenRepuesto.query.filter_by(id=orden_repuesto_id, orden_id=orden_id).first()
+            if not orden_rep:
+                return False, "Relación de repuesto no encontrada."
+
+            # Calcular mano de obra previa para preservarla
+            old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
+            mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
+
+            # Eliminar relacion
+            db.session.delete(orden_rep)
+            db.session.flush()
+
+            # Recalcular costo consolidado
+            OrdenPresupuestoController._recalcular_costo(orden, mano_obra)
             
-            actuales = list(orden.repuestos or [])
-            if 0 <= idx < len(actuales):
-                # Calcular mano de obra previa para preservarla
-                old_sum = sum(float(r.get('precio', 0.0)) for r in actuales)
-                mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
-
-                actuales.pop(idx)
-                orden.repuestos = actuales
-                flag_modified(orden, 'repuestos')
-
-                # Recalcular costo consolidado
-                OrdenPresupuestoController._recalcular_costo(orden, mano_obra)
-                
-                db.session.commit()
-                return True, "Repuesto removido correctamente del presupuesto."
-            return False, "Índice de repuesto inválido."
+            db.session.commit()
+            return True, "Repuesto removido correctamente del presupuesto."
         except Exception as e:
             db.session.rollback()
             return False, f"Error al eliminar repuesto: {str(e)}"
+
+    @staticmethod
+    def iniciar_busqueda_repuestos(q):
+        """Inicia la búsqueda en un hilo de fondo simulando Celery localmente."""
+        q = (q or '').strip()
+        if not q:
+            return False, 'El término de búsqueda está vacío'
+        
+        task_id = str(uuid.uuid4())
+        _tareas_busqueda[task_id] = {'status': 'running', 'results': []}
+
+        # Ejecutamos la búsqueda en un hilo separado
+        def run_search():
+            try:
+                from backend.tasks import _ejecutar_scrapers
+                # Ya que _ejecutar_scrapers es asíncrono, creamos un nuevo event loop en este hilo
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                results = loop.run_until_complete(_ejecutar_scrapers(q))
+                loop.close()
+                _tareas_busqueda[task_id] = {'status': 'completed', 'results': results}
+            except Exception as e:
+                print(f"[Scraper Thread] Error al ejecutar búsqueda: {e}")
+                _tareas_busqueda[task_id] = {'status': 'failed', 'error': str(e)}
+
+        threading.Thread(target=run_search, daemon=True).start()
+        return True, {'task_id': task_id, 'status': 'pending'}
+
+    @staticmethod
+    def obtener_estado_busqueda_repuestos(task_id):
+        """Consulta el estado de la tarea en memoria."""
+        task = _tareas_busqueda.get(task_id)
+        if not task:
+            return False, 'Tarea no encontrada'
+        
+        if task['status'] == 'completed':
+            return True, {'status': 'completed', 'results': task['results']}
+        elif task['status'] == 'failed':
+            return False, task.get('error', 'Error en la búsqueda del repuesto')
+        else:
+            return True, {'status': 'running'}

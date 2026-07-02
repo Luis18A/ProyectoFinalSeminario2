@@ -13,6 +13,10 @@ from backend.models.OrdenServicio import OrdenServicio
 from backend.models.EstadoOrden import EstadoOrden
 from backend.models.HistorialEstado import HistorialEstado
 from backend.models.Notificacion import Notificacion
+from backend.models.Repuesto import Repuesto
+from backend.models.OrdenRepuesto import OrdenRepuesto
+
+
 
 # Datos semilla de ejemplo
 NOMBRES = ["Juan", "María", "Carlos", "Ana", "Luis", "Sofía", "Diego", "Lucía", "Javier", "Elena", 
@@ -103,6 +107,8 @@ def limpiar_tablas():
     print("Limpiando tablas de prueba anteriores...")
     db.session.query(HistorialEstado).delete()
     db.session.query(Notificacion).delete()
+    db.session.query(OrdenRepuesto).delete()
+    db.session.query(Repuesto).delete()
     db.session.query(OrdenServicio).delete()
     db.session.query(Equipo).delete()
     db.session.query(Cliente).delete()
@@ -125,6 +131,25 @@ def generar_datos():
         return
     
     tipos_dict = {t.descripcion: t.id for t in tipos_db}
+
+    # Sembrar catálogo de repuestos
+    repuestos_db = []
+    for r in REPUESTOS_LISTA:
+        codigo = r["nombre"].replace(" ", "-").upper()[:50]
+        rep_db = Repuesto.query.filter_by(codigo=codigo).first()
+        if not rep_db:
+            rep_db = Repuesto(
+                codigo=codigo,
+                descripcion=r["nombre"],
+                categoria="Hardware",
+                precio_promedio=r["precio"],
+                proveedor="Manual",
+                activo=True
+            )
+            db.session.add(rep_db)
+            db.session.flush()
+        repuestos_db.append(rep_db)
+    db.session.commit()
 
     # 2. Generar Clientes (generaremos 25 clientes)
     clientes = []
@@ -210,7 +235,7 @@ def generar_datos():
         costo = None
         observaciones = None
         fecha_entrega = None
-        repuestos = []
+        rep_a_asociar_list = []
 
         if estado != EstadoOrden.PENDIENTE:
             diagnostico = random.choice(DIAGNOSTICOS)
@@ -218,14 +243,10 @@ def generar_datos():
             if estado in [EstadoOrden.PRESUPUESTADO, EstadoOrden.REPARACION, EstadoOrden.LISTO, EstadoOrden.ENTREGADO]:
                 costo = random.randint(15, 120) * 1000  # Entre $15.000 y $120.000
                 
-                # Opcionalmente agregar repuestos
-                if random.random() < 0.5:
-                    rep_elegido = random.choice(REPUESTOS_LISTA)
-                    repuestos.append({
-                        "nombre": rep_elegido["nombre"],
-                        "precio": rep_elegido["precio"]
-                    })
-                    costo += rep_elegido["precio"]
+                # Siempre agregar 1 o 2 repuestos para pruebas
+                rep_a_asociar_list = random.sample(repuestos_db, k=random.randint(1, 2))
+                for rep in rep_a_asociar_list:
+                    costo += int(rep.precio_promedio)
 
             if estado in [EstadoOrden.LISTO, EstadoOrden.ENTREGADO]:
                 observaciones = "Equipo testeado y funcionando correctamente."
@@ -246,11 +267,20 @@ def generar_datos():
             estado_diagnostico=diagnostico,
             fecha_entrega=fecha_entrega,
             costo=costo,
-            observaciones=observaciones,
-            repuestos=repuestos
+            observaciones=observaciones
         )
         db.session.add(orden)
         db.session.flush() # Para tener el id de la orden y poder hacer el historial
+
+        if rep_a_asociar_list:
+            for rep in rep_a_asociar_list:
+                orden_rep = OrdenRepuesto(
+                    orden_id=orden.id,
+                    repuesto_id=rep.id,
+                    cantidad=1,
+                    precio_unitario=rep.precio_promedio
+                )
+                db.session.add(orden_rep)
 
         # 5. Generar Historial de Transiciones de Estado para cada orden de forma coherente
         hist1 = HistorialEstado(

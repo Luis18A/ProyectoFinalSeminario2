@@ -309,3 +309,24 @@
     </div>
 </main>
 {% endblock %}
+
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Tablero de Trabajo Técnico</h3>
+    <p>Esta vista organiza las órdenes de servicio asignadas al técnico según su etapa de reparación.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Columnas del Tablero:</p>
+        <p class="pl-3 text-zinc-500">
+            - <strong>Ingresado/Diagnóstico:</strong> Tickets recién asignados listos para ser evaluados.
+            <br>- <strong>En Reparación:</strong> Equipos cuyos presupuestos ya fueron aprobados y están en proceso de arreglo.
+            <br>- <strong>Entregados (Historial):</strong> Lista rápida de equipos finalizados y retirados por el cliente.
+        </p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Iniciar Diagnóstico o Reparación:</p>
+        <p class="pl-3 text-zinc-500">Hacé clic en cualquier ticket para acceder a la **Ficha de Trabajo**. Desde allí podrás registrar las observaciones técnicas, utilizar el predictor de fallas inteligente y mutar el estado del equipo.</p>
+    </div>
+</div>
+{% endblock %}

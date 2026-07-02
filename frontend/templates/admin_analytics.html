@@ -443,6 +443,37 @@
 </main>
 {% endblock %}
 
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Métricas y Telemetría del Sistema</h3>
+    <p>Esta sección resume la salud financiera, operativa e inteligente de la plataforma.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Indicadores Clave (KPIs):</p>
+        <p class="pl-3 text-zinc-500">Muestran el conteo de tickets activos en el taller, fallas críticas pendientes, técnicos ocupados, ingresos facturados y egresos de repuestos.</p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Curva de Pareto e Incidencias:</p>
+        <p class="pl-3 text-zinc-500">El gráfico de Pareto agrupa la cantidad de incidentes por día de la semana. Ayuda a identificar en qué días ocurre el 80% de los reportes para optimizar la guardia técnica.</p>
+    </div>
+
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Minería de Datos (K-Means):</p>
+        <p class="pl-3 text-zinc-500">Algoritmo de clustering que procesa el historial. Segmenta automáticamente a los clientes en:
+            <br>- <strong>Platinum:</strong> Clientes de alto valor (mucha facturación y frecuencia).
+            <br>- <strong>Activo:</strong> Clientes estables.
+            <br>- <strong>Casual:</strong> Clientes nuevos o de baja recurrencia.
+        </p>
+    </div>
+
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Copias de Seguridad (Backup):</p>
+        <p class="pl-3 text-zinc-500">El botón "Descargar Backup" genera un volcado en formato SQL o comprimido de la base de datos actual para resguardo administrativo.</p>
+    </div>
+</div>
+{% endblock %}
+
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/admin_analytics.js') }}" defer></script>
 {% endblock %}

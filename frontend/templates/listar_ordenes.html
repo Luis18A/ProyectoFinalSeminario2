@@ -366,5 +366,40 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block help_content %}
+<div class="space-y-4">
+    <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Gestión de Órdenes (Taller)</h3>
+    <p>Esta vista centraliza todas las órdenes de servicio activas en el taller y permite controlar su flujo de estados.</p>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Flujo de Trabajo (Ciclo de Vida):</p>
+        <p class="pl-3 text-zinc-500">Cada dispositivo ingresado sigue esta secuencia:
+            <br>1. <strong>Ingresado:</strong> Recibido, en espera de diagnóstico.
+            <br>2. <strong>Diagnóstico:</strong> El técnico evalúa y determina la falla.
+            <br>3. <strong>Presupuestado:</strong> Se asigna un costo. Requiere <strong>Aprobación</strong> del cliente.
+            <br>4. <strong>Reparación:</strong> Si se aprueba, el técnico trabaja en resolverlo.
+            <br>5. <strong>Listo:</strong> Reparado y verificado.
+            <br>6. <strong>Entregado:</strong> Entregado al cliente (pago recibido, orden archivada).
+        </p>
+    </div>
+    
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Acciones Rápidas (Secretaría):</p>
+        <p class="pl-3 text-zinc-500">
+            - <strong>Aceptar/Rechazar Presupuesto:</strong> Permite registrar la decisión del cliente sobre el presupuesto.
+            <br>- <strong>Entregar:</strong> Finaliza el ciclo y archiva el ticket.
+        </p>
+    </div>
+
+    <div class="space-y-2">
+        <p class="font-semibold text-zinc-700">• Detalle / Historial:</p>
+        <p class="pl-3 text-zinc-500">Accedé a "Detalle" en cualquier fila para ver el log de auditoría completo del ticket y los detalles técnicos de repuestos.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script src="{{ url_for('static', filename='js/listar_ordenes.js') }}"></script>
 {% endblock %}

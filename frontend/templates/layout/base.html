@@ -2,6 +2,15 @@
 
 {% block content %}{% endblock %}
 
+<div id="page-help-source" class="hidden">
+    {% block help_content %}
+        <div class="space-y-4">
+            <p class="font-bold text-zinc-800">Guía de Uso Rápido</p>
+            <p>No hay una guía disponible para esta sección.</p>
+        </div>
+    {% endblock %}
+</div>
+
 </div> <!-- Cierre centralizado de #main-content (abierto en header.html) -->
 {% block extra_js %}{% endblock %}
 </body>

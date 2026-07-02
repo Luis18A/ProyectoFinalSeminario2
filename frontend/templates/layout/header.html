@@ -89,6 +89,30 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity duration-300 opacity-0">
     </div>
 
+    <!-- Help Drawer Overlay -->
+    <div id="help-drawer-overlay" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity duration-300 opacity-0">
+    </div>
+
+    <!-- Help Drawer (Slide-over) -->
+    <div id="help-drawer" class="fixed inset-y-0 right-0 max-w-full flex z-50 translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="w-screen max-w-md bg-white border-l border-[#1A1A1A]/10 shadow-2xl flex flex-col">
+            <!-- Drawer Header -->
+            <div class="p-6 border-b border-[#1A1A1A]/5 flex items-center justify-between bg-zinc-50">
+                <div class="flex items-center gap-2 text-[#0057FF]">
+                    <span class="material-symbols-outlined text-lg font-bold">help</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-[10px]">Guía de esta sección</span>
+                </div>
+                <button id="close-help-drawer" class="text-zinc-400 hover:text-zinc-950 transition-colors focus:outline-none">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+            <!-- Drawer Content -->
+            <div id="help-drawer-content" class="flex-grow p-6 overflow-y-auto space-y-4 text-xs text-zinc-600 leading-relaxed">
+                <!-- Injected via page block -->
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Shell -->
     <div id="main-content" class="flex flex-col min-h-screen">
         <!-- Floating Toast Notification Container -->
@@ -164,6 +188,12 @@
                         </select>
                     </div>
                     {% endif %}
+                    <!-- Help Button -->
+                    <button id="page-help-btn"
+                        class="text-zinc-500 hover:text-[#0057FF] transition-colors mr-2 relative flex items-center justify-center p-1.5 rounded-full hover:bg-zinc-100 focus:outline-none"
+                        title="Ayuda sobre esta sección">
+                        <span class="material-symbols-outlined">help</span>
+                    </button>
                     <!-- Notifications Dropdown Container -->
                     <div class="relative">
                         <button id="notification-btn"
