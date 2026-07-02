@@ -208,5 +208,27 @@ def _auto_seed_db(app):
 # ─────────────────────────────────────────────
 app = create_app()
 
+@app.route('/notificaciones/stream')
+def stream_notificaciones():
+    from flask import Response
+    import queue
+    from backend.utils.sse_service import sse_service
+    
+    def event_stream():
+        q = sse_service.listen()
+        # Enviar ping inicial de apertura de stream
+        yield "data: {\"type\": \"ping\"}\n\n"
+        while True:
+            try:
+                # Timeout corto para detectar desconexión del cliente rápidamente y liberar el hilo
+                msg = q.get(timeout=0.1)
+                yield f"data: {msg}\n\n"
+            except queue.Empty:
+                yield "data: {\"type\": \"ping\"}\n\n"
+            except Exception:
+                break
+                
+    return Response(event_stream(), mimetype="text/event-stream")
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

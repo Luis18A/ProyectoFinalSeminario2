@@ -1,0 +1,110 @@
+{% from 'layout/macros.html' import badge_estado %}
+
+<div class="table-scroll-container !border-none">
+    <table class="table-swiss min-w-[800px]">
+        <thead>
+            <tr>
+                <th class="w-20">ID</th>
+                <th>Cliente</th>
+                <th>Equipo</th>
+                <th>Estado</th>
+                {% if modo == 'historial' %}
+                <th>Fecha Ingreso</th>
+                <th>Fecha Salida</th>
+                {% endif %}
+                <th class="text-right w-44">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="font-body-sm">
+            {% if ordenes %}
+            {% for orden in ordenes %}
+            {% set estado = orden.estado.value %}
+            <tr class="hover:bg-background transition-colors">
+                <td class="font-mono text-zinc-400">
+                    <span class="font-label-mono font-bold text-accent text-xs">TK-{{ "%04d"|format(orden.id) }}</span>
+                </td>
+                <td>
+                    {% if modo == 'historial' %}
+                    <div class="font-bold">{{ orden.equipo.cliente.apellido }}, {{ orden.equipo.cliente.nombre }}</div>
+                    <div class="text-zinc-500 font-label-mono text-xs">{{ orden.equipo.cliente.telefono or '—' }}</div>
+                    {% else %}
+                    <div class="font-bold">{{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}</div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if modo == 'historial' %}
+                    <div class="font-medium">{{ orden.equipo.tipo.descripcion if orden.equipo.tipo else 'Equipo' }} {{ orden.equipo.marca }}</div>
+                    <div class="text-zinc-500 text-xs">SN: {{ orden.equipo.numero_serie }}</div>
+                    {% else %}
+                    <span class="text-zinc-600">{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ badge_estado(estado) }}
+                </td>
+                {% if modo == 'historial' %}
+                <td class="font-label-mono text-zinc-600 text-xs">
+                    {{ orden.fecha_recepcion.strftime('%d %b, %H:%M') if orden.fecha_recepcion else '—' }}
+                </td>
+                <td class="font-label-mono text-zinc-600 text-xs">
+                    {{ orden.fecha_entrega.strftime('%d %b, %H:%M') if orden.fecha_entrega else '—' }}
+                </td>
+                {% endif %}
+                <td class="text-right">
+                    <div class="flex justify-end gap-2 items-center">
+                        {% if modo == 'taller' %}
+                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
+                            class="px-2 py-1.5 bg-zinc-100 border border-zinc-200 text-zinc-700 hover:bg-zinc-200 transition-colors uppercase text-[9px] font-bold flex items-center gap-1"
+                            title="Ver Detalle / Historial">
+                            <span class="material-symbols-outlined text-[12px]">visibility</span>
+                            Detalle
+                        </a>
+                        {% if session.get('rol_descripcion') != 'Técnico' %}
+                        {% if estado == 'Presupuestado' %}
+                        <button
+                            onclick="confirmarPresupuesto('{{ orden.id }}', '{{ orden.costo or 0.0 }}')"
+                            class="px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
+                            title="Confirmar aceptación del presupuesto">
+                            <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                            Aceptar
+                        </button>
+                        <button onclick="rechazarPresupuesto('{{ orden.id }}')"
+                            class="px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
+                            title="Rechazar presupuesto (volver a diagnóstico)">
+                            <span class="material-symbols-outlined text-[12px]">cancel</span> Rechazar
+                        </button>
+                        {% elif estado == 'Listo' %}
+                        <button onclick="entregarEquipo('{{ orden.id }}')"
+                            class="px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white font-bold uppercase text-[9px] transition-colors flex items-center gap-1"
+                            title="Entregar equipo al cliente (Finalizar ciclo)">
+                            <span class="material-symbols-outlined text-[12px]">local_shipping</span>
+                            Entregar
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                        {% elif modo == 'historial' %}
+                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
+                            class="inline-block text-on-surface-variant hover:text-accent p-xs transition-colors"
+                            title="Ver Detalles">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </a>
+                        <a href="{{ url_for('orden_servicio.comprobante', orden_id=orden.id) }}"
+                            class="inline-block text-on-surface-variant hover:text-primary p-xs transition-colors"
+                            title="Imprimir Ticket">
+                            <span class="material-symbols-outlined">print</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="{% if modo == 'historial' %}7{% else %}5{% endif %}" class="p-8 text-center text-on-surface-variant font-label-mono text-xs uppercase">
+                    No hay órdenes de servicio registradas.
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>

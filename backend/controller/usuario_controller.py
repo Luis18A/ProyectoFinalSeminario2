@@ -22,14 +22,31 @@ class UsuarioController:
         }
         password_crudo = (datos_formulario.get('password') or '').strip()
 
-        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS ──
+        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS, LONGITUD Y FORMATO ──
         if not datos['username']: return False, "El nombre de usuario es requerido."
-        if not datos['nombre']: return False, "El nombre es requerido."
-        if not datos['apellido']: return False, "El apellido es requerido."
-        if not datos['rol_id']: return False, "El rol es requerido."
+        if len(datos['username']) > 80: return False, "El nombre de usuario no puede tener más de 80 caracteres."
+        
+        import re
+        if not re.match(r"^[a-zA-Z0-9._\-]+$", datos['username']):
+            return False, "El nombre de usuario solo debe contener letras, números, puntos, guiones y guiones bajos."
 
+        if not datos['nombre']: return False, "El nombre es requerido."
+        if len(datos['nombre']) > 80: return False, "El nombre no puede tener más de 80 caracteres."
+        
+        patron_texto = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'\-]+$"
+        if not re.match(patron_texto, datos['nombre']):
+            return False, "El nombre solo debe contener letras, espacios, guiones o apóstrofes."
+
+        if not datos['apellido']: return False, "El apellido es requerido."
+        if len(datos['apellido']) > 80: return False, "El apellido no puede tener más de 80 caracteres."
+        if not re.match(patron_texto, datos['apellido']):
+            return False, "El apellido solo debe contener letras, espacios, guiones o apóstrofes."
+
+        if not datos['rol_id']: return False, "El rol es requerido."
         try:
             datos['rol_id'] = int(datos['rol_id'])
+            if not db.session.get(Rol, datos['rol_id']):
+                return False, "El rol asignado no existe."
         except (ValueError, TypeError):
             return False, "El rol provisto no es válido."
 

@@ -3,6 +3,16 @@
  * Maneja modales de edición y búsqueda de clientes en tiempo real con de-bounce.
  */
 
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Lógica para el Modal de Registrar
 function abrirModalRegistrar() {
     const modal = document.getElementById('modal-registrar');
@@ -48,6 +58,23 @@ function cerrarModal() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Capturador seguro de clics para editar clientes (elimina onclick inline)
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-editar-cliente');
+        if (btn) {
+            const id = btn.getAttribute('data-id');
+            const dni = btn.getAttribute('data-dni');
+            const nombre = btn.getAttribute('data-nombre');
+            const apellido = btn.getAttribute('data-apellido');
+            const telefono = btn.getAttribute('data-telefono');
+            const email = btn.getAttribute('data-email');
+            const domicilio = btn.getAttribute('data-domicilio');
+            const localidad = btn.getAttribute('data-localidad');
+            
+            abrirEditar(id, dni, nombre, apellido, telefono, email, domicilio, localidad);
+        }
+    });
+
     // === VALIDACIONES PREMIUM DE ENTRADA Y FORMULARIOS ===
 
     // Input Helpers para filtrar caracteres no válidos en tiempo real
@@ -157,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!telefono) {
             return "El teléfono es obligatorio.";
         }
-        if (telefono.length > 20) {
+        if (telefono.length > 30) {
             return "El teléfono es demasiado largo.";
         }
         const cleanTel = telefono.replace(/[-+ ]/g, '');
@@ -338,6 +365,28 @@ document.addEventListener('DOMContentLoaded', function () {
                         tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-on-surface-variant">Búsqueda demasiado larga</td></tr>`;
                         return;
                     }
+                    // Mostrar skeleton loader mientras se realiza la búsqueda
+                    tbody.innerHTML = `
+                        <tr class="skeleton-row">
+                            <td>
+                                <div class="skeleton-bar w-3/4"></div>
+                                <div class="skeleton-bar-sm w-1/4"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton-bar w-1/2"></div>
+                                <div class="skeleton-bar-sm w-1/3"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton-bar w-2/3"></div>
+                            </td>
+                            <td class="text-right">
+                                <div class="flex justify-end gap-2">
+                                    <div class="skeleton-circle"></div>
+                                    <div class="skeleton-circle"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                     fetch(`/clientes/buscar?q=${encodeURIComponent(query)}`)
                         .then(response => response.json())
                         .then(data => {
@@ -367,20 +416,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
             tr.innerHTML = `
                 <td>
-                    <div class="font-bold">${c.nombre} ${c.apellido}</div>
+                    <div class="font-bold">${escapeHTML(c.nombre)} ${escapeHTML(c.apellido)}</div>
                     <div class="text-[10px] text-on-surface-variant font-label-mono uppercase">ID: #${String(c.id).padStart(3, '0')}</div>
                 </td>
                 <td>
-                    <div class="text-sm">${c.telefono}</div>
-                    <div class="text-[11px] text-on-surface-variant">${emailStr}</div>
+                    <div class="text-sm">${escapeHTML(c.telefono)}</div>
+                    <div class="text-[11px] text-on-surface-variant">${escapeHTML(emailStr)}</div>
                 </td>
-                <td class="font-label-mono text-xs">${c.dni_cuil}</td>
+                <td class="font-label-mono text-xs">${escapeHTML(c.dni_cuil)}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-2">
                         <a href="/equipos/${c.id}" class="p-2 text-on-surface-variant hover:text-accent transition-colors" title="Ver Equipos">
                             <span class="material-symbols-outlined text-[18px]">devices</span>
                         </a>
-                        <button onclick="abrirEditar('${c.id}', '${c.dni_cuil}', '${c.nombre}', '${c.apellido}', '${c.telefono}', '${emailStr}', '${domicilioStr}', '${localidadStr}')" class="p-2 text-on-surface-variant hover:text-primary transition-colors" title="Editar">
+                        <button 
+                            class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-editar-cliente" 
+                            data-id="${c.id}" 
+                            data-dni="${escapeHTML(c.dni_cuil)}" 
+                            data-nombre="${escapeHTML(c.nombre)}" 
+                            data-apellido="${escapeHTML(c.apellido)}" 
+                            data-telefono="${escapeHTML(c.telefono)}" 
+                            data-email="${escapeHTML(emailStr)}" 
+                            data-domicilio="${escapeHTML(domicilioStr)}" 
+                            data-localidad="${escapeHTML(localidadStr)}"
+                            title="Editar">
                             <span class="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                     </div>

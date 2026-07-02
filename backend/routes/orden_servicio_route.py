@@ -139,10 +139,16 @@ def cambiar_estado_flujo(orden_id):
 
 @orden_servicio_bp.get('/ordenServicio/activas')
 @login_required
-@role_required('Administrador', 'Secretario')
+@role_required('Administrador', 'Secretario', 'Técnico')
 def listar_ordenes_view():
-    # Delegación total: la ruta no sabe qué datos se necesitan, solo los renderiza.
-    return render_template('listar_ordenes.html', **orden_servicio_controller.obtener_datos_lista_activas())
+    return render_template(
+        'listar_ordenes.html', 
+        **orden_servicio_controller.obtener_datos_lista_activas(
+            ticket_id=request.args.get('ticket_id'),
+            cliente_query=request.args.get('cliente'),
+            equipo_query=request.args.get('equipo')
+        )
+    )
 
 
 @orden_servicio_bp.post('/api/buscar-repuestos/iniciar')

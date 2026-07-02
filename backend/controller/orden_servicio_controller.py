@@ -22,16 +22,28 @@ class OrdenServicioController:
             'costo': datos_formulario.get('costo')
         }
 
-        # Validación de tipos
+        # Validación de tipos e integridad referencial
         try:
             datos['equipo_id'] = int(datos['equipo_id'])
             datos['usuario_id'] = int(datos['usuario_id'])
+            
+            if not db.session.get(Equipo, datos['equipo_id']):
+                return False, "El equipo asignado no existe."
+            
+            from backend.models.Usuario import Usuario
+            if not db.session.get(Usuario, datos['usuario_id']):
+                return False, "El usuario (operador) asignado no existe."
+
             datos['costo'] = float(datos['costo']) if datos['costo'] else 0.0
             if datos['costo'] < 0: return False, "El costo no puede ser negativo."
         except (TypeError, ValueError):
             return False, "Datos numéricos inválidos (equipo, usuario o costo)."
 
         if not datos['falla_reportada']: return False, "La falla reportada es obligatoria."
+        if len(datos['falla_reportada']) > 500:
+            return False, "La descripción de la falla reportada no puede superar los 500 caracteres."
+        if datos['accesorios'] and len(datos['accesorios']) > 500:
+            return False, "La descripción de accesorios no puede superar los 500 caracteres."
         
         return True, datos
 
@@ -127,13 +139,36 @@ class OrdenServicioController:
         return OrdenServicio.get_por_usuario(usuario_id)
 
     @staticmethod
-    def obtener_datos_lista_activas():
-        ordenes = (
-            OrdenServicio.query
-            .filter(OrdenServicio.estado != EstadoOrden.ENTREGADO)
-            .order_by(OrdenServicio.id.desc())
-            .all()
-        )
+    def obtener_datos_lista_activas(ticket_id=None, cliente_query=None, equipo_query=None):
+        query = OrdenServicio.query.join(Equipo).join(Cliente)
+        
+        # Filtrar solo las activas
+        query = query.filter(OrdenServicio.estado != EstadoOrden.ENTREGADO)
+        
+        if ticket_id and ticket_id.strip():
+            clean_id = ticket_id.upper().replace("TK-", "")
+            try:
+                numeric_id = int(clean_id)
+                query = query.filter(OrdenServicio.id == numeric_id)
+            except ValueError:
+                query = query.filter(OrdenServicio.id == -1)
+                
+        if cliente_query:
+            query = query.filter(
+                (Cliente.nombre.ilike(f"%{cliente_query}%")) |
+                (Cliente.apellido.ilike(f"%{cliente_query}%")) |
+                (Cliente.telefono.ilike(f"%{cliente_query}%"))
+            )
+            
+        if equipo_query:
+            from backend.models.TipoDispositivo import TipoDispositivo
+            query = query.join(TipoDispositivo, Equipo.tipo_id == TipoDispositivo.id).filter(
+                (Equipo.marca.ilike(f"%{equipo_query}%")) |
+                (Equipo.modelo.ilike(f"%{equipo_query}%")) |
+                (TipoDispositivo.descripcion.ilike(f"%{equipo_query}%"))
+            )
+            
+        ordenes = query.order_by(OrdenServicio.id.desc()).all()
         return {
             'ordenes':           ordenes,
             'clientes':          Cliente.query.all(),
@@ -157,11 +192,19 @@ class OrdenServicioController:
     
     @staticmethod
     def generar_csv_historial(args):
-        ordenes = OrdenServicioController.obtener_historial_filtrado(
-            ticket_id=args.get('ticket_id', '').strip(),
-            cliente_query=args.get('cliente', '').strip(),
-            equipo_query=args.get('equipo', '').strip(),
-        )
+        if args.get('activos_only') == 'true':
+            datos = OrdenServicioController.obtener_datos_lista_activas(
+                ticket_id=args.get('ticket_id', '').strip(),
+                cliente_query=args.get('cliente', '').strip(),
+                equipo_query=args.get('equipo', '').strip(),
+            )
+            ordenes = datos['ordenes']
+        else:
+            ordenes = OrdenServicioController.obtener_historial_filtrado(
+                ticket_id=args.get('ticket_id', '').strip(),
+                cliente_query=args.get('cliente', '').strip(),
+                equipo_query=args.get('equipo', '').strip(),
+            )
         output = io.StringIO()
         output.write('\ufeff')  # BOM para Excel
         writer = csv.writer(output, delimiter=';')

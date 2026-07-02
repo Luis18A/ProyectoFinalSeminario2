@@ -37,6 +37,16 @@ function cerrarModalNuevoTipo() {
     }
 }
 
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Lógica para el Modal de Editar Equipo (Globales para invocación inline)
 function abrirEditar(id, tipo_id, marca, modelo, serie, descripcion) {
     const modal = document.getElementById('modal-editar-equipo');
@@ -89,6 +99,29 @@ function cerrarModalOrdenes() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Listener seguro para ver órdenes de un equipo
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-ver-ordenes-equipo');
+        if (btn) {
+            const id = btn.getAttribute('data-id');
+            const nombre = btn.getAttribute('data-nombre');
+            mostrarOrdenesEquipo(id, nombre);
+        }
+    });
+
+    // Listener seguro para editar un equipo
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-editar-equipo');
+        if (btn) {
+            const id = btn.getAttribute('data-id');
+            const tipoId = btn.getAttribute('data-tipo-id');
+            const marca = btn.getAttribute('data-marca');
+            const modelo = btn.getAttribute('data-modelo');
+            const serie = btn.getAttribute('data-serie');
+            const descripcion = btn.getAttribute('data-descripcion');
+            abrirEditar(id, tipoId, marca, modelo, serie, descripcion);
+        }
+    });
     // Cerrar modal de Registrar Equipo al hacer clic fuera
     const modalRegistrar = document.getElementById('modal-registrar-equipo');
     if (modalRegistrar) {
@@ -249,11 +282,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                 tr.innerHTML = `
                                     <td>${tiendaHtml}</td>
-                                    <td class="text-sm text-primary max-w-xs truncate" title="${item.titulo}">${item.titulo}</td>
-                                    <td class="text-xs text-on-surface-variant uppercase">${condicionText}</td>
+                                    <td class="text-sm text-primary max-w-xs truncate" title="${escapeHTML(item.titulo)}">${escapeHTML(item.titulo)}</td>
+                                    <td class="text-xs text-on-surface-variant uppercase">${escapeHTML(condicionText)}</td>
                                     <td class="text-right font-label-mono font-bold text-accent">${formatCurrency(item.precio)}</td>
                                     <td class="text-center">
-                                        <a href="${item.link}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 hover:bg-secondary hover:text-white transition-colors text-primary mx-auto" title="Ver publicación">
+                                        <a href="${escapeHTML(item.link)}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 hover:bg-secondary hover:text-white transition-colors text-primary mx-auto" title="Ver publicación">
                                             <span class="material-symbols-outlined text-[18px]">open_in_new</span>
                                         </a>
                                     </td>

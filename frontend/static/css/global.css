@@ -212,3 +212,45 @@ input:focus, select:focus, textarea:focus {
 .table-scroll-container td {
     border-bottom: 1px solid var(--border);
 }
+
+/* Skeleton Loaders and Pulse Animations */
+@keyframes pulse-glow {
+    0% {
+        background-color: #f1f1f3;
+        opacity: 0.6;
+    }
+    50% {
+        background-color: #e4e4e7;
+        opacity: 1;
+    }
+    100% {
+        background-color: #f1f1f3;
+        opacity: 0.6;
+    }
+}
+
+.skeleton-row td {
+    padding: 1.25rem 1rem !important;
+}
+
+.skeleton-bar {
+    height: 14px;
+    width: 80%;
+    animation: pulse-glow 1.5s ease-in-out infinite;
+    display: inline-block;
+}
+
+.skeleton-bar-sm {
+    height: 10px;
+    width: 50%;
+    margin-top: 6px;
+    animation: pulse-glow 1.5s ease-in-out infinite;
+    display: block;
+}
+
+.skeleton-circle {
+    height: 32px;
+    width: 32px;
+    animation: pulse-glow 1.5s ease-in-out infinite;
+    display: block;
+}

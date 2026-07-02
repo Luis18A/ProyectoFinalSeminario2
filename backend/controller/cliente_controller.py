@@ -46,7 +46,7 @@ class ClienteController:
         if not datos['apellido'] or len(datos['apellido']) < 2: return False, "El apellido debe tener al menos 2 caracteres."
         if len(datos['apellido']) > 50: return False, "El apellido es demasiado largo."
         
-        patron_texto = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-]+$"
+        patron_texto = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'\-]+$"
         if not re.match(patron_texto, datos['nombre']): return False, "El nombre solo debe contener letras, espacios o guiones."
         if not re.match(patron_texto, datos['apellido']): return False, "El apellido solo debe contener letras, espacios o guiones."
 
@@ -77,7 +77,7 @@ class ClienteController:
 
         # ── 4. VALIDACIÓN DE TELÉFONO ──
         if not datos['telefono']: return False, "El teléfono es requerido."
-        if len(datos['telefono']) > 20: return False, "El teléfono es demasiado largo."
+        if len(datos['telefono']) > 30: return False, "El teléfono es demasiado largo."
         clean_tel = re.sub(r'[-+ ]', '', datos['telefono'])
         if not clean_tel.isdigit() or not (8 <= len(clean_tel) <= 15):
             return False, "El teléfono debe contener entre 8 y 15 números netos."

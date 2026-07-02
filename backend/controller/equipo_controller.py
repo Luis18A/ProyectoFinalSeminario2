@@ -13,20 +13,37 @@ class EquipoController:
             'descripcion': (datos_formulario.get('descripcion') or '').strip() or None,
         }
 
-        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS ──
+        # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS Y LONGITUD ──
         if not datos['numero_serie']:
             return False, "El número de serie no puede estar vacío."
+        if len(datos['numero_serie']) > 80:
+            return False, "El número de serie no puede tener más de 80 caracteres."
+
         if not datos['marca']:
             return False, "La marca no puede estar vacía."
+        if len(datos['marca']) > 80:
+            return False, "La marca no puede tener más de 80 caracteres."
+
         if not datos['modelo']:
             return False, "El modelo no puede estar vacío."
+        if len(datos['modelo']) > 80:
+            return False, "El modelo no puede tener más de 80 caracteres."
+
+        if datos['descripcion'] and len(datos['descripcion']) > 500:
+            return False, "La descripción no puede tener más de 500 caracteres."
 
         # ── 3. VALIDACIÓN DE CLAVES FORÁNEAS (IDs) ──
         try:
             datos['tipo_id'] = int(datos_formulario.get('tipo_dispositivo_id'))
+            if not db.session.get(TipoDispositivo, datos['tipo_id']):
+                return False, "El tipo de dispositivo asignado no existe."
+
             # El cliente solo es necesario al crearlo, no al editarlo
             if not is_edit:
                 datos['cliente_id'] = int(datos_formulario.get('cliente_id'))
+                from backend.models.Cliente import Cliente
+                if not db.session.get(Cliente, datos['cliente_id']):
+                    return False, "El cliente asignado no existe."
         except (TypeError, ValueError):
             return False, "Datos de cliente o tipo de dispositivo inválidos."
 

@@ -8,6 +8,11 @@ class AuthController:
         """
         Valida credenciales y gestiona el contador de intentos fallidos.
         """
+        if not username or len(username) > 80:
+            return None, 'Usuario o contraseña incorrectos.'
+        if not password or len(password) > 100:
+            return None, 'Usuario o contraseña incorrectos.'
+
         try:
             # 1. Búsqueda con manejo de errores de conexión
             usuario = Usuario.get_por_username(username)

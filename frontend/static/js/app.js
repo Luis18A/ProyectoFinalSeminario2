@@ -336,3 +336,70 @@ window.entregarEquipo = async function(ordenId) {
         window.showToast('Ocurrió un error al registrar la entrega del equipo.', 'error');
     }
 };
+
+// --- LÓGICA DE ESCUCHA DE NOTIFICACIONES EN TIEMPO REAL (SSE) ---
+(function iniciarSSE() {
+    const sseSource = new EventSource('/notificaciones/stream');
+
+    sseSource.onmessage = function (event) {
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Si el mensaje es un ping, simplemente mantener la conexión viva
+            if (data.type === 'ping') {
+                return;
+            }
+
+            // Si la notificación pertenece al usuario autenticado actual
+            if (window.USER_ID && data.usuario_id === window.USER_ID) {
+                // 1. Mostrar Toast dinámico en la pantalla
+                window.showToast(`${data.titulo}: ${data.mensaje}`, 'success');
+
+                // 2. Incrementar dinámicamente el contador rojo del navbar si existe
+                const countBadge = document.querySelector('#notification-btn span');
+                if (countBadge) {
+                    let currentCount = parseInt(countBadge.textContent.trim()) || 0;
+                    countBadge.textContent = currentCount + 1;
+                } else {
+                    // Si no tiene contador visible, inyectar el elemento badge dinámicamente
+                    const notifBtn = document.getElementById('notification-btn');
+                    if (notifBtn) {
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center animate-pulse';
+                        newBadge.textContent = '1';
+                        notifBtn.appendChild(newBadge);
+                    }
+                }
+
+                // 3. Inyectar la notificación en la lista del Dropdown en tiempo real
+                const notifList = document.querySelector('#notification-dropdown .divide-y');
+                if (notifList) {
+                    // Quitar cartel de "no tienes notificaciones" si existe
+                    const emptyState = notifList.querySelector('.p-8');
+                    if (emptyState) emptyState.remove();
+
+                    const date = new Date();
+                    const dateStr = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+                    const newNotifHtml = `
+                        <div onclick="handleNotificationClick(${data.id || 0}, '/tablero-tickets/${data.orden_id}')"
+                            class="p-4 hover:bg-zinc-50 cursor-pointer transition-colors relative bg-[#0057FF]/5 border-l-2 border-[#0057FF]">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-[#1A1A1A] pr-2">${data.titulo}</span>
+                                <span class="text-[9px] text-zinc-400 font-mono whitespace-nowrap">${dateStr}</span>
+                            </div>
+                            <p class="text-[11px] text-zinc-600 leading-normal">${data.mensaje}</p>
+                        </div>
+                    `;
+                    notifList.insertAdjacentHTML('afterbegin', newNotifHtml);
+                }
+            }
+        } catch (err) {
+            console.error('Error al procesar mensaje SSE:', err);
+        }
+    };
+
+    sseSource.onerror = function () {
+        console.warn('Conexión SSE perdida. Reintentando...');
+    };
+})();

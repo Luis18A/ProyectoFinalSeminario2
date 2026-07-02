@@ -8,8 +8,11 @@ import uuid
 import threading
 import asyncio
 
+import time
+
 # Almacén de tareas de búsqueda en memoria para simular Celery localmente
 _tareas_busqueda = {}
+_tareas_lock = threading.Lock()
 
 class OrdenPresupuestoController:
     @staticmethod
@@ -198,37 +201,57 @@ class OrdenPresupuestoController:
 
     @staticmethod
     def iniciar_busqueda_repuestos(q):
-        """Inicia la búsqueda en un hilo de fondo simulando Celery localmente."""
+        """Inicia la búsqueda en un hilo de fondo simulando Celery localmente con prevención de memory leaks."""
         q = (q or '').strip()
         if not q:
             return False, 'El término de búsqueda está vacío'
         
         task_id = str(uuid.uuid4())
-        _tareas_busqueda[task_id] = {'status': 'running', 'results': []}
+        ahora = time.time()
+
+        with _tareas_lock:
+            # Purgar búsquedas de más de 15 minutos (900 segundos) para evitar memory leaks
+            for tid in list(_tareas_busqueda.keys()):
+                if ahora - _tareas_busqueda[tid].get('timestamp', 0) > 900:
+                    _tareas_busqueda.pop(tid, None)
+                    
+            _tareas_busqueda[task_id] = {
+                'status': 'running', 
+                'results': [],
+                'timestamp': ahora
+            }
 
         # Ejecutamos la búsqueda en un hilo separado
         def run_search():
             try:
                 from backend.tasks import _ejecutar_scrapers
-                # Ya que _ejecutar_scrapers es asíncrono, creamos un nuevo event loop en este hilo
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 results = loop.run_until_complete(_ejecutar_scrapers(q))
                 loop.close()
-                _tareas_busqueda[task_id] = {'status': 'completed', 'results': results}
+                
+                with _tareas_lock:
+                    if task_id in _tareas_busqueda:
+                        _tareas_busqueda[task_id]['status'] = 'completed'
+                        _tareas_busqueda[task_id]['results'] = results
             except Exception as e:
                 print(f"[Scraper Thread] Error al ejecutar búsqueda: {e}")
-                _tareas_busqueda[task_id] = {'status': 'failed', 'error': str(e)}
+                with _tareas_lock:
+                    if task_id in _tareas_busqueda:
+                        _tareas_busqueda[task_id]['status'] = 'failed'
+                        _tareas_busqueda[task_id]['error'] = str(e)
 
         threading.Thread(target=run_search, daemon=True).start()
         return True, {'task_id': task_id, 'status': 'pending'}
 
     @staticmethod
     def obtener_estado_busqueda_repuestos(task_id):
-        """Consulta el estado de la tarea en memoria."""
-        task = _tareas_busqueda.get(task_id)
+        """Consulta el estado de la tarea en memoria de forma segura."""
+        with _tareas_lock:
+            task = _tareas_busqueda.get(task_id)
+            
         if not task:
-            return False, 'Tarea no encontrada'
+            return False, 'Tarea no encontrada o expirada de memoria.'
         
         if task['status'] == 'completed':
             return True, {'status': 'completed', 'results': task['results']}

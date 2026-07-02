@@ -101,14 +101,20 @@
                             <td class="text-right">
                                 <div class="flex justify-end gap-1.5 items-center">
                                     <button
-                                        onclick="mostrarOrdenesEquipo('{{ equipo.id }}', '{{ equipo.tipo.descripcion }} - {{ equipo.marca }} {{ equipo.modelo }}')"
-                                        class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                        class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-ver-ordenes-equipo"
+                                        data-id="{{ equipo.id }}"
+                                        data-nombre="{{ equipo.tipo.descripcion }} - {{ equipo.marca }} {{ equipo.modelo }}"
                                         title="Ver órdenes de servicio asociadas">
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
                                     </button>
                                     <button
-                                        onclick="abrirEditar('{{ equipo.id }}', '{{ equipo.tipo_id }}', '{{ equipo.marca }}', '{{ equipo.modelo }}', '{{ equipo.numero_serie }}', '{{ equipo.descripcion }}')"
-                                        class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                        class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-editar-equipo"
+                                        data-id="{{ equipo.id }}"
+                                        data-tipo-id="{{ equipo.tipo_id }}"
+                                        data-marca="{{ equipo.marca }}"
+                                        data-modelo="{{ equipo.modelo }}"
+                                        data-serie="{{ equipo.numero_serie }}"
+                                        data-descripcion="{{ equipo.descripcion or '' }}"
                                         title="Editar">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                     </button>

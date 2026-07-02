@@ -118,19 +118,25 @@ class OrdenFlujoController:
                     if not (orden.estado_diagnostico or '').strip():
                         return False, "El diagnóstico técnico es obligatorio para el estado seleccionado."
 
-            # Actualizamos otros campos técnicos
+            # Actualizamos otros campos técnicos con validaciones de longitud
             if datos_formulario.get('estado_diagnostico') is not None:
                 new_diag = datos_formulario.get('estado_diagnostico').strip()
+                if len(new_diag) > 255:
+                    return False, "El diagnóstico técnico no puede superar los 255 caracteres."
                 if new_diag != (orden.estado_diagnostico or ''):
                     orden.estado_diagnostico = new_diag
                     hubo_cambios = True
             if datos_formulario.get('falla_reportada') is not None:
-                new_falla = datos_formulario.get('falla_reportada')
+                new_falla = datos_formulario.get('falla_reportada').strip()
+                if len(new_falla) > 500:
+                    return False, "La falla reportada no puede superar los 500 caracteres."
                 if new_falla != (orden.falla_reportada or ''):
                     orden.falla_reportada = new_falla
                     hubo_cambios = True
             if datos_formulario.get('accesorios') is not None:
-                new_acc = datos_formulario.get('accesorios')
+                new_acc = datos_formulario.get('accesorios').strip()
+                if len(new_acc) > 500:
+                    return False, "La descripción de accesorios no puede superar los 500 caracteres."
                 if new_acc != (orden.accesorios or ''):
                     orden.accesorios = new_acc
                     hubo_cambios = True
@@ -140,6 +146,8 @@ class OrdenFlujoController:
             observacion_limpia = ""
             if datos_formulario.get('observaciones') is not None:
                 new_obs = datos_formulario.get('observaciones').strip()
+                if len(new_obs) > 500:
+                    return False, "La descripción de trabajo realizado no puede superar los 500 caracteres."
                 if new_obs != (orden.observaciones or ''):
                     orden.observaciones = new_obs
                     hubo_cambios = True
@@ -244,6 +252,21 @@ class OrdenFlujoController:
             for n in notificaciones:
                 db.session.add(n)
             db.session.commit()
+
+            # Anunciar notificaciones en tiempo real vía Server-Sent Events (SSE)
+            import json
+            from backend.utils.sse_service import sse_service
+            for n in notificaciones:
+                try:
+                    sse_service.announce(json.dumps({
+                        'type': 'notification',
+                        'usuario_id': n.usuario_id,
+                        'titulo': n.titulo,
+                        'mensaje': n.mensaje,
+                        'orden_id': n.orden_id
+                    }))
+                except Exception as sse_err:
+                    print(f"[SSE Error] No se pudo anunciar notificación: {sse_err}")
         except Exception as e:
             print(f"Error al enviar notificaciones: {str(e)}")
             db.session.rollback()

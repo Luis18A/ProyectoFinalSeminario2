@@ -72,8 +72,15 @@
                                     <span class="material-symbols-outlined text-[18px]">devices</span>
                                 </a>
                                 <button
-                                    onclick="abrirEditar('{{ c.id }}', '{{ c.dni_cuil }}', '{{ c.nombre }}', '{{ c.apellido }}', '{{ c.telefono }}', '{{ c.email }}', '{{ c.domicilio }}', '{{ c.localidad }}')"
-                                    class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                                    class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-editar-cliente"
+                                    data-id="{{ c.id }}"
+                                    data-dni="{{ c.dni_cuil }}"
+                                    data-nombre="{{ c.nombre }}"
+                                    data-apellido="{{ c.apellido }}"
+                                    data-telefono="{{ c.telefono }}"
+                                    data-email="{{ c.email or '' }}"
+                                    data-domicilio="{{ c.domicilio }}"
+                                    data-localidad="{{ c.localidad }}"
                                     title="Editar">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </button>

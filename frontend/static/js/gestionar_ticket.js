@@ -1,4 +1,14 @@
 // Lógica Interactiva para Técnicos (Presupuestos, Cálculos y Scraping)
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Obtener ordenId y query string de la URL
     const match = window.location.pathname.match(/\/tablero-tickets\/(\d+)/);
@@ -129,19 +139,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const hasLink = r.link && r.link !== '#' && r.link.trim() !== '';
+            const escapedTitulo = escapeHTML(r.titulo);
             const linkHtml = hasLink
-                ? `<a href="${r.link}" target="_blank" class="hover:underline text-primary flex items-center gap-1">
-                      ${r.titulo.substring(0, 60)}${r.titulo.length > 60 ? '...' : ''} 
+                ? `<a href="${escapeHTML(r.link)}" target="_blank" class="hover:underline text-primary flex items-center gap-1">
+                      ${escapedTitulo.substring(0, 60)}${escapedTitulo.length > 60 ? '...' : ''} 
                       <span class="material-symbols-outlined text-[12px]">open_in_new</span>
                    </a>`
-                : `<span class="text-zinc-700 font-semibold">${r.titulo.substring(0, 60)}${r.titulo.length > 60 ? '...' : ''}</span>`;
+                : `<span class="text-zinc-700 font-semibold">${escapedTitulo.substring(0, 60)}${escapedTitulo.length > 60 ? '...' : ''}</span>`;
 
             if (idx === editIdx) {
                 tbodyHtml += `
                     <tr class="bg-zinc-50 transition-colors">
                         <td class="p-3">${badge}</td>
                         <td class="p-3">
-                            <input type="text" id="edit-repuesto-titulo-${idx}" class="input-swiss text-xs py-1 px-2 w-full bg-white border border-zinc-300" value="${r.titulo}">
+                            <input type="text" id="edit-repuesto-titulo-${idx}" class="input-swiss text-xs py-1 px-2 w-full bg-white border border-zinc-300" value="${escapeHTML(r.titulo)}">
                         </td>
                         <td class="p-3 text-right">
                             <input type="number" step="0.01" id="edit-repuesto-precio-${idx}" class="input-swiss text-xs py-1 px-2 w-28 bg-white border border-zinc-300 text-right font-bold" value="${r.precio}">
@@ -506,9 +517,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('repuestos-results-container');
         const tbody = document.getElementById('repuestos-results-body');
 
-        loading.classList.remove('hidden');
-        container.classList.add('hidden');
+        // Mostrar estructura de Skeleton Loader en la tabla
+        if (loading) loading.classList.add('hidden');
+        container.classList.remove('hidden');
         tbody.innerHTML = '';
+        
+        for (let i = 0; i < 3; i++) {
+            const tr = document.createElement('tr');
+            tr.className = 'skeleton-row border-b border-zinc-100';
+            tr.innerHTML = `
+                <td class="p-2.5 text-center"><div class="skeleton-bar w-10"></div></td>
+                <td class="p-2.5"><div class="skeleton-bar w-full"></div></td>
+                <td class="p-2.5 text-right"><div class="skeleton-bar w-16"></div></td>
+                <td class="p-2.5 text-center flex justify-center"><div class="skeleton-circle"></div></td>
+            `;
+            tbody.appendChild(tr);
+        }
 
         try {
             const scraperHost = window.location.hostname;
@@ -536,18 +560,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                         tiendaHtml = `<span class="px-2 py-0.5 bg-gray-100 text-gray-800 border border-gray-200 text-[9px] font-bold uppercase rounded">${item.tienda}</span>`;
                     }
 
-                    const escTitulo = item.titulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const escTitulo = escapeHTML(item.titulo).replace(/'/g, "\\'");
 
                     tr.innerHTML = `
                         <td class="p-2.5 text-center">${tiendaHtml}</td>
-                        <td class="p-2.5 max-w-[240px] truncate" title="${item.titulo}">
-                            <a href="${item.link}" target="_blank" class="text-primary hover:underline font-medium">
-                                ${item.titulo}
+                        <td class="p-2.5 max-w-[240px] truncate" title="${escapeHTML(item.titulo)}">
+                            <a href="${escapeHTML(item.link)}" target="_blank" class="text-primary hover:underline font-medium">
+                                ${escapeHTML(item.titulo)}
                             </a>
                         </td>
                         <td class="p-2.5 text-right font-bold text-accent">$${item.precio.toLocaleString('es-AR')}</td>
                         <td class="p-2.5 text-center">
-                            <button type="button" onclick="agregarRepuestoAlPresupuesto('${escTitulo}', ${item.precio}, '${item.link}', '${item.tienda}')"
+                            <button type="button" onclick="agregarRepuestoAlPresupuesto('${escTitulo}', ${item.precio}, '${escapeHTML(item.link)}', '${escapeHTML(item.tienda)}')"
                                     class="px-2 py-1 bg-zinc-900 text-white font-bold uppercase text-[9px] hover:bg-primary transition-all">
                                 + Cotizar
                             </button>
@@ -559,8 +583,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.classList.remove('hidden');
         } catch (err) {
             console.error(err);
-            loading.classList.add('hidden');
-            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-semibold">La cola de tareas en segundo plano (Celery + Redis) no responde. Detalles: ${err.message}</td></tr>`;
+            if (loading) loading.classList.add('hidden');
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-semibold">El servicio de repuestos externo no se encuentra en línea. Detalles: ${err.message}</td></tr>`;
             container.classList.remove('hidden');
         }
     }
@@ -648,5 +672,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         // Si no existe select-estado (modo de lectura), renderizar repuestos de todos modos
         renderRepuestos();
+    }
+});
+
+// Control del Modal de Inteligencia/Predicción de Fallas
+window.abrirModalPredicciones = function() {
+    const modal = document.getElementById('modal-prediccion-fallas');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+};
+
+window.cerrarModalPredicciones = function() {
+    const modal = document.getElementById('modal-prediccion-fallas');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// Listener para cerrar modal al hacer clic en el fondo oscuro
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modal-prediccion-fallas');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModalPredicciones();
+            }
+        });
     }
 });

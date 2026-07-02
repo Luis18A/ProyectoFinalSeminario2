@@ -52,67 +52,9 @@
 
     <!-- Data Table -->
     <div class="table-container">
-        <div class="table-scroll-container !border-none">
-            <table class="table-swiss">
-            <thead>
-                <tr>
-                    <th class="w-[150px]">ID de Ticket</th>
-                    <th>Cliente</th>
-                    <th>Equipo</th>
-                    <th>Estado</th>
-                    <th>Fecha Ingreso</th>
-                    <th>Fecha Salida</th>
-                    <th class="text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="font-body-sm">
-                {% if ordenes %}
-                {% for o in ordenes %}
-                <tr class="hover:bg-background transition-colors">
-                    <td><span class="font-label-mono font-bold text-accent text-xs">TK-{{ "%04d"|format(o.id) }}</span>
-                    </td>
-                    <td>
-                        <div class="font-bold">{{ o.equipo.cliente.apellido }}, {{ o.equipo.cliente.nombre }}</div>
-                        <div class="text-zinc-500 font-label-mono text-xs">{{ o.equipo.cliente.telefono or '—' }}</div>
-                    </td>
-                    <td>
-                        <div class="font-medium">{{ o.equipo.tipo.descripcion if o.equipo.tipo else 'Equipo' }} {{
-                            o.equipo.marca }}</div>
-                        <div class="text-zinc-500 text-xs">SN: {{ o.equipo.numero_serie }}</div>
-                    </td>
-                    <td>
-                        {{ badge_estado(o.estado.value) }}
-                    </td>
-                    <td class="font-label-mono text-zinc-600 text-xs">
-                        {{ o.fecha_recepcion.strftime('%d %b, %H:%M') if o.fecha_recepcion else '—' }}
-                    </td>
-                    <td class="font-label-mono text-zinc-600 text-xs">
-                        {{ o.fecha_entrega.strftime('%d %b, %H:%M') if o.fecha_entrega else '—' }}
-                    </td>
-                    <td class="text-right space-x-2">
-                        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=o.id) }}"
-                            class="inline-block text-on-surface-variant hover:text-accent p-xs transition-colors"
-                            title="Ver Detalles">
-                            <span class="material-symbols-outlined">visibility</span>
-                        </a>
-                        <a href="{{ url_for('orden_servicio.comprobante', orden_id=o.id) }}"
-                            class="inline-block text-on-surface-variant hover:text-primary p-xs transition-colors"
-                            title="Imprimir Ticket">
-                            <span class="material-symbols-outlined">print</span>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="7" class="p-8 text-center text-on-surface-variant font-label-mono text-xs uppercase">
-                        No hay órdenes de servicio registradas.
-                    </td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-        </div>
+        {% with ordenes=ordenes, modo='historial' %}
+            {% include 'componentes/tabla_ordenes.html' %}
+        {% endwith %}
 
         <!-- Information Footer -->
         <div
