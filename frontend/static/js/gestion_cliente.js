@@ -3,6 +3,23 @@
  * Maneja modales de edición y búsqueda de clientes en tiempo real con de-bounce.
  */
 
+// Lógica para el Modal de Registrar
+function abrirModalRegistrar() {
+    const modal = document.getElementById('modal-registrar');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function cerrarModalRegistrar() {
+    const modal = document.getElementById('modal-registrar');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    document.body.style.overflow = 'auto';
+}
+
 // Lógica para el Modal de Editar
 function abrirEditar(id, dni, nombre, apellido, telefono, email, domicilio, localidad) {
     const modal = document.getElementById('modal-editar');
@@ -239,6 +256,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (modalEditar) {
         modalEditar.addEventListener('click', function (e) {
             if (e.target === this) cerrarModal();
+        });
+    }
+
+    const modalRegistrar = document.getElementById('modal-registrar');
+    if (modalRegistrar) {
+        modalRegistrar.addEventListener('click', function (e) {
+            if (e.target === this) cerrarModalRegistrar();
         });
     }
 

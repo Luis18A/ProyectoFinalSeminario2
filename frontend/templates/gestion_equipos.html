@@ -5,28 +5,32 @@
 
 
 <!-- Canvas Area -->
-<main class="flex-1 p-container-margin overflow-y-auto">
-    <!-- Page Header -->
+<main class="flex-1 p-container-margin overflow-y-auto">    <!-- Page Header -->
     <div class="flex justify-between items-end mb-10">
         <div>
             <h1 class="font-headline-xl text-primary mb-2">Mostrando equipos de: {{ cliente.nombre ~ ' ' ~
                 cliente.apellido if cliente else 'Cliente General' }}</h1>
             <p class="font-body-md text-on-surface-variant">Gestión de activos y registro de equipos vinculados.</p>
         </div>
-        <a href="{{ url_for('clientes.gestion_cliente') }}" class="btn-swiss btn-outline">
-            <span class="material-symbols-outlined text-sm">arrow_back</span>
-            Volver a Clientes
-        </a>
+        <div class="flex gap-4 items-center">
+            <button onclick="abrirModalRegistrarEquipo()" class="btn-swiss btn-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">devices</span>
+                Registrar Dispositivo
+            </button>
+            <a href="{{ url_for('clientes.gestion_cliente') }}" class="btn-swiss btn-outline flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Volver a Clientes
+            </a>
+        </div>
     </div>
 
     <!-- Bento Grid Structure -->
     <div class="grid grid-cols-12 gap-grid-gutter">
         <!-- Left Column: Lista de Equipos -->
-        <div class="col-span-12 lg:col-span-9">
+        <div class="col-span-12">
             <div class="table-container flex flex-col overflow-hidden">
                 <div class="p-6 border-b border-border flex justify-between items-center bg-white">
-                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Inventario del Cliente
-                    </h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-primary">Inventario del Cliente</h2>
                     <span class="font-label-mono text-[10px] text-zinc-400">Total: {{ equipos|length }} Activo(s)</span>
                 </div>
                 <div class="table-scroll-container !border-none">
@@ -128,89 +132,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Right Column: Formularios de Registro -->
-        <div class="col-span-12 lg:col-span-3 flex flex-col gap-grid-gutter self-start">
-            <!-- Registrar Dispositivo -->
-            <div class="bento-card p-6 flex flex-col">
-                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
-                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Dispositivo
-                    </h2>
-                    <span class="material-symbols-outlined text-on-surface-variant text-sm">devices</span>
-                </div>
-                <form class="flex flex-col gap-6 flex-1" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de
-                            Equipo</label>
-                        {% if cliente %}
-                        <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
-                        {% endif %}
-                        <select name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent" required>
-                            <option disabled selected value="">Seleccionar tipo</option>
-                            {% for tipo in tipo_dispositivos %}
-                            <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca
-                                *</label>
-                            <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo
-                                *</label>
-                            <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text"
-                                required />
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie
-                            * (S/N)</label>
-                        <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX"
-                            type="text" required />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción
-                            General</label>
-                        <textarea name="descripcion" class="input-swiss resize-none"
-                            placeholder="Detalles de estado, color, accesorios..." rows="3"></textarea>
-                    </div>
-                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
-                        Guardar Equipo
-                    </button>
-                </form>
-            </div>
-
-            <!-- Nuevo Tipo de Equipo -->
-            <div class="bento-card p-6 flex flex-col">
-                <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
-                    <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Nuevo Tipo de Equipo</h2>
-                    <span class="material-symbols-outlined text-on-surface-variant text-sm">playlist_add</span>
-                </div>
-                <form class="flex flex-col gap-6 flex-1"
-                    action="{{ url_for('tipo_dispositivo.crear_tipo_dispositivo') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    {% if cliente %}
-                    <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
-                    {% endif %}
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Dispositivo
-                            *</label>
-                        <!-- el name debe coincidir con el atributo name del input en el backend, es decir, si no coincide no se enviara nada-->
-                        <input name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora"
-                            type="text" required />
-                    </div>
-
-                    <button class="btn-swiss btn-primary w-full justify-center mt-4" type="submit">
-                        Guardar Tipo de Dispositivo
-                    </button>
-                </form>
-            </div>
-        </div>
-
     </div>
 </main>
 
@@ -308,6 +229,107 @@
     </div>
 </div>
 
+<!-- Modal Registrar Equipo -->
+<div id="modal-registrar-equipo"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/38 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">devices</span>
+                Registrar Dispositivo
+            </h2>
+            <button onclick="cerrarModalRegistrarEquipo()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-registrar-equipo" class="p-8 flex flex-col gap-5" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if cliente %}
+            <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+            {% endif %}
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Tipo de Equipo *</label>
+                <div class="flex gap-2">
+                    <select id="select-tipo-dispositivo" name="tipo_dispositivo_id" class="input-swiss flex-grow appearance-none bg-transparent" required>
+                        <option disabled selected value="">Seleccionar tipo</option>
+                        {% for tipo in tipo_dispositivos %}
+                        <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" onclick="abrirModalNuevoTipo()"
+                        class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center w-[41px]"
+                        title="Nuevo Tipo de Equipo">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Marca *</label>
+                    <input name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Modelo *</label>
+                    <input name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text" required />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Número de Serie * (S/N)</label>
+                <input name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX" type="text" required />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Descripción General</label>
+                <input name="descripcion" class="input-swiss" placeholder="Detalles de estado, color, accesorios..." type="text" />
+            </div>
+
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModalRegistrarEquipo()"
+                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Registrar Nuevo Tipo de Dispositivo (Emergente) -->
+<div id="modal-nuevo-tipo"
+    class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-sm border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/38 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">add_circle</span>
+                Nuevo Tipo de Equipo
+            </h2>
+            <button type="button" onclick="cerrarModalNuevoTipo()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-nuevo-tipo" class="p-8 flex flex-col gap-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Dispositivo *</label>
+                <input id="input-nuevo-tipo" name="descripcion" class="input-swiss" placeholder="Ej. Notebook, PC, Impresora" type="text" required />
+            </div>
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModalNuevoTipo()"
+                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block help_content %}

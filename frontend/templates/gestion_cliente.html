@@ -5,17 +5,20 @@
 <!-- Canvas Area -->
 <main class="flex-1 p-container-margin overflow-y-auto">
 
-
     <!-- Page Header -->
     <div class="flex justify-between items-end mb-lg">
         <div>
             <h1 class="font-headline-xl text-primary mb-1">Gestión de Clientes</h1>
             <p class="font-body-md text-on-surface-variant">Administrá tu cartera de clientes y sus equipos.</p>
         </div>
+        <button onclick="abrirModalRegistrar()" class="btn-swiss btn-primary flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">person_add</span>
+            Registrar Cliente
+        </button>
     </div>
 
     <!-- Bento Grid Structure -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-grid-gutter">
+    <div class="grid grid-cols-12 gap-grid-gutter">
         <!-- Main Search Bar -->
         <div class="col-span-12 bento-card">
             <div class="flex items-center gap-sm">
@@ -27,7 +30,16 @@
         </div>
 
         <!-- Data Table Container -->
-        <div class="col-span-12 lg:col-span-9 table-container flex flex-col">
+        <div class="col-span-12 table-container flex flex-col">
+            <div class="p-6 border-b border-[#1A1A1A]/38 flex justify-between items-center bg-zinc-50">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[18px]">group</span>
+                    Clientes Registrados
+                </h2>
+                <span class="font-mono text-[10px] bg-zinc-900 text-white px-3 py-1">
+                    TOTAL: {{ clientes | length }}
+                </span>
+            </div>
             <div class="table-scroll-container !border-none">
                 <table class="table-swiss">
                 <thead>
@@ -86,64 +98,6 @@
             </table>
             </div>
         </div>
-
-        <!-- Registration Form -->
-        <div class="col-span-12 lg:col-span-3 bento-card flex flex-col self-start">
-            <div class="border-b border-border pb-sm mb-lg flex justify-between items-center">
-                <h2 class="font-label-bold text-primary uppercase tracking-widest text-xs">Registrar Nuevo Cliente</h2>
-                <span class="material-symbols-outlined text-on-surface-variant text-sm">person_add</span>
-            </div>
-            <form class="flex flex-col gap-6 flex-1" method="post" action="/clientes">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="flex flex-col gap-1">
-                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">DNI / CUIL</label>
-                    <input id="dni" name="dni" class="input-swiss" placeholder="Ingresar documento" type="text"
-                        value="{{ form_data.get('dni', '') }}" required />
-                </div>
-                <div class="grid grid-cols-2 gap-md">
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Nombre</label>
-                        <input id="nombre" name="nombre" class="input-swiss" placeholder="Nombre" type="text"
-                            value="{{ form_data.get('nombre', '') }}" required />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Apellido</label>
-                        <input id="apellido" name="apellido" class="input-swiss" placeholder="Apellido" type="text"
-                            value="{{ form_data.get('apellido', '') }}" required />
-                    </div>
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Teléfono</label>
-                    <input id="telefono" name="telefono" class="input-swiss" placeholder="+54 9 11 0000-0000" type="tel"
-                        value="{{ form_data.get('telefono', '') }}" required />
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Email</label>
-                    <input id="email" name="email" class="input-swiss" placeholder="correo@ejemplo.com" type="email"
-                        value="{{ form_data.get('email', '') }}" />
-                </div>
-                <div class="grid grid-cols-2 gap-md">
-                    <div class="flex flex-col gap-1">
-                        <label
-                            class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Domicilio</label>
-                        <input id="domicilio" name="domicilio" class="input-swiss" placeholder="Calle y número"
-                            type="text" value="{{ form_data.get('domicilio', '') }}" required />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label
-                            class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Localidad</label>
-                        <input id="localidad" name="localidad" class="input-swiss" placeholder="Ciudad" type="text"
-                            value="{{ form_data.get('localidad', '') }}" required />
-                    </div>
-                </div>
-                <div class="mt-auto pt-lg">
-                    <button class="btn-swiss btn-primary w-full justify-center" type="submit">
-                        <span class="material-symbols-outlined text-sm">save</span>
-                        Guardar Registro
-                    </button>
-                </div>
-            </form>
-        </div>
     </div>
 </main>
 
@@ -196,6 +150,72 @@
                 <button type="button" onclick="cerrarModal()"
                     class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
                 <button type="submit" class="btn-swiss btn-primary flex-1 justify-center">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Registrar Cliente -->
+<div id="modal-registrar"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/38 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">person_add</span>
+                Registrar Nuevo Cliente
+            </h2>
+            <button onclick="cerrarModalRegistrar()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form class="p-8 flex flex-col gap-5" method="post" action="/clientes">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">DNI / CUIL *</label>
+                <input id="dni" name="dni" class="input-swiss" placeholder="Ingresar documento" type="text" required />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Nombre *</label>
+                    <input id="nombre" name="nombre" class="input-swiss" placeholder="Nombre" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Apellido *</label>
+                    <input id="apellido" name="apellido" class="input-swiss" placeholder="Apellido" type="text" required />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Teléfono *</label>
+                    <input id="telefono" name="telefono" class="input-swiss" placeholder="+54 9 11 0000-0000" type="tel" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Email</label>
+                    <input id="email" name="email" class="input-swiss" placeholder="correo@ejemplo.com" type="email" />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Domicilio *</label>
+                <input id="domicilio" name="domicilio" class="input-swiss" placeholder="Calle y número" type="text" required />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Localidad *</label>
+                <input id="localidad" name="localidad" class="input-swiss" placeholder="Ciudad" type="text" required />
+            </div>
+
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModalRegistrar()"
+                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    Guardar
+                </button>
             </div>
         </form>
     </div>

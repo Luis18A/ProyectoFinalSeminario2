@@ -2,6 +2,7 @@ tailwind.config = {
     theme: {
         extend: {
             "colors": {
+                "border": "rgba(26, 26, 26, 0.38)",
                 "outline": "#747878",
                 "on-tertiary": "#ffffff",
                 "background": "#f9f9fb",

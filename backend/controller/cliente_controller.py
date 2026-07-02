@@ -173,7 +173,7 @@ class ClienteController:
             (Cliente.nombre.ilike(f"%{termino}%")) | 
             (Cliente.apellido.ilike(f"%{termino}%")) | 
             (Cliente.dni_cuil.ilike(f"%{termino}%"))
-        ).limit(20).all()
+        ).order_by(Cliente.fecha_registro.desc()).limit(20).all()
 
     @staticmethod
     def buscar_clientes_json(termino):

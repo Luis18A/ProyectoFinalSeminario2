@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         container.innerHTML = `
-            <div class="border border-[#1A1A1A]/10 overflow-hidden">
+            <div class="border border-[#1A1A1A]/38 overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-zinc-50 border-b border-zinc-100 text-[10px] uppercase font-bold text-zinc-400">

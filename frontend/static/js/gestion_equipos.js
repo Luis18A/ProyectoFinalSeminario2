@@ -3,6 +3,40 @@
  * Maneja el modal de edición de equipos y el buscador de ofertas de repuestos (FastAPI).
  */
 
+// Lógica para el Modal de Registrar Equipo
+function abrirModalRegistrarEquipo() {
+    const modal = document.getElementById('modal-registrar-equipo');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function cerrarModalRegistrarEquipo() {
+    const modal = document.getElementById('modal-registrar-equipo');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.getElementById('form-registrar-equipo').reset();
+    }
+    document.body.style.overflow = 'auto';
+}
+
+// Lógica para el Modal de Nuevo Tipo
+function abrirModalNuevoTipo() {
+    const modal = document.getElementById('modal-nuevo-tipo');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function cerrarModalNuevoTipo() {
+    const modal = document.getElementById('modal-nuevo-tipo');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.getElementById('form-nuevo-tipo').reset();
+    }
+}
+
 // Lógica para el Modal de Editar Equipo (Globales para invocación inline)
 function abrirEditar(id, tipo_id, marca, modelo, serie, descripcion) {
     const modal = document.getElementById('modal-editar-equipo');
@@ -55,6 +89,71 @@ function cerrarModalOrdenes() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Cerrar modal de Registrar Equipo al hacer clic fuera
+    const modalRegistrar = document.getElementById('modal-registrar-equipo');
+    if (modalRegistrar) {
+        modalRegistrar.addEventListener('click', function (e) {
+            if (e.target === this) cerrarModalRegistrarEquipo();
+        });
+    }
+
+    // Cerrar modal de Nuevo Tipo al hacer clic fuera
+    const modalNuevoTipo = document.getElementById('modal-nuevo-tipo');
+    if (modalNuevoTipo) {
+        modalNuevoTipo.addEventListener('click', function (e) {
+            if (e.target === this) cerrarModalNuevoTipo();
+        });
+    }
+
+    // Submit de registro de nuevo tipo de equipo via AJAX
+    const formNuevoTipo = document.getElementById('form-nuevo-tipo');
+    const selectTipoDispositivo = document.getElementById('select-tipo-dispositivo');
+    const editTipoDispositivo = document.getElementById('edit-tipo');
+
+    if (formNuevoTipo && selectTipoDispositivo) {
+        formNuevoTipo.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            try {
+                const resp = await fetch('/tipoDispositivo/rapido', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    body: formData
+                });
+                
+                const data = await resp.json();
+                if (data.success) {
+                    window.showToast('Tipo de dispositivo registrado con éxito.', 'success');
+                    
+                    // Agregar y seleccionar la nueva opción en el selector del modal de registro
+                    const opt1 = document.createElement('option');
+                    opt1.value = data.tipo.id;
+                    opt1.textContent = data.tipo.descripcion;
+                    selectTipoDispositivo.appendChild(opt1);
+                    selectTipoDispositivo.value = data.tipo.id;
+                    
+                    // También agregarlo al selector del modal de edición por consistencia
+                    if (editTipoDispositivo) {
+                        const opt2 = document.createElement('option');
+                        opt2.value = data.tipo.id;
+                        opt2.textContent = data.tipo.descripcion;
+                        editTipoDispositivo.appendChild(opt2);
+                    }
+
+                    cerrarModalNuevoTipo();
+                } else {
+                    window.showToast('Error al registrar el tipo: ' + data.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.showToast('Ocurrió un error al registrar el tipo de dispositivo.', 'error');
+            }
+        });
+    }
+
     // Cerrar modal al hacer clic fuera
     const modalEditar = document.getElementById('modal-editar-equipo');
     if (modalEditar) {
