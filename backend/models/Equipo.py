@@ -1,4 +1,5 @@
 from database import db
+from backend.models.OrdenServicio import OrdenServicio
 
 class Equipo(db.Model):
     __tablename__ = 'equipo'
@@ -24,9 +25,6 @@ class Equipo(db.Model):
 
     @property
     def estado_actual(self):
-        # Se importa aquí adentro para evitar la Importación Circular con OrdenServicio.py
-        from backend.models.OrdenServicio import OrdenServicio
-        
         ultima = (OrdenServicio.query
                   .filter_by(equipo_id=self.id)
                   .order_by(OrdenServicio.id.desc())

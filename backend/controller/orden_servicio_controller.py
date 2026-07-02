@@ -5,6 +5,7 @@ from backend.models.HistorialEstado import HistorialEstado
 from backend.models.Cliente import Cliente
 from backend.models.Equipo import Equipo
 from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models.Usuario import Usuario
 from backend.controller.tipo_dispositivo_controller import TipoDispositivoController
 from database import db
 import csv, io
@@ -30,7 +31,6 @@ class OrdenServicioController:
             if not db.session.get(Equipo, datos['equipo_id']):
                 return False, "El equipo asignado no existe."
             
-            from backend.models.Usuario import Usuario
             if not db.session.get(Usuario, datos['usuario_id']):
                 return False, "El usuario (operador) asignado no existe."
 
@@ -161,7 +161,6 @@ class OrdenServicioController:
             )
             
         if equipo_query:
-            from backend.models.TipoDispositivo import TipoDispositivo
             query = query.join(TipoDispositivo, Equipo.tipo_id == TipoDispositivo.id).filter(
                 (Equipo.marca.ilike(f"%{equipo_query}%")) |
                 (Equipo.modelo.ilike(f"%{equipo_query}%")) |

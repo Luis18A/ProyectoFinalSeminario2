@@ -1,6 +1,7 @@
 from datetime import datetime
 from database import db
 from backend.models.Usuario import Usuario
+import re
 from backend.models.Rol import Rol
 from backend.models.HistorialEstado import HistorialEstado
 
@@ -26,7 +27,6 @@ class UsuarioController:
         if not datos['username']: return False, "El nombre de usuario es requerido."
         if len(datos['username']) > 80: return False, "El nombre de usuario no puede tener más de 80 caracteres."
         
-        import re
         if not re.match(r"^[a-zA-Z0-9._\-]+$", datos['username']):
             return False, "El nombre de usuario solo debe contener letras, números, puntos, guiones y guiones bajos."
 

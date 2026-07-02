@@ -1,5 +1,6 @@
 from database import db
 from backend.models.TipoDispositivo import TipoDispositivo
+import re
 
 class TipoDispositivoController:
 
@@ -15,7 +16,6 @@ class TipoDispositivoController:
         if len(descripcion) < 3 or len(descripcion) > 50:
             return False, "La descripción debe tener entre 3 y 50 caracteres."
             
-        import re
         if not re.match(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s0-9]+$", descripcion):
             return False, "La descripción solo debe contener letras, números y espacios."
             

@@ -2,6 +2,9 @@ from backend.utils.predictor_service import PredictorService
 from backend.models.OrdenServicio import OrdenServicio
 from database import db
 from datetime import datetime
+import json
+from flask import url_for
+from backend.utils.sse_service import sse_service
 from backend.models.EstadoOrden import EstadoOrden
 from backend.models.HistorialEstado import HistorialEstado
 from backend.models.Notificacion import Notificacion
@@ -254,8 +257,6 @@ class OrdenFlujoController:
             db.session.commit()
 
             # Anunciar notificaciones en tiempo real vía Server-Sent Events (SSE)
-            import json
-            from backend.utils.sse_service import sse_service
             for n in notificaciones:
                 try:
                     sse_service.announce(json.dumps({
@@ -428,7 +429,6 @@ class OrdenFlujoController:
             datos.update({'puede_editar': False, 'puede_editar_costos': False})
             
         orden = datos['orden']
-        from flask import url_for
         return {
             'repuestosActivos': orden.repuestos or [],
             'ordenId': orden.id,

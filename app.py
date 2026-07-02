@@ -1,8 +1,8 @@
-# app.py — versión corregida y comentada
-
 import os
-from flask import Flask, flash, redirect, url_for, session
+import queue
+from flask import Flask, flash, redirect, url_for, session, Response
 from database import db
+from backend.utils.sse_service import sse_service
 
 # ─────────────────────────────────────────────
 # IMPORTS de modelos (necesarios para create_all)
@@ -210,10 +210,6 @@ app = create_app()
 
 @app.route('/notificaciones/stream')
 def stream_notificaciones():
-    from flask import Response
-    import queue
-    from backend.utils.sse_service import sse_service
-    
     def event_stream():
         q = sse_service.listen()
         # Enviar ping inicial de apertura de stream

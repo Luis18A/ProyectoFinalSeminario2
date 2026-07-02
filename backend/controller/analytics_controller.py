@@ -6,6 +6,7 @@ from backend.models.HistorialEstado import HistorialEstado
 from backend.models.EstadoOrden import EstadoOrden
 from backend.utils.kmeans_service import KMeansService
 from collections import Counter
+from sqlalchemy.orm import joinedload
 
 
 class AnalyticsController:
@@ -15,7 +16,6 @@ class AnalyticsController:
         # ── OPTIMIZACIÓN: Eager loading para evitar N+1 queries ──
         # DEUDA TÉCNICA: Se resuelve el N+1 para equipo.tipo, pero si más adelante o en los
         # templates se accede a equipo.cliente, puede haber un N+1 residual. Aceptable para la entrega.
-        from sqlalchemy.orm import joinedload
         ordenes = OrdenServicio.query.options(
             joinedload(OrdenServicio.equipo).joinedload(Equipo.tipo)
         ).all()

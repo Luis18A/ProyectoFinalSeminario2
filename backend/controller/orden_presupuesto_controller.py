@@ -7,6 +7,7 @@ from sqlalchemy.orm.attributes import flag_modified
 import uuid
 import threading
 import asyncio
+from backend.utils.tasks import _ejecutar_scrapers
 
 import time
 
@@ -224,7 +225,6 @@ class OrdenPresupuestoController:
         # Ejecutamos la búsqueda en un hilo separado
         def run_search():
             try:
-                from backend.tasks import _ejecutar_scrapers
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 results = loop.run_until_complete(_ejecutar_scrapers(q))

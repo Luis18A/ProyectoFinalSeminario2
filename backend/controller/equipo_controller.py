@@ -1,6 +1,7 @@
 from database import db
 from backend.models.Equipo import Equipo
 from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models.Cliente import Cliente
 
 class EquipoController:
     @staticmethod
@@ -41,7 +42,6 @@ class EquipoController:
             # El cliente solo es necesario al crearlo, no al editarlo
             if not is_edit:
                 datos['cliente_id'] = int(datos_formulario.get('cliente_id'))
-                from backend.models.Cliente import Cliente
                 if not db.session.get(Cliente, datos['cliente_id']):
                     return False, "El cliente asignado no existe."
         except (TypeError, ValueError):
@@ -166,7 +166,6 @@ class EquipoController:
     @staticmethod
     def obtener_equipos_cliente_json(cliente_id):
         """Obtiene equipos de un cliente en formato JSON (para AJAX)."""
-        from backend.models.Cliente import Cliente
         cliente = Cliente.get_by_id(cliente_id)
         if not cliente:
             return None
@@ -179,7 +178,6 @@ class EquipoController:
     @staticmethod
     def obtener_datos_gestion_cliente(cliente_id):
         """Unifica las consultas para el panel de gestión mediante delegación."""
-        from backend.models.Cliente import Cliente
         tipo_dispositivos = TipoDispositivo.get_all()
         cliente = db.session.get(Cliente, cliente_id) if cliente_id else None
         equipos = Equipo.get_por_cliente(cliente_id) if cliente else []
