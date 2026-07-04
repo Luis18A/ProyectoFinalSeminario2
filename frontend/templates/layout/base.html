@@ -1,18 +1,76 @@
-{% include 'layout/header.html' %}
+<!DOCTYPE html>
+<html class="light" lang="es">
 
-{% block content %}{% endblock %}
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}TechFlow{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <script>
+        window.USER_ID = {{ session.get('usuario_id', 0) }};
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
 
-<div id="page-help-source" class="hidden">
-    {% block help_content %}
-        <div class="space-y-4">
-            <p class="font-bold text-zinc-800">Guía de Uso Rápido</p>
-            <p>No hay una guía disponible para esta sección.</p>
+<body class="bg-background font-body-md text-on-surface">
+
+    <!-- Floating Toast Notification Container (Flash alerts) -->
+    <div id="toast-container" style="z-index: 9999;"
+        class="fixed top-6 right-6 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="toast-alert pointer-events-auto flex items-center gap-3 p-4 bg-white border-l-4 shadow-lg animate-slide-in duration-300 {% if category == 'success' %}border-emerald-500 text-emerald-800{% else %}border-red-500 text-red-800{% endif %}"
+            role="alert">
+            <span class="material-symbols-outlined">
+                {% if category == 'success' %}check_circle{% else %}error{% endif %}
+            </span>
+            <div class="flex-grow font-label-mono text-xs uppercase tracking-wider pr-2">
+                {{ message }}
+            </div>
+            <button class="text-zinc-400 hover:text-zinc-900 transition-colors"
+                onclick="this.parentElement.remove()">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
         </div>
-    {% endblock %}
-</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
 
-</div> <!-- Cierre centralizado de #main-content (abierto en header.html) -->
-{% block extra_js %}{% endblock %}
+    <!-- Sidebar, overlays, and help drawer -->
+    {% include 'layout/sidebar.html' %}
+
+    <!-- Main Content Shell -->
+    <div id="main-content" class="flex flex-col min-h-screen">
+
+        <!-- TopAppBar (Compartido) -->
+        {% include 'layout/header.html' %}
+
+        <!-- Page Specific Content -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Contextual Help Content source (read by Javascript) -->
+    <div id="page-help-source" class="hidden">
+        {% block help_content %}
+            <div class="space-y-4">
+                <p class="font-bold text-zinc-800">Guía de Uso Rápido</p>
+                <p>No hay una guía disponible para esta sección.</p>
+            </div>
+        {% endblock %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

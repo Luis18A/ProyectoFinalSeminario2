@@ -18,15 +18,7 @@
 
 <body class="bg-zinc-100 p-4 md:p-8">
 
-    {% set ns = namespace(total_repuestos=0.0) %}
-    {% for r in orden.repuestos or [] %}
-    {% set ns.total_repuestos = ns.total_repuestos + r.precio %}
-    {% endfor %}
-    {% if orden.costo is not none %}
-    {% set mano_obra = (orden.costo | float) - (ns.total_repuestos | float) %}
-    {% else %}
-    {% set mano_obra = 0.0 %}
-    {% endif %}
+
 
     <!-- Actions Bar (Non-printing) -->
     <div
@@ -195,7 +187,7 @@
                 <div class="totals-right">
                     <div class="total-row">
                         <div class="total-label">Subtotal Materiales:</div>
-                        <div class="total-val">${{ "%.2f"|format(ns.total_repuestos) }}</div>
+                        <div class="total-val">${{ "%.2f"|format(total_repuestos) }}</div>
                     </div>
                     <div class="total-row">
                         <div class="total-label">Subtotal Mano de Obra:</div>

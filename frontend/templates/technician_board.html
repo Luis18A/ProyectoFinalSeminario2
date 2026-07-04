@@ -1,7 +1,7 @@
 {% extends 'layout/base.html' %}
 {% block title %}Tablero del Técnico | TechFlow{% endblock %}
 {% block content %}
-{% from 'layout/macros.html' import badge_estado %}
+{% from 'layout/macros.html' import badge_estado, kanban_card %}
 
 
 <!-- Main Workspace -->
@@ -34,33 +34,9 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in pendiente %}
-                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                        class="block bg-white border-l-4 border-l-error border border-border p-4 hover:shadow-sm transition-all group">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono text-[11px] text-error font-bold">#{{ orden.id }}</span>
-                            {{ badge_estado(orden.estado.value) }}
-                        </div>
-                        <h4 class="font-bold text-sm mb-1 text-on-surface">
-                            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                        </h4>
-                        <p class="text-xs text-on-surface-variant mb-2">
-                            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                        </p>
-                        <div class="border-t border-zinc-100 pt-2">
-                            <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1">Falla</p>
-                            <p class="text-[11px] leading-snug text-on-surface line-clamp-2">{{ orden.falla_reportada }}
-                            </p>
-                        </div>
-                        <div class="mt-3 flex items-center justify-between text-zinc-400">
-                            <span class="text-[10px] font-mono">
-                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
-                            </span>
-                            <span
-                                class="material-symbols-outlined text-[16px] group-hover:text-error transition-colors">arrow_forward</span>
-                        </div>
-                    </a>
+                        {{ kanban_card(orden, 'border-l-error', 'text-error', 'bg-red-50', 'border-red-200') }}
                     {% else %}
-                    <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes pendientes.</p>
+                        <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes pendientes.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -77,33 +53,9 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in diagnostico %}
-                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                        class="block bg-white border-l-4 border-l-blue-600 border border-border p-4 hover:shadow-sm transition-all group">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono text-[11px] text-blue-700 font-bold">#{{ orden.id }}</span>
-                            {{ badge_estado(orden.estado.value) }}
-                        </div>
-                        <h4 class="font-bold text-sm mb-1 text-on-surface">
-                            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                        </h4>
-                        <p class="text-xs text-on-surface-variant mb-2">
-                            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                        </p>
-                        <div class="border-t border-zinc-100 pt-2">
-                            <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1">Falla</p>
-                            <p class="text-[11px] leading-snug text-on-surface line-clamp-2">{{ orden.falla_reportada }}
-                            </p>
-                        </div>
-                        <div class="mt-3 flex items-center justify-between text-zinc-400">
-                            <span class="text-[10px] font-mono">
-                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
-                            </span>
-                            <span
-                                class="material-symbols-outlined text-[16px] group-hover:text-blue-700 transition-colors">arrow_forward</span>
-                        </div>
-                    </a>
+                        {{ kanban_card(orden, 'border-l-blue-600', 'text-blue-700', 'bg-blue-50', 'border-blue-200') }}
                     {% else %}
-                    <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes en diagnóstico.</p>
+                        <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes en diagnóstico.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -120,40 +72,9 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in presupuestado %}
-                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                        class="block bg-white border-l-4 border-l-purple-600 border border-border p-4 hover:shadow-sm transition-all group">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono text-[11px] text-purple-700 font-bold">#{{ orden.id }}</span>
-                            {{ badge_estado(orden.estado.value) }}
-                        </div>
-                        <h4 class="font-bold text-sm mb-1 text-on-surface">
-                            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                        </h4>
-                        <p class="text-xs text-on-surface-variant mb-2">
-                            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                        </p>
-                        <div class="border-t border-zinc-100 pt-2">
-                            <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1">Falla</p>
-                            <p class="text-[11px] leading-snug text-on-surface line-clamp-2">{{ orden.falla_reportada }}
-                            </p>
-                        </div>
-                        {% if orden.costo %}
-                        <div class="mt-2 bg-purple-50 border border-purple-200 p-2">
-                            <p class="text-[10px] font-bold text-purple-700">
-                                Costo: ${{ "%.2f" | format(orden.costo) }}
-                            </p>
-                        </div>
-                        {% endif %}
-                        <div class="mt-3 flex items-center justify-between text-zinc-400">
-                            <span class="text-[10px] font-mono">
-                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
-                            </span>
-                            <span
-                                class="material-symbols-outlined text-[16px] group-hover:text-purple-700 transition-colors">arrow_forward</span>
-                        </div>
-                    </a>
+                        {{ kanban_card(orden, 'border-l-purple-600', 'text-purple-700', 'bg-purple-50', 'border-purple-200') }}
                     {% else %}
-                    <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes presupuestadas.</p>
+                        <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes presupuestadas.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -175,41 +96,9 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in reparacion %}
-                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                        class="block bg-white border-l-4 border-l-orange-500 border border-border p-4 hover:shadow-sm transition-all group">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono text-[11px] text-orange-600 font-bold">#{{ orden.id }}</span>
-                            {{ badge_estado(orden.estado.value) }}
-                        </div>
-                        <h4 class="font-bold text-sm mb-1 text-on-surface">
-                            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                        </h4>
-                        <p class="text-xs text-on-surface-variant mb-2">
-                            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                        </p>
-                        <div class="border-t border-zinc-100 pt-2">
-                            <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1">Diagnóstico</p>
-                            <p class="text-[11px] leading-snug text-on-surface line-clamp-2">
-                                {{ orden.estado_diagnostico or orden.falla_reportada }}
-                            </p>
-                        </div>
-                        {% if orden.costo %}
-                        <div class="mt-2 bg-orange-50 border border-orange-200 p-2">
-                            <p class="text-[10px] font-bold text-orange-700">
-                                Costo: ${{ "%.2f" | format(orden.costo) }}
-                            </p>
-                        </div>
-                        {% endif %}
-                        <div class="mt-3 flex items-center justify-between text-zinc-400">
-                            <span class="text-[10px] font-mono">
-                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
-                            </span>
-                            <span
-                                class="material-symbols-outlined text-[16px] group-hover:text-orange-600 transition-colors">arrow_forward</span>
-                        </div>
-                    </a>
+                        {{ kanban_card(orden, 'border-l-orange-500', 'text-orange-600', 'bg-orange-50', 'border-orange-200') }}
                     {% else %}
-                    <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes en reparación.</p>
+                        <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes en reparación.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -226,35 +115,9 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in listo %}
-                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                        class="block bg-white border-l-4 border-l-emerald-600 border border-border p-4 hover:shadow-sm transition-all group">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono text-[11px] text-emerald-700 font-bold">#{{ orden.id }}</span>
-                            {{ badge_estado(orden.estado.value) }}
-                        </div>
-                        <h4 class="font-bold text-sm mb-1 text-on-surface">
-                            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                        </h4>
-                        <p class="text-xs text-on-surface-variant mb-2">
-                            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                        </p>
-                        {% if orden.costo %}
-                        <div class="mt-2 bg-green-50 border border-green-200 p-2">
-                            <p class="text-[10px] font-bold text-green-700">
-                                Costo: ${{ "%.2f" | format(orden.costo) }}
-                            </p>
-                        </div>
-                        {% endif %}
-                        <div class="mt-3 flex items-center justify-between text-zinc-400">
-                            <span class="text-[10px] font-mono">
-                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
-                            </span>
-                            <span
-                                class="material-symbols-outlined text-[16px] group-hover:text-emerald-600 transition-colors">arrow_forward</span>
-                        </div>
-                    </a>
+                        {{ kanban_card(orden, 'border-l-emerald-600', 'text-emerald-700', 'bg-green-50', 'border-green-200') }}
                     {% else %}
-                    <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes listas.</p>
+                        <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes listas.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -271,35 +134,9 @@
                 </div>
                 <div class="max-h-[380px] flex-1 p-3 overflow-y-auto space-y-3 bg-[#F5F5F7]">
                     {% for orden in entregado %}
-                    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
-                        class="block bg-white border-l-4 border-l-zinc-600 border border-border p-4 hover:shadow-sm transition-all group">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono text-[11px] text-zinc-600 font-bold">#{{ orden.id }}</span>
-                            {{ badge_estado(orden.estado.value) }}
-                        </div>
-                        <h4 class="font-bold text-sm mb-1 text-on-surface">
-                            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
-                        </h4>
-                        <p class="text-xs text-on-surface-variant mb-2">
-                            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
-                        </p>
-                        {% if orden.costo %}
-                        <div class="mt-2 bg-zinc-50 border border-zinc-200 p-2">
-                            <p class="text-[10px] font-bold text-zinc-600">
-                                Costo: ${{ "%.2f" | format(orden.costo) }}
-                            </p>
-                        </div>
-                        {% endif %}
-                        <div class="mt-3 flex items-center justify-between text-zinc-400">
-                            <span class="text-[10px] font-mono">
-                                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
-                            </span>
-                            <span
-                                class="material-symbols-outlined text-[16px] group-hover:text-zinc-600 transition-colors">arrow_forward</span>
-                        </div>
-                    </a>
+                        {{ kanban_card(orden, 'border-l-zinc-600', 'text-zinc-600', 'bg-zinc-50', 'border-zinc-200') }}
                     {% else %}
-                    <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes entregadas.</p>
+                        <p class="text-xs text-center text-zinc-400 pt-8">Sin órdenes entregadas.</p>
                     {% endfor %}
                 </div>
             </div>

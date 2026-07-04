@@ -17,9 +17,9 @@ class AuthController:
             # 1. Búsqueda con manejo de errores de conexión
             usuario = Usuario.get_por_username(username)
             
-            # Simulamos usuario "dummy" si no existe para evitar timing attacks
-            # pero para mantenerlo simple y seguro, seguiremos con tu lógica actual:
             if not usuario:
+                # Mitigación contra Timing Attacks (calcula el hash aunque el usuario no exista)
+                Usuario.hashear_password("dummy_password_for_timing_delay")
                 return None, 'Usuario o contraseña incorrectos.'
 
             # 2. Verificación de contraseña (el costo computacional es el mismo)

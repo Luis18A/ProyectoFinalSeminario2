@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from database import db
 from backend.models.Usuario import Usuario
 import re
@@ -77,7 +77,6 @@ class UsuarioController:
             if not success:
                 return False, result # result es el mensaje de error
 
-            # Desempaquetado limpio directamente al modelo
             nuevo_usuario = Usuario(**result)
             db.session.add(nuevo_usuario)
             db.session.commit()
@@ -155,7 +154,10 @@ class UsuarioController:
         tiempo_auditoria = "Sin registros"
         
         if last_audit:
-            diff = datetime.now() - last_audit.fecha_cambio
+            fecha_cambio = last_audit.fecha_cambio
+            if fecha_cambio.tzinfo is None:
+                fecha_cambio = fecha_cambio.replace(tzinfo=timezone.utc)
+            diff = datetime.now(timezone.utc) - fecha_cambio
             if diff.days > 0: tiempo_auditoria = f"Hace {diff.days}d"
             elif diff.seconds // 3600 > 0: tiempo_auditoria = f"Hace {diff.seconds // 3600}h"
             else: tiempo_auditoria = "Hace instantes"

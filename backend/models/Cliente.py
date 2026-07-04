@@ -17,16 +17,6 @@ class Cliente(db.Model):
     # Relación con Equipo
     equipos = db.relationship('Equipo', back_populates='cliente', lazy=True)
 
-    def __init__(self, dni_cuil, nombre, apellido, telefono,
-                 email, domicilio, localidad):
-        self.dni_cuil  = dni_cuil
-        self.nombre    = nombre
-        self.apellido  = apellido
-        self.telefono  = telefono
-        self.email     = email
-        self.domicilio = domicilio
-        self.localidad = localidad
-
     @classmethod
     def get_all(cls):
         return cls.query.order_by(cls.fecha_registro.desc()).all()

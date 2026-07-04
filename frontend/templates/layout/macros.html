@@ -16,3 +16,62 @@
     {{ estado_clean }}
   </span>
 {% endmacro %}
+
+{% macro kanban_card(orden, border_left_class, text_class, cost_bg_class, cost_border_class) %}
+    <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}"
+        class="block bg-white border-l-4 {{ border_left_class }} border border-border p-4 hover:shadow-sm transition-all group">
+        
+        <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] {{ text_class }} font-bold">#{{ orden.id }}</span>
+            {{ badge_estado(orden.estado.value) }}
+        </div>
+        
+        <h4 class="font-bold text-sm mb-1 text-on-surface">
+            {{ orden.equipo.cliente.nombre }} {{ orden.equipo.cliente.apellido }}
+        </h4>
+        <p class="text-xs text-on-surface-variant mb-2">
+            {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
+        </p>
+        
+        <div class="border-t border-zinc-100 pt-2">
+            {% if orden.estado.value in ['Reparación', 'Listo', 'Entregado'] %}
+                <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1">Diagnóstico</p>
+                <p class="text-[11px] leading-snug text-on-surface line-clamp-2">
+                    {{ orden.estado_diagnostico or orden.falla_reportada }}
+                </p>
+            {% else %}
+                <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1">Falla</p>
+                <p class="text-[11px] leading-snug text-on-surface line-clamp-2">{{ orden.falla_reportada }}</p>
+            {% endif %}
+        </div>
+        
+        {% if orden.costo %}
+        <div class="mt-2 {{ cost_bg_class }} border {{ cost_border_class }} p-2">
+            <p class="text-[10px] font-bold {{ text_class }}">
+                Costo: ${{ "%.2f" | format(orden.costo) }}
+            </p>
+        </div>
+        {% endif %}
+        
+        <div class="mt-3 flex items-center justify-between text-zinc-400">
+            <span class="text-[10px] font-mono">
+                {{ orden.fecha_recepcion.strftime('%d/%m/%Y') if orden.fecha_recepcion else '—' }}
+            </span>
+            <span class="material-symbols-outlined text-[16px] group-hover:{{ text_class }} transition-colors">arrow_forward</span>
+        </div>
+    </a>
+{% endmacro %}
+
+{% macro kmeans_card(titulo, data, color_base) %}
+    <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
+        <div>
+            <span class="font-label-bold text-[9px] text-{{ color_base }}-600 uppercase tracking-widest block">{{ titulo }}</span>
+            <span class="text-2xl font-black text-{{ color_base }}-700 mt-2 block">{{ data.count if data else 0 }} Clientes</span>
+        </div>
+        <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
+            Gasto Total: <span class="font-bold text-on-surface">${{ "{:,.2f}".format(data.total_gasto if data else 0.0) }}</span><br />
+            Frecuencia Promedio: <span class="font-bold text-on-surface">{{ data.avg_frecuencia if data else 0 }} reparaciones</span>
+        </div>
+    </div>
+{% endmacro %}
+

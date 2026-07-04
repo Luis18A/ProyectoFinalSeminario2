@@ -1,6 +1,7 @@
 {% extends 'layout/base.html' %}
 {% block title %}Métricas y Análisis | TechFlow{% endblock %}
 {% block content %}
+{% from 'layout/macros.html' import kmeans_card %}
 <!-- CANVAS (Bento Grid Layout) -->
 <main class="flex-1 p-4 md:p-10 bg-background overflow-x-hidden">
     <!-- Page Header -->
@@ -285,49 +286,9 @@
 
             <!-- Summary Stats of Clusters -->
             <div class="grid grid-cols-1 md:grid-cols-3 border-b border-zinc-100 bg-zinc-50/50">
-                <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
-                    <div>
-                        <span
-                            class="font-label-bold text-[9px] text-emerald-600 uppercase tracking-widest block">Segmento
-                            Platinum</span>
-                        <span class="text-2xl font-black text-emerald-700 mt-2 block"> {{ kmeans_stats.get('Platinum',
-                            {'count': 0}).count }} Clientes </span>
-                    </div>
-                    <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
-                        Gasto Total: <span class="font-bold text-on-surface">${{
-                            "{:,.2f}".format(kmeans_stats.Platinum.total_gasto) }}</span><br />
-                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{
-                            kmeans_stats.Platinum.avg_frecuencia }} reparaciones</span>
-                    </div>
-                </div>
-                <div class="p-6 border-r border-b md:border-b-0 border-zinc-100 flex flex-col justify-between">
-                    <div>
-                        <span class="font-label-bold text-[9px] text-blue-600 uppercase tracking-widest block">Segmento
-                            Activo</span>
-                        <span class="text-2xl font-black text-blue-700 mt-2 block">{{ kmeans_stats.Activo.count }}
-                            Clientes</span>
-                    </div>
-                    <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
-                        Gasto Total: <span class="font-bold text-on-surface">${{
-                            "{:,.2f}".format(kmeans_stats.Activo.total_gasto) }}</span><br />
-                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{
-                            kmeans_stats.Activo.avg_frecuencia }} reparaciones</span>
-                    </div>
-                </div>
-                <div class="p-6 flex flex-col justify-between">
-                    <div>
-                        <span class="font-label-bold text-[9px] text-zinc-500 uppercase tracking-widest block">Segmento
-                            Casual / Nuevo</span>
-                        <span class="text-2xl font-black text-zinc-600 mt-2 block">{{ kmeans_stats.Casual.count }}
-                            Clientes</span>
-                    </div>
-                    <div class="font-label-mono text-[10px] text-zinc-500 mt-4">
-                        Gasto Total: <span class="font-bold text-on-surface">${{
-                            "{:,.2f}".format(kmeans_stats.Casual.total_gasto) }}</span><br />
-                        Frecuencia Promedio: <span class="font-bold text-on-surface">{{
-                            kmeans_stats.Casual.avg_frecuencia }} reparaciones</span>
-                    </div>
-                </div>
+                {{ kmeans_card('Segmento Platinum', kmeans_stats.Platinum, 'emerald') }}
+                {{ kmeans_card('Segmento Activo', kmeans_stats.Activo, 'blue') }}
+                {{ kmeans_card('Segmento Casual / Nuevo', kmeans_stats.Casual, 'zinc') }}
             </div>
 
             <!-- Table of Assignments -->

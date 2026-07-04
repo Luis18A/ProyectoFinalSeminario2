@@ -26,44 +26,7 @@
             {% endif %}
         </div>
 
-        <!-- Search & Filter Bar -->
-        <div class="bento-card mb-md">
-            <form method="GET" action="{{ url_for('orden_servicio.listar_ordenes_view') }}"
-                class="flex flex-col md:flex-row gap-md items-end">
-                <div class="flex-1 w-full relative">
-                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Ticket #</label>
-                    <div class="relative">
-                        <span
-                            class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                        <input name="ticket_id" value="{{ request.args.get('ticket_id', '') }}" class="input-swiss pl-8"
-                            placeholder="Ej. TK-8942" type="text" />
-                    </div>
-                </div>
-                <div class="flex-1 w-full relative">
-                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Cliente</label>
-                    <input name="cliente" value="{{ request.args.get('cliente', '') }}" class="input-swiss"
-                        placeholder="Nombre o Teléfono" type="text" />
-                </div>
-                <div class="flex-1 w-full relative">
-                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Equipo</label>
-                    <input name="equipo" value="{{ request.args.get('equipo', '') }}" class="input-swiss"
-                        placeholder="Tipo o Marca" type="text" />
-                </div>
-                <div class="w-full md:w-auto flex gap-sm">
-                    <button type="submit" class="btn-swiss btn-primary flex-1 md:flex-none">
-                        <span class="material-symbols-outlined text-sm">filter_list</span>
-                        Filtrar
-                    </button>
-                    {% if not is_tech %}
-                    <a href="{{ url_for('orden_servicio.exportar_csv', ticket_id=request.args.get('ticket_id', ''), cliente=request.args.get('cliente', ''), equipo=request.args.get('equipo', ''), activos_only='true') }}"
-                        class="btn-swiss btn-outline flex-1 md:flex-none">
-                        <span class="material-symbols-outlined text-sm">download</span>
-                        Exportar
-                    </a>
-                    {% endif %}
-                </div>
-            </form>
-        </div>
+
 
         <div class="grid grid-cols-12 gap-6">
             <!-- Tabla de Órdenes Activas -->
@@ -83,83 +46,7 @@
     </div>
 </main>
 
-
-
-
-
-<!-- Modal Registrar Orden -->
-<div id="modal-registrar-orden"
-    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    <div
-        class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
-        <div class="border-b border-[#1A1A1A]/38 p-6 flex justify-between items-center bg-zinc-50">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-[18px]">playlist_add</span>
-                Registrar Nueva Orden
-            </h2>
-            <button onclick="cerrarModalRegistrarOrden()"
-                class="text-on-surface-variant hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-        <form id="form-orden" class="p-8 flex flex-col gap-5" method="POST"
-            action="{{ url_for('orden_servicio.crear_ordenServicio') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="next" value="{{ url_for('orden_servicio.listar_ordenes_view') }}">
-            <input type="hidden" name="usuario_id" value="{{ session.get('usuario_id') }}">
-
-            <div class="flex flex-col gap-1 relative">
-                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Buscar Cliente *</label>
-                <input type="text" id="buscar-cliente-input" class="input-swiss w-full"
-                    placeholder="Escribí nombre, apellido o DNI..." autocomplete="off" required>
-                <div id="buscar-cliente-dropdown"
-                    class="absolute left-0 right-0 top-[100%] z-20 hidden bg-white border border-zinc-200 shadow-lg max-h-[200px] overflow-y-auto mt-1 flex flex-col divide-y divide-zinc-100">
-                </div>
-                <input type="hidden" id="select-cliente" name="cliente_id" required>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Equipo *</label>
-                <select id="select-equipo" name="equipo_id" required disabled
-                    class="input-swiss w-full disabled:opacity-40">
-                    <option value="">— Primero seleccione un cliente —</option>
-                </select>
-                <p id="equipo-hint" class="text-[10px] text-zinc-400 hidden mt-1 w-full bg-white py-1">
-                    ⚠ Este cliente no tiene equipos registrados.
-                </p>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Costo Estimado
-                    (opcional)</label>
-                <input type="number" name="costo" step="0.01" min="0" placeholder="0.00"
-                    class="input-swiss font-label-mono">
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Falla Reportada *</label>
-                <input type="text" name="falla_reportada" required minlength="5" maxlength="100"
-                    placeholder="Ej: No enciende, pantalla rota..." class="input-swiss">
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Accesorios /
-                    Pertenencias</label>
-                <input type="text" name="accesorios" value="Sin accesorios" maxlength="100"
-                    placeholder="Ej: cargador, funda, mouse..." class="input-swiss">
-            </div>
-
-            <div class="flex gap-4 mt-4">
-                <button type="button" onclick="cerrarModalRegistrarOrden()"
-                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
-                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">save</span>
-                    Guardar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+{% include 'componentes/modal_registrar_orden.html' %}
 {% endblock %}
 
 {% block help_content %}
@@ -167,10 +54,7 @@
     <h3 class="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">Gestión de Órdenes (Taller)</h3>
     <p>Esta vista centraliza todas las órdenes de servicio activas en el taller y permite controlar su flujo de estados.</p>
 
-    <div class="space-y-2">
-        <p class="font-semibold text-zinc-700">• Buscador y Filtros Bento-Card:</p>
-        <p class="pl-3 text-zinc-500">Filtrá las órdenes activas del taller por <strong>ID de Ticket (ej. TK-0025)</strong>, datos del cliente (nombre, apellido o teléfono) o del equipo (tipo, marca). Presioná <strong>Exportar</strong> para descargar en CSV los resultados filtrados.</p>
-    </div>
+
 
     <div class="space-y-2">
         <p class="font-semibold text-zinc-700">• Flujo de Trabajo (Ciclo de Vida):</p>

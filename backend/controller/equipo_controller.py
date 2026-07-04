@@ -15,23 +15,43 @@ class EquipoController:
         }
 
         # ── 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS Y LONGITUD ──
+        import re
+
         if not datos['numero_serie']:
             return False, "El número de serie no puede estar vacío."
         if len(datos['numero_serie']) > 80:
             return False, "El número de serie no puede tener más de 80 caracteres."
+        patron_serial = r"^[a-zA-Z0-9][a-zA-Z0-9\s\-\.\/_]*$"
+        if not re.match(patron_serial, datos['numero_serie']):
+            return False, "El número de serie contiene caracteres no permitidos o no comienza con una letra/número."
+        if not re.search(r"[a-zA-Z0-9]", datos['numero_serie']):
+            return False, "El número de serie debe contener al menos una letra o número."
 
         if not datos['marca']:
             return False, "La marca no puede estar vacía."
         if len(datos['marca']) > 80:
             return False, "La marca no puede tener más de 80 caracteres."
+        patron_marca_modelo = r"^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ][a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-\.\+\/()\"]*$"
+        if not re.match(patron_marca_modelo, datos['marca']):
+            return False, "La marca contiene caracteres no permitidos o no comienza con una letra/número."
+        if not re.search(r"[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ]", datos['marca']):
+            return False, "La marca debe contener al menos una letra o número."
 
         if not datos['modelo']:
             return False, "El modelo no puede estar vacío."
         if len(datos['modelo']) > 80:
             return False, "El modelo no puede tener más de 80 caracteres."
+        if not re.match(patron_marca_modelo, datos['modelo']):
+            return False, "El modelo contiene caracteres no permitidos o no comienza con una letra/número."
+        if not re.search(r"[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ]", datos['modelo']):
+            return False, "El modelo debe contener al menos una letra o número."
 
-        if datos['descripcion'] and len(datos['descripcion']) > 500:
-            return False, "La descripción no puede tener más de 500 caracteres."
+        if datos['descripcion']:
+            if len(datos['descripcion']) > 500:
+                return False, "La descripción no puede tener más de 500 caracteres."
+            patron_desc = r"^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s'\",\.\-\+\/()#\?!:;*%=\$@&º°_]+$"
+            if not re.match(patron_desc, datos['descripcion']):
+                return False, "La descripción contiene caracteres no permitidos."
 
         # ── 3. VALIDACIÓN DE CLAVES FORÁNEAS (IDs) ──
         try:
@@ -66,29 +86,11 @@ class EquipoController:
             
             db.session.add(nuevo)
             db.session.commit()
-            return True, "Equipo creado exitosamente."
+            return True, nuevo
 
         except Exception:
             db.session.rollback()
             return False, "Error al crear el equipo. Intentá de nuevo."
-
-    @staticmethod
-    def crear_equipo_rapido(datos_formulario):
-        """Intenta crear el equipo y devuelve el DTO formateado en un solo viaje."""
-        success, result = EquipoController.crear_equipo(datos_formulario)
-        if not success:
-            return False, result, None
-
-        # Limpiamos el número de serie de la misma forma que en procesar_datos (strip y upper)
-        clean_serial = (datos_formulario.get('numero_serie') or '').strip().upper()
-        equipo = Equipo.get_por_numero_serie(clean_serial)
-        if not equipo:
-            return False, "Error al recuperar el equipo tras la creación.", None
-
-        return True, result, {
-            'id': equipo.id,
-            'label': f"{equipo.marca} {equipo.modelo} (S/N: {equipo.numero_serie})"
-        }
 
     @staticmethod
     def editar_equipo(equipo_id, datos_formulario):
@@ -153,10 +155,14 @@ class EquipoController:
 
     @staticmethod
     def buscar_equipos(termino):
+        from database import remove_accents
+        from sqlalchemy import func
+        clean_term = remove_accents(termino)
+        search_pattern = f"%{clean_term}%"
         return Equipo.query.filter(
-            (Equipo.marca.ilike(f"%{termino}%")) | 
-            (Equipo.modelo.ilike(f"%{termino}%")) | 
-            (Equipo.numero_serie.ilike(f"%{termino}%"))
+            (func.unaccent(Equipo.marca).ilike(func.unaccent(search_pattern))) | 
+            (func.unaccent(Equipo.modelo).ilike(func.unaccent(search_pattern))) | 
+            (func.unaccent(Equipo.numero_serie).ilike(func.unaccent(search_pattern)))
         ).limit(50).all()
 
     @staticmethod

@@ -1,0 +1,36 @@
+<!-- Modal Ver Órdenes de Servicio -->
+<div id="modal-ver-ordenes"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div
+        class="bg-white w-full max-w-lg bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="font-headline-md text-primary tracking-tight flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">history</span>
+                Historial de Órdenes de Servicio
+            </h2>
+            <button onclick="cerrarModalOrdenes()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+            <div>
+                <p class="font-label-bold text-on-surface-variant uppercase text-[10px] tracking-wider">Equipo
+                    Seleccionado</p>
+                <h3 id="modal-equipo-nombre" class="font-headline-sm text-primary mt-1"></h3>
+            </div>
+            <div class="border-t border-border pt-4">
+                <p class="font-label-bold text-on-surface-variant uppercase text-[10px] tracking-wider mb-3">Órdenes
+                    Vinculadas</p>
+                <div id="modal-ordenes-contenido" class="max-h-[350px] overflow-y-auto pr-1 flex flex-col gap-3">
+                    <!-- Se poblará dinámicamente -->
+                </div>
+            </div>
+            <div class="flex gap-4 mt-2">
+                <button type="button" onclick="cerrarModalOrdenes()"
+                    class="btn-swiss btn-outline w-full justify-center">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

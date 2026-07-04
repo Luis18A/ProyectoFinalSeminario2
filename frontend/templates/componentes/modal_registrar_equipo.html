@@ -1,0 +1,69 @@
+<!-- Modal Registrar Equipo -->
+<div id="modal-registrar-equipo"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white w-full max-w-md border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/38 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">devices</span>
+                Registrar Dispositivo
+            </h2>
+            <button onclick="cerrarModalRegistrarEquipo()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-registrar-equipo" class="p-8 flex flex-col gap-5" action="{{ url_for('equipo.crear_equipo') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if cliente %}
+            <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+            {% endif %}
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Tipo de Equipo *</label>
+                <div class="flex gap-2">
+                    <select id="select-tipo-dispositivo" name="tipo_dispositivo_id" class="input-swiss flex-grow appearance-none bg-transparent" required>
+                        <option disabled selected value="">Seleccionar tipo</option>
+                        {% for tipo in tipo_dispositivos %}
+                        <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" onclick="abrirModalNuevoTipo()"
+                        class="p-2 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center w-[41px]"
+                        title="Nuevo Tipo de Equipo">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Marca *</label>
+                    <input id="marca" name="marca" class="input-swiss" placeholder="Ej. HP, Dell" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Modelo *</label>
+                    <input id="modelo" name="modelo" class="input-swiss" placeholder="Ej. Latitude 5420" type="text" required />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Número de Serie * (S/N)</label>
+                <input id="numero_serie" name="numero_serie" class="input-swiss font-label-mono uppercase" placeholder="CN-XXXXXX" type="text" required />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1">Descripción General</label>
+                <input id="descripcion" name="descripcion" class="input-swiss" placeholder="Detalles de estado, color, accesorios..." type="text" />
+            </div>
+
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModalRegistrarEquipo()"
+                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -107,8 +107,16 @@ document.addEventListener('DOMContentLoaded', function () {
     restringirEntrada(document.getElementById('apellido'), letterRegex);
     restringirEntrada(document.getElementById('edit-nombre'), letterRegex);
     restringirEntrada(document.getElementById('edit-apellido'), letterRegex);
-    restringirEntrada(document.getElementById('localidad'), letterRegex);
-    restringirEntrada(document.getElementById('edit-localidad'), letterRegex);
+
+    // Permitir letras, espacios, apóstrofes, guiones y puntos en la localidad
+    const localityRegex = /[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'\.-]/g;
+    restringirEntrada(document.getElementById('localidad'), localityRegex);
+    restringirEntrada(document.getElementById('edit-localidad'), localityRegex);
+
+    // Permitir letras, números, espacios, comillas, comas, puntos, guiones, barras, paréntesis y numerales en el domicilio
+    const domRegex = /[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s'",\.\-°ºª\/()#]/g;
+    restringirEntrada(document.getElementById('domicilio'), domRegex);
+    restringirEntrada(document.getElementById('edit-domicilio'), domRegex);
 
     // Algoritmo matemático para validar CUIT/CUIL argentino
     const validarCuitCuil = (cuit) => {
@@ -210,6 +218,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (domicilio.length > 150) {
             return "El domicilio es demasiado largo (máximo 150 caracteres).";
         }
+        const addressPattern = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s'",\.\-°ºª/()#]+$/;
+        if (!addressPattern.test(domicilio)) {
+            return "El domicilio contiene caracteres no permitidos.";
+        }
         if (!/[A-Za-z0-9áéíóúÁÉÍÓÚñÑüÜ]/.test(domicilio)) {
             return "El domicilio es inválido (debe contener letras o números).";
         }
@@ -221,8 +233,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (localidad.length > 100) {
             return "La localidad es demasiado larga (máximo 100 caracteres).";
         }
-        if (!letterPattern.test(localidad)) {
-            return "La localidad solo debe contener letras, espacios, guiones o apóstrofes.";
+        const localityPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'\.-]+$/;
+        if (!localityPattern.test(localidad)) {
+            return "La localidad solo debe contener letras, espacios, puntos, guiones o apóstrofes.";
         }
 
         return null; // Datos válidos

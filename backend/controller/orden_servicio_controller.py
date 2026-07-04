@@ -55,7 +55,7 @@ class OrdenServicioController:
 
             # Validar equipo disponible
             if OrdenServicio.query.filter(OrdenServicio.equipo_id == result['equipo_id'], 
-                                        OrdenServicio.estado != EstadoOrden.ENTREGADO).first():
+                                         OrdenServicio.estado != EstadoOrden.ENTREGADO).first():
                 return False, "El equipo ya tiene una orden activa."
 
             nueva_orden = OrdenServicio(**result)

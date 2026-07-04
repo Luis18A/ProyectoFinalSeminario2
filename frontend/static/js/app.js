@@ -152,6 +152,264 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ─── LÓGICA DE BUSCADOR GLOBAL ─────────────────────────────────────────
+    const globalSearchInput = document.getElementById('global-search-input');
+    const globalSearchResults = document.getElementById('global-search-results');
+    const globalSearchClear = document.getElementById('global-search-clear');
+    const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+    const mobileSearchBack = document.getElementById('mobile-search-back');
+    const header = document.querySelector('header');
+
+    if (globalSearchInput && globalSearchResults) {
+        let debounceTimer;
+        let activeIndex = -1;
+
+        const performSearch = async (query) => {
+            if (query.length < 2) {
+                globalSearchResults.innerHTML = '';
+                globalSearchResults.classList.add('hidden');
+                globalSearchClear?.classList.add('hidden');
+                activeIndex = -1;
+                return;
+            }
+
+            globalSearchClear?.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/api/global-search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Search request failed');
+                
+                const data = await response.json();
+                renderSearchResults(data, query);
+            } catch (err) {
+                console.error('Error during global search:', err);
+                globalSearchResults.innerHTML = `
+                    <div class="p-4 text-center text-red-500 font-semibold text-xs">
+                        Error al buscar. Por favor, reintente.
+                    </div>
+                `;
+                globalSearchResults.classList.remove('hidden');
+            }
+        };
+
+        const renderSearchResults = (data, query) => {
+            globalSearchResults.innerHTML = '';
+            let html = '';
+            let hasResults = false;
+
+            const renderEstadoBadge = (estado) => {
+                const estadoClean = (estado || '').trim();
+                let bgClass = 'bg-zinc-100 text-zinc-600 border-zinc-200';
+                let icon = 'build';
+                
+                if (estadoClean === 'Pendiente') {
+                    bgClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                    icon = 'info';
+                } else if (estadoClean === 'Diagnostico' || estadoClean === 'Diagnóstico') {
+                    bgClass = 'bg-blue-50 text-blue-700 border-blue-200';
+                    icon = 'build';
+                } else if (estadoClean === 'Presupuestado') {
+                    bgClass = 'bg-purple-50 text-purple-700 border-purple-200';
+                    icon = 'build';
+                } else if (estadoClean === 'Reparacion' || estadoClean === 'Reparación') {
+                    bgClass = 'bg-orange-50 text-orange-700 border-orange-200';
+                    icon = 'build';
+                } else if (estadoClean === 'Listo') {
+                    bgClass = 'bg-green-50 text-green-700 border-green-200';
+                    icon = 'check_circle';
+                } else if (estadoClean === 'Entregado') {
+                    bgClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    icon = 'check_circle';
+                }
+                
+                return `<span class="px-2 py-0.5 font-bold uppercase text-[9px] tracking-wider border inline-flex items-center gap-1 ${bgClass}">
+                    <span class="material-symbols-outlined text-[10px]">${icon}</span>
+                    ${estadoClean}
+                </span>`;
+            };
+
+            const escapeHTML = (str) => {
+                return str.replace(/[&<>'"]/g, 
+                    tag => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        "'": '&#39;',
+                        '"': '&quot;'
+                    }[tag] || tag)
+                );
+            };
+
+            // Clientes
+            if (data.clientes && data.clientes.length > 0) {
+                hasResults = true;
+                html += `<div class="bg-zinc-50 border-b border-zinc-100 px-4 py-2 text-[9px] font-bold text-zinc-400 tracking-widest uppercase select-none">Clientes</div>`;
+                data.clientes.forEach(c => {
+                    html += `
+                        <a href="${c.url}" class="search-result-item flex items-center justify-between px-4 py-3 hover:bg-zinc-50 border-b border-zinc-100/50 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-zinc-400 group-hover:text-[#0057FF] transition-colors">person</span>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-semibold text-[#1A1A1A]">${escapeHTML(c.nombre)}</span>
+                                    <span class="text-[10px] text-zinc-400">DNI/CUIL: ${escapeHTML(c.dni_cuil)}</span>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition-colors text-sm">arrow_forward</span>
+                        </a>
+                    `;
+                });
+            }
+
+            // Equipos
+            if (data.equipos && data.equipos.length > 0) {
+                hasResults = true;
+                html += `<div class="bg-zinc-50 border-b border-zinc-100 px-4 py-2 text-[9px] font-bold text-zinc-400 tracking-widest uppercase select-none">Equipos</div>`;
+                data.equipos.forEach(e => {
+                    html += `
+                        <a href="${e.url}" class="search-result-item flex items-center justify-between px-4 py-3 hover:bg-zinc-50 border-b border-zinc-100/50 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-zinc-400 group-hover:text-[#0057FF] transition-colors">devices</span>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-semibold text-[#1A1A1A]">${escapeHTML(e.label)}</span>
+                                    <span class="text-[10px] text-zinc-400">Cliente: ${escapeHTML(e.cliente_nombre)}</span>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition-colors text-sm">arrow_forward</span>
+                        </a>
+                    `;
+                });
+            }
+
+            // Órdenes
+            if (data.ordenes && data.ordenes.length > 0) {
+                hasResults = true;
+                html += `<div class="bg-zinc-50 border-b border-zinc-100 px-4 py-2 text-[9px] font-bold text-zinc-400 tracking-widest uppercase select-none">Órdenes de Servicio</div>`;
+                data.ordenes.forEach(o => {
+                    html += `
+                        <a href="${o.url}" class="search-result-item flex items-center justify-between px-4 py-3 hover:bg-zinc-50 border-b border-zinc-100/50 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-zinc-400 group-hover:text-[#0057FF] transition-colors">receipt_long</span>
+                                <div class="flex flex-col gap-0.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-bold text-[#1A1A1A] font-mono">${escapeHTML(o.codigo)}</span>
+                                        ${renderEstadoBadge(o.estado)}
+                                    </div>
+                                    <span class="text-[11px] font-medium text-[#1A1A1A]">
+                                        ${escapeHTML(o.cliente)} • <span class="text-zinc-500 font-normal">${escapeHTML(o.equipo)}</span>
+                                    </span>
+                                    <span class="text-[10px] text-zinc-400 truncate max-w-[340px]">Falla: ${escapeHTML(o.falla)}</span>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition-colors text-sm">arrow_forward</span>
+                        </a>
+                    `;
+                });
+            }
+
+            if (!hasResults) {
+                html = `
+                    <div class="p-8 text-center text-zinc-400 select-none flex flex-col items-center gap-2">
+                        <span class="material-symbols-outlined text-zinc-300 text-3xl">search_off</span>
+                        <span class="text-[11px] font-medium">No se encontraron resultados para "${escapeHTML(query)}"</span>
+                    </div>
+                `;
+            }
+
+            globalSearchResults.innerHTML = html;
+            globalSearchResults.classList.remove('hidden');
+            activeIndex = -1;
+        };
+
+        const closeSearch = () => {
+            globalSearchResults.innerHTML = '';
+            globalSearchResults.classList.add('hidden');
+            globalSearchInput.value = '';
+            globalSearchClear?.classList.add('hidden');
+            header?.classList.remove('mobile-search-active');
+            activeIndex = -1;
+        };
+
+        // Input listener with debounce
+        globalSearchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value.trim();
+            debounceTimer = setTimeout(() => {
+                performSearch(query);
+            }, 250);
+        });
+
+        // Clear button click listener
+        globalSearchClear?.addEventListener('click', () => {
+            globalSearchInput.value = '';
+            globalSearchInput.focus();
+            performSearch('');
+        });
+
+        // Toggle mobile search
+        mobileSearchToggle?.addEventListener('click', () => {
+            header?.classList.add('mobile-search-active');
+            setTimeout(() => {
+                globalSearchInput.focus();
+            }, 100);
+        });
+
+        // Back button on mobile search
+        mobileSearchBack?.addEventListener('click', () => {
+            closeSearch();
+        });
+
+        // Close on clicking outside
+        document.addEventListener('click', (e) => {
+            if (!globalSearchResults.contains(e.target) && 
+                !globalSearchInput.contains(e.target) && 
+                !mobileSearchToggle?.contains(e.target)) {
+                globalSearchResults.classList.add('hidden');
+            }
+        });
+
+        // Focus input to reopen results if not empty
+        globalSearchInput.addEventListener('focus', () => {
+            if (globalSearchInput.value.trim().length >= 2 && globalSearchResults.children.length > 0) {
+                globalSearchResults.classList.remove('hidden');
+            }
+        });
+
+        // Keyboard navigation (Escape, ArrowDown, ArrowUp, Enter)
+        globalSearchInput.addEventListener('keydown', (e) => {
+            const items = globalSearchResults.querySelectorAll('.search-result-item');
+            if (!items.length) return;
+
+            if (e.key === 'Escape') {
+                closeSearch();
+                globalSearchInput.blur();
+                e.preventDefault();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeIndex < items.length - 1) {
+                    if (activeIndex >= 0) {
+                        items[activeIndex].classList.remove('search-result-item-active');
+                    }
+                    activeIndex++;
+                    items[activeIndex].classList.add('search-result-item-active');
+                    items[activeIndex].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeIndex > 0) {
+                    items[activeIndex].classList.remove('search-result-item-active');
+                    activeIndex--;
+                    items[activeIndex].classList.add('search-result-item-active');
+                    items[activeIndex].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                if (activeIndex >= 0 && activeIndex < items.length) {
+                    e.preventDefault();
+                    items[activeIndex].click();
+                }
+            }
+        });
+    }
+
     console.log('TechFlow Responsive Terminal initialized with Global Search.');
 });
 

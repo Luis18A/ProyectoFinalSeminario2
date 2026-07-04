@@ -1,3 +1,5 @@
+import logging
+from sqlalchemy.sql import func
 from backend.utils.predictor_service import PredictorService
 from backend.models.OrdenServicio import OrdenServicio
 from database import db
@@ -11,7 +13,47 @@ from backend.models.Notificacion import Notificacion
 from backend.models.Usuario import Usuario
 from backend.models.Rol import Rol
 
+logger = logging.getLogger(__name__)
+
 class OrdenFlujoController:
+    # Constante de clase con el orden secuencial de los estados
+    ESTADOS_ORDENADOS = [
+        EstadoOrden.PENDIENTE,
+        EstadoOrden.DIAGNOSTICO,
+        EstadoOrden.PRESUPUESTADO,
+        EstadoOrden.REPARACION,
+        EstadoOrden.LISTO,
+        EstadoOrden.ENTREGADO
+    ]
+
+    @staticmethod
+    def _validar_transicion(orden, nuevo_estado, rol_actual, observacion=None):
+        """Valida que la transición de estado cumpla las reglas de negocio y permisos."""
+        if nuevo_estado == orden.estado:
+            return True, ""
+
+        # 1. Restricciones de rol
+        if rol_actual == 'Técnico':
+            if orden.estado == EstadoOrden.PRESUPUESTADO:
+                return False, "No tienes permisos para aprobar o rechazar presupuestos. Esto debe ser realizado por la secretaría o administración."
+            if nuevo_estado == EstadoOrden.ENTREGADO:
+                return False, "El técnico no tiene permitido entregar equipos. Esto debe ser realizado por la secretaría o administración."
+
+        # 2. Transición permitida por la máquina de estados
+        permitidos = EstadoOrden.transiciones_permitidas(orden.estado)
+        if nuevo_estado not in permitidos:
+            return False, f"Transición de estado no permitida: {orden.estado.value} -> {nuevo_estado.value}."
+
+        # 3. Validación de observaciones en retrocesos
+        es_retroceso = (
+            (orden.estado == EstadoOrden.PRESUPUESTADO and nuevo_estado == EstadoOrden.DIAGNOSTICO) or
+            (orden.estado == EstadoOrden.REPARACION and nuevo_estado == EstadoOrden.PRESUPUESTADO)
+        )
+        if es_retroceso and not (observacion and str(observacion).strip()):
+            return False, "La observación técnica es obligatoria al retroceder el estado de la orden."
+
+        return True, ""
+
     @staticmethod
     def actualizar_ordenServicio(orden_id, datos_formulario, rol_actual=''):
         """Actualiza la orden y maneja el cambio de estado con historial."""
@@ -24,7 +66,31 @@ class OrdenFlujoController:
             if rol_actual == 'Secretario' and orden.estado != EstadoOrden.PENDIENTE:
                 return False, "La secretaría no tiene permitido modificar campos de la orden una vez que ha salido del estado Pendiente."
 
+            # REGLA: No se permite modificar una orden ya ENTREGADA
+            if orden.estado == EstadoOrden.ENTREGADO:
+                if rol_actual != 'Administrador':
+                    return False, "No se permite modificar una orden de servicio que ya ha sido entregada."
+                
+                # Si es Administrador, solo puede modificar el costo (con justificación técnica)
+                intentando_cambiar_otros = False
+                new_diag = datos_formulario.get('estado_diagnostico')
+                if new_diag is not None and new_diag.strip() != (orden.estado_diagnostico or ''):
+                    intentando_cambiar_otros = True
+                new_falla = datos_formulario.get('falla_reportada')
+                if new_falla is not None and new_falla.strip() != (orden.falla_reportada or ''):
+                    intentando_cambiar_otros = True
+                new_acc = datos_formulario.get('accesorios')
+                if new_acc is not None and new_acc.strip() != (orden.accesorios or ''):
+                    intentando_cambiar_otros = True
+                nuevo_estado_form = datos_formulario.get('estado')
+                if nuevo_estado_form and nuevo_estado_form != orden.estado.name:
+                    intentando_cambiar_otros = True
+                
+                if intentando_cambiar_otros:
+                    return False, "Como Administrador, en una orden entregada solo tienes permitido modificar el monto con su respectiva justificación."
+
             estado_anterior_enum = orden.estado
+            nuevo_enum = estado_anterior_enum
 
             # Capturamos datos del formulario
             nuevo_estado_id = datos_formulario.get('estado')
@@ -34,8 +100,6 @@ class OrdenFlujoController:
                 return False, "ID de usuario inválido."
             observacion = datos_formulario.get('observaciones')
             costo = datos_formulario.get('costo')
-            estado_anterior_nombre = orden.estado.value
-            estado_nuevo_nombre = orden.estado.value
             hubo_cambios = False
             es_estado_cerrado = orden.estado in (EstadoOrden.LISTO, EstadoOrden.ENTREGADO)
 
@@ -66,30 +130,14 @@ class OrdenFlujoController:
                 except KeyError:
                     return False, f"Estado '{nuevo_estado_id}' no es válido."
                 
-                # REGLA: Si la orden está PRESUPUESTADO, el Técnico no puede cambiar el estado manually.
-                # Solo Administrador y Secretario pueden confirmar o rechazar presupuestos.
-                if orden.estado == EstadoOrden.PRESUPUESTADO and rol_actual == 'Técnico':
-                    return False, "No tienes permisos para aprobar o rechazar presupuestos. Esto debe ser realizado por la secretaría o administración."
+                # Validaciones centralizadas de transición
+                es_valido, error_msg = OrdenFlujoController._validar_transicion(orden, nuevo_enum, rol_actual, observacion)
+                if not es_valido:
+                    return False, error_msg
                 
-                if nuevo_enum == EstadoOrden.ENTREGADO and rol_actual == 'Técnico':
-                    return False, "El técnico no tiene permitido entregar equipos. Esto debe ser realizado por la secretaría o administración."
+                if nuevo_enum == EstadoOrden.ENTREGADO:
+                    orden.fecha_entrega = func.now()
                 
-                # Validar la transición usando la máquina de estados
-                permitidos = EstadoOrden.transiciones_permitidas(orden.estado)
-                if nuevo_enum not in permitidos:
-                    return False, f"Transición de estado no permitida: {orden.estado.value} -> {nuevo_enum.value}."
-                
-                # Validar obligatoriedad de observación en retrocesos
-                es_retroceso = (
-                    (orden.estado == EstadoOrden.PRESUPUESTADO and nuevo_enum == EstadoOrden.DIAGNOSTICO) or
-                    (orden.estado == EstadoOrden.REPARACION and nuevo_enum == EstadoOrden.PRESUPUESTADO)
-                )
-                if es_retroceso:
-                    if not observacion or not str(observacion).strip():
-                        return False, "La observación técnica es obligatoria al retroceder el estado de la orden."
-                
-                orden.estado = nuevo_enum
-                estado_nuevo_nombre = orden.estado.value
                 hubo_cambios = True
                     
             # 2. Si hay un costo nuevo y no es estado cerrado
@@ -161,9 +209,7 @@ class OrdenFlujoController:
             if not hubo_cambios:
                 return False, "No se detectaron cambios en la orden de servicio."
 
-            # 3. Si hubo algún cambio, grabamos el historial.
-            # En el historial técnico grabamos la observación/trabajo realizado solo si fue modificado en esta acción,
-            # o bien un mensaje estándar si hubo un cambio de estado automático.
+            # Grabamos el historial
             historial_obs = None
             if nuevo_estado_id and nuevo_estado_id != estado_anterior_enum.name:
                 try:
@@ -180,18 +226,16 @@ class OrdenFlujoController:
             else:
                 historial_obs = observacion_limpia if (nota_modificada and observacion_limpia) else None
 
-            historial = HistorialEstado(
-                orden_id=orden.id,
+            historial = orden.preparar_cambio_estado(
+                nuevo_estado=nuevo_enum,
                 usuario_id=usuario_id,
-                estado_anterior=estado_anterior_nombre,
-                estado_nuevo=estado_nuevo_nombre,
-                observacion_tecnica=historial_obs
+                observacion=historial_obs
             )
             db.session.add(historial)
             db.session.commit()
 
             # Enviar notificaciones si cambió el estado
-            if nuevo_state_changed := (nuevo_estado_id and nuevo_estado_id != estado_anterior_enum.name):
+            if nuevo_estado_id and nuevo_estado_id != estado_anterior_enum.name:
                 OrdenFlujoController._enviar_notificaciones_cambio_estado(
                     orden=orden,
                     estado_anterior=estado_anterior_enum,
@@ -201,6 +245,7 @@ class OrdenFlujoController:
 
             return True, 'Ticket actualizado correctamente.'
         except Exception as e:
+            logger.exception("Error al actualizar la orden de servicio")
             db.session.rollback()
             return False, f"Error al actualizar la orden: {str(e)}"
             
@@ -267,9 +312,9 @@ class OrdenFlujoController:
                         'orden_id': n.orden_id
                     }))
                 except Exception as sse_err:
-                    print(f"[SSE Error] No se pudo anunciar notificación: {sse_err}")
+                    logger.warning(f"[SSE Error] No se pudo anunciar notificación: {sse_err}")
         except Exception as e:
-            print(f"Error al enviar notificaciones: {str(e)}")
+            logger.error(f"[NOTIFICACIONES] Error crítico al enviar: {str(e)}")
             db.session.rollback()
 
     @staticmethod
@@ -288,48 +333,30 @@ class OrdenFlujoController:
             if nuevo_estado == orden.estado:
                 return True, f"La orden ya está en estado {nuevo_estado.value}."
 
-            # ── Restricciones por rol ──────────────────────────────────
-            if rol_actual == 'Técnico':
-                if orden.estado == EstadoOrden.PRESUPUESTADO:
-                    return False, "No tenés permisos para aprobar o rechazar presupuestos."
-                if nuevo_estado == EstadoOrden.ENTREGADO:
-                    return False, "El técnico no puede marcar equipos como entregados."
-
-            # ── Validar transición con la máquina de estados ──────────
-            permitidos = EstadoOrden.transiciones_permitidas(orden.estado)
-            if nuevo_estado not in permitidos:
-                return False, f"Transición no permitida: {orden.estado.value} → {nuevo_estado.value}."
+            # Validaciones centralizadas de transición
+            es_valido, error_msg = OrdenFlujoController._validar_transicion(orden, nuevo_estado, rol_actual, observacion)
+            if not es_valido:
+                return False, error_msg
 
             # ── Diagnóstico obligatorio para estados distintos de PENDIENTE ──
             if nuevo_estado != EstadoOrden.PENDIENTE and not (orden.estado_diagnostico or '').strip():
                 return False, "La orden de servicio debe tener un diagnóstico técnico registrado para cambiar al estado seleccionado."
 
-            # ── Observación obligatoria en retrocesos ─────────────────
-            es_retroceso = (
-                (orden.estado == EstadoOrden.PRESUPUESTADO and nuevo_estado == EstadoOrden.DIAGNOSTICO) or
-                (orden.estado == EstadoOrden.REPARACION    and nuevo_estado == EstadoOrden.PRESUPUESTADO)
-            )
-            if es_retroceso and not (observacion and str(observacion).strip()):
-                return False, "La observación técnica es obligatoria al retroceder el estado."
-
             if nuevo_estado == EstadoOrden.ENTREGADO:
-                orden.fecha_entrega = datetime.now()
+                orden.fecha_entrega = func.now()
 
             estado_anterior = orden.estado
 
             try:
-                # 1. Capturás el objeto devuelto por el modelo
+                # Capturás el objeto devuelto por el modelo y grabamos
                 nuevo_historial = orden.preparar_cambio_estado(nuevo_estado, usuario_id, observacion)
-                
-                # 2. El controlador asume la responsabilidad de agregarlo a la sesión
                 db.session.add(nuevo_historial)
-                
-                # 3. Y finalmente guardamos todo en una sola transacción atómica
                 db.session.commit()
             except ValueError as e:
                 db.session.rollback()
                 return False, str(e)
-            except Exception:
+            except Exception as e:
+                logger.exception("Error al persistir cambio de estado")
                 db.session.rollback()
                 return False, "Error al cambiar el estado."
 
@@ -343,7 +370,8 @@ class OrdenFlujoController:
 
             return True, f"Estado actualizado a {nuevo_estado.value}."
 
-        except Exception:
+        except Exception as e:
+            logger.exception("Error en cambiar_estado_flujo")
             db.session.rollback()
             return False, "Error al cambiar el estado. Intentá de nuevo."
 
@@ -359,25 +387,16 @@ class OrdenFlujoController:
         opciones_estado = EstadoOrden.transiciones_permitidas(orden.estado)
         if rol_actual == 'Técnico':
             opciones_estado = [e for e in opciones_estado if e != EstadoOrden.ENTREGADO]
-        # Construir opciones detalladas indicando dirección (Actual, Avanzar, Retroceder)
-        lista_ordenada = [
-            EstadoOrden.PENDIENTE,
-            EstadoOrden.DIAGNOSTICO,
-            EstadoOrden.PRESUPUESTADO,
-            EstadoOrden.REPARACION,
-            EstadoOrden.LISTO,
-            EstadoOrden.ENTREGADO
-        ]
         
         try:
-            idx_actual = lista_ordenada.index(orden.estado)
+            idx_actual = OrdenFlujoController.ESTADOS_ORDENADOS.index(orden.estado)
         except ValueError:
             idx_actual = -1
             
         opciones_estado_detalladas = []
         for e in opciones_estado:
             try:
-                idx_opcion = lista_ordenada.index(e)
+                idx_opcion = OrdenFlujoController.ESTADOS_ORDENADOS.index(e)
             except ValueError:
                 idx_opcion = -1
                 
@@ -399,7 +418,9 @@ class OrdenFlujoController:
                 'is_actual': e == orden.estado
             })
             
-        if rol_actual == 'Secretario':
+        if orden.estado == EstadoOrden.ENTREGADO:
+            puede_editar = False
+        elif rol_actual == 'Secretario':
             puede_editar = (orden.estado == EstadoOrden.PENDIENTE)
         else:
             puede_editar = rol_actual in ('Técnico', 'Administrador')

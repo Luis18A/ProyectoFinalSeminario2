@@ -17,6 +17,8 @@ def listar_usuarios():
 @role_required('Administrador')
 def crear_usuario():
     success, message = usuario_controller.crear_usuario(request.form)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return {'success': success, 'message': message}, 200 if success else 400
     flash(message, 'success' if success else 'error')
     return redirect(url_for('usuarios.listar_usuarios'))
 
@@ -33,5 +35,7 @@ def eliminar_usuario(id):
 @role_required('Administrador')
 def actualizar_usuario(id):
     success, message = usuario_controller.actualizar_usuario(id, request.form)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return {'success': success, 'message': message}, 200 if success else 400
     flash(message, 'success' if success else 'error')
     return redirect(url_for('usuarios.listar_usuarios'))

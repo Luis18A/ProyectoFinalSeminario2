@@ -9,8 +9,11 @@ equipo_bp = Blueprint('equipo', __name__)
 @role_required('Administrador', 'Secretario')
 def crear_equipo():
     cliente_id = request.form.get('cliente_id')
-    success, message = equipo_controller.crear_equipo(request.form)
-    flash(message, 'success' if success else 'error')
+    success, result = equipo_controller.crear_equipo(request.form)
+    if success:
+        flash("Equipo creado exitosamente.", "success")
+    else:
+        flash(result, "error")
     
     # Estandarización de redirección
     destino = url_for('equipo.gestion_equipos', cliente_id=cliente_id) if cliente_id else url_for('clientes.gestion_cliente')
@@ -40,21 +43,6 @@ def gestion_equipos(cliente_id):
                            tipo_dispositivos=tipo_dispositivos,
                            cliente=cliente,
                            equipos=equipos)
-
-@equipo_bp.post('/equipo/rapido')
-@login_required
-@role_required('Administrador', 'Secretario')
-def crear_equipo_rapido():
-    success, message, equipo_data = equipo_controller.crear_equipo_rapido(request.form)
-    
-    if not success:
-        return jsonify({'success': False, 'message': message}), 400
-
-    return jsonify({
-        'success': True,
-        'message': message,
-        'equipo': equipo_data
-    })
 
 @equipo_bp.get('/clientes/<int:cliente_id>/equipos')
 @login_required

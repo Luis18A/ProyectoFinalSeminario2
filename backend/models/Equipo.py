@@ -1,35 +1,26 @@
 from database import db
-from backend.models.OrdenServicio import OrdenServicio
 
 class Equipo(db.Model):
     __tablename__ = 'equipo'
 
-    id           = db.Column(db.Integer, primary_key=True)
-    cliente_id   = db.Column(db.ForeignKey('cliente.id'), nullable=False)
-    marca        = db.Column(db.String(80), nullable=False)
-    modelo       = db.Column(db.String(80), nullable=False)
-    numero_serie = db.Column(db.String(80), unique=True, nullable=False)
-    tipo_id      = db.Column(db.ForeignKey('tipo_dispositivo.id'), nullable=False)
-    descripcion  = db.Column(db.String(500), nullable=True)
+    id               = db.Column(db.Integer, primary_key=True)
+    cliente_id       = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False, index=True)
+    marca            = db.Column(db.String(80), nullable=False)
+    modelo           = db.Column(db.String(80), nullable=False)
+    numero_serie     = db.Column(db.String(80), unique=True, nullable=False)
+    tipo_id          = db.Column(db.Integer, db.ForeignKey('tipo_dispositivo.id'), nullable=False, index=True)
+    descripcion      = db.Column(db.String(500), nullable=True)
 
-    cliente = db.relationship('Cliente', back_populates='equipos', foreign_keys=[cliente_id])
-    tipo    = db.relationship('TipoDispositivo', foreign_keys=[tipo_id])
+    cliente          = db.relationship('Cliente', back_populates='equipos')
+    tipo             = db.relationship('TipoDispositivo')
 
-    def __init__(self, cliente_id, marca, modelo, numero_serie, tipo_id, descripcion=None):
-        self.cliente_id   = cliente_id
-        self.marca        = marca
-        self.modelo       = modelo
-        self.numero_serie = numero_serie
-        self.tipo_id      = tipo_id
-        self.descripcion  = descripcion
+    ordenes          = db.relationship('OrdenServicio', back_populates='equipo', lazy='dynamic', cascade="all, delete-orphan")
 
     @property
     def estado_actual(self):
-        ultima = (OrdenServicio.query
-                  .filter_by(equipo_id=self.id)
-                  .order_by(OrdenServicio.id.desc())
-                  .first())
-        return ultima.estado.value if ultima else "Disponible"
+        from backend.models.OrdenServicio import OrdenServicio
+        ultima_orden = self.ordenes.order_by(OrdenServicio.id.desc()).first()
+        return ultima_orden.estado.value if ultima_orden else "Disponible"
 
     @classmethod
     def get_all(cls):

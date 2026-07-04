@@ -38,29 +38,15 @@ def verificar_dni(dni):
 @role_required('Administrador', 'Secretario')
 def gestion_cliente():
     if request.method == 'POST':
-        success, message = cliente_controller.crear_cliente(request.form)
-        flash(message, 'success' if success else 'error')
+        success, result = cliente_controller.crear_cliente(request.form)
         if success:
+            flash("Cliente creado exitosamente.", "success")
             return redirect(url_for('clientes.gestion_cliente'))
+        else:
+            flash(result, 'error')
         clientes = cliente_controller.obtener_datos_gestion(request.args.get('q'))
         return render_template('gestion_cliente.html', clientes=clientes, search_query=request.args.get('q', ''), form_data=request.form)
 
     # El controlador decide si busca filtrado o trae todos internamente
     clientes = cliente_controller.obtener_datos_gestion(request.args.get('q'))
     return render_template('gestion_cliente.html', clientes=clientes, search_query=request.args.get('q', ''), form_data={})
-
-@cliente_bp.post('/clientes/rapido')
-@login_required
-@role_required('Administrador', 'Secretario')
-def crear_cliente_rapido():
-    # Eliminación del antipatrón "Doble Viaje"
-    success, message, cliente_data = cliente_controller.crear_cliente_rapido(request.form)
-    
-    if not success:
-        return jsonify({'success': False, 'message': message}), 400
-
-    return jsonify({
-        'success': True,
-        'message': message,
-        'cliente': cliente_data
-    })

@@ -48,7 +48,10 @@ class ClienteController:
         
         patron_texto = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'\-]+$"
         if not re.match(patron_texto, datos['nombre']): return False, "El nombre solo debe contener letras, espacios o guiones."
+        if not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]", datos['nombre']): return False, "El nombre debe contener al menos una letra."
+        
         if not re.match(patron_texto, datos['apellido']): return False, "El apellido solo debe contener letras, espacios o guiones."
+        if not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]", datos['apellido']): return False, "El apellido debe contener al menos una letra."
 
         # ── 3. VALIDACIÓN DE DNI / CUIL Y SU UNICIDAD ──
         if not is_edit:
@@ -95,11 +98,18 @@ class ClienteController:
         # ── 6. VALIDACIÓN DE DOMICILIO Y LOCALIDAD ──
         if not datos['domicilio'] or len(datos['domicilio']) < 3: return False, "El domicilio debe tener al menos 3 caracteres."
         if len(datos['domicilio']) > 150: return False, "El domicilio es demasiado largo."
-        if not re.search(r"[A-Za-z0-9áéíóúÁÉÍÓÚñÑüÜ]", datos['domicilio']): return False, "El domicilio es inválido."
+        
+        patron_domicilio = r"^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s'\",\.\-°ºª/()#]+$"
+        if not re.match(patron_domicilio, datos['domicilio']):
+            return False, "El domicilio contiene caracteres no permitidos."
+        if not re.search(r"[A-Za-z0-9áéíóúÁÉÍÓÚñÑüÜ]", datos['domicilio']):
+            return False, "El domicilio debe contener al menos una letra o número."
         
         if not datos['localidad'] or len(datos['localidad']) < 2: return False, "La localidad debe tener al menos 2 caracteres."
         if len(datos['localidad']) > 100: return False, "La localidad es demasiado larga."
-        if not re.match(patron_texto, datos['localidad']): return False, "La localidad contiene caracteres inválidos."
+        patron_localidad = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'\-\.]+$"
+        if not re.match(patron_localidad, datos['localidad']): return False, "La localidad contiene caracteres inválidos."
+        if not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]", datos['localidad']): return False, "La localidad debe contener al menos una letra."
 
         # Retornamos True y el diccionario listo para usar
         return True, datos
@@ -211,26 +221,6 @@ class ClienteController:
         if q:
             return ClienteController.buscar_clientes(q)
         return ClienteController.obtener_todos()
-
-    @staticmethod
-    def crear_cliente_rapido(datos_formulario):
-        """Intenta crear un cliente y devuelve el DTO en un único viaje."""
-        success, result = ClienteController.crear_cliente(datos_formulario)
-        if not success:
-            return False, result, None
-            
-        dni = (datos_formulario.get('dni') or '').strip()
-        clean_dni = re.sub(r'[\.\- ]', '', dni)
-        cliente = Cliente.get_por_dni(clean_dni)
-        if not cliente:
-            return False, "Error al recuperar el cliente tras la creación.", None
-            
-        return True, result, {
-            'id': cliente.id,
-            'nombre': cliente.nombre,
-            'apellido': cliente.apellido,
-            'dni_cuil': cliente.dni_cuil
-        }
 
     @staticmethod
     def eliminar_cliente(cliente_id):

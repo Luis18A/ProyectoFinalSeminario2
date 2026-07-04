@@ -107,4 +107,45 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.target === this) cerrarModalUsuario();
         });
     }
+
+    // Manejar envío del formulario por AJAX
+    const formUsuario = document.getElementById('form-usuario');
+    if (formUsuario) {
+        formUsuario.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(formUsuario);
+            const actionUrl = formUsuario.action;
+            const btnSubmit = document.getElementById('btn-submit');
+
+            try {
+                if (btnSubmit) btnSubmit.disabled = true;
+
+                const response = await fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    window.showToast(data.message, 'success');
+                    cerrarModalUsuario();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    window.showToast(data.message || 'Error al procesar la solicitud', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.showToast('Ocurrió un error inesperado al procesar la solicitud.', 'error');
+            } finally {
+                if (btnSubmit) btnSubmit.disabled = false;
+            }
+        });
+    }
 });

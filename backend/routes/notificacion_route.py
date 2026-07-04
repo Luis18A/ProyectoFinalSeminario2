@@ -13,5 +13,5 @@ def leer_notificacion(id):
 @notificacion_bp.post('/notificaciones/leer-todas')
 @login_required
 def leer_todas_notificaciones():
-    notificacion_controller.marcar_todas_leidas(session.get('usuario_id'))
-    return jsonify({'success': True})
+    success = notificacion_controller.marcar_todas_leidas(session.get('usuario_id'))
+    return jsonify({'success': success}), (200 if success else 500)

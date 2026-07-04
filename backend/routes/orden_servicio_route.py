@@ -120,7 +120,17 @@ def comprobante(orden_id):
     if not orden:
         flash("Orden de servicio no encontrada.", "error")
         return redirect(url_for('vistas.technician') if session.get('rol_descripcion') == 'Técnico' else url_for('vistas.secretary'))
-    return render_template('comprobante.html', orden=orden)
+    
+    total_repuestos = sum(float(r.precio or 0.0) for r in (orden.repuestos or []))
+    costo_total = float(orden.costo or 0.0) if orden.costo is not None else 0.0
+    mano_obra = max(0.0, costo_total - total_repuestos)
+    
+    return render_template(
+        'comprobante.html', 
+        orden=orden, 
+        total_repuestos=total_repuestos, 
+        mano_obra=mano_obra
+    )
 
 @orden_servicio_bp.post('/ordenServicio/<int:orden_id>/actualizar-estado-flujo')
 @login_required
@@ -139,7 +149,7 @@ def cambiar_estado_flujo(orden_id):
 
 @orden_servicio_bp.get('/ordenServicio/activas')
 @login_required
-@role_required('Administrador', 'Secretario', 'Técnico')
+@role_required('Administrador', 'Secretario')
 def listar_ordenes_view():
     return render_template(
         'listar_ordenes.html', 

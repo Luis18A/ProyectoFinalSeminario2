@@ -1,0 +1,45 @@
+<div class="bento-card shadow-sm border-zinc-200">
+    <h3
+        class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/38 flex items-center justify-between">
+        Historial de Movimientos
+        <span class="material-symbols-outlined text-[18px]">history</span>
+    </h3>
+
+    {% if historial %}
+    <div class="max-h-[320px] overflow-y-auto pr-2 pl-2">
+        <div
+            class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-[2px] before:bg-[#1A1A1A]/10">
+            {% for entrada in historial %}
+            <div class="relative">
+                <!-- Dot en la línea de tiempo -->
+                <div class="absolute -left-[29px] top-1 w-3 h-3 bg-white border-2
+                    {% if loop.first %}border-emerald-500{% else %}border-[#1A1A1A]/20{% endif %}">
+                </div>
+                <div class="flex items-start justify-between mb-2 gap-2 flex-wrap">
+                    {{ badge_estado(entrada.estado_nuevo) }}
+                    <span class="font-label-mono text-on-surface-variant text-xs">
+                        {{ entrada.fecha_cambio.strftime('%d/%m/%Y %H:%M') if entrada.fecha_cambio else '—' }}
+                    </span>
+                </div>
+                <p class="font-body-sm font-bold text-on-surface mb-1">
+                    {{ entrada.usuario.nombre ~ ' ' ~ entrada.usuario.apellido if entrada.usuario else 'Sistema' }}
+                </p>
+                {% if entrada.observacion_tecnica %}
+                <div
+                    class="bg-zinc-50 p-3 border border-[#1A1A1A]/38 italic font-body-sm text-on-surface-variant">
+                    {{ entrada.observacion_tecnica }}
+                </div>
+                {% endif %}
+                <p class="text-[10px] text-on-surface-variant mt-1">
+                    {{ entrada.estado_anterior }} → {{ entrada.estado_nuevo }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <p class="text-sm text-on-surface-variant text-center py-8">
+        No hay movimientos registrados para esta orden.
+    </p>
+    {% endif %}
+</div>

@@ -99,6 +99,117 @@ function cerrarModalOrdenes() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // === VALIDACIONES PREMIUM DE ENTRADA Y FORMULARIOS DE EQUIPOS ===
+
+    const restringirEntrada = (input, regex) => {
+        if (!input) return;
+        input.addEventListener('input', function() {
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const originalVal = this.value;
+            const newVal = originalVal.replace(regex, '');
+            
+            if (originalVal !== newVal) {
+                this.value = newVal;
+                this.setSelectionRange(start - (originalVal.length - newVal.length), end - (originalVal.length - newVal.length));
+            }
+        });
+    };
+
+    // Filtros de caracteres en tiempo real
+    const brandModelRegex = /[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-\.\+\/()"]/g;
+    restringirEntrada(document.getElementById('marca'), brandModelRegex);
+    restringirEntrada(document.getElementById('edit-marca'), brandModelRegex);
+    restringirEntrada(document.getElementById('modelo'), brandModelRegex);
+    restringirEntrada(document.getElementById('edit-modelo'), brandModelRegex);
+
+    const serialRegex = /[^a-zA-Z0-9\s\-\.\/_]/g;
+    restringirEntrada(document.getElementById('numero_serie'), serialRegex);
+    restringirEntrada(document.getElementById('edit-serie'), serialRegex);
+
+    const descRegex = /[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s'",\.\-\+\/()#\?!:;*%=\$@&º°_]/g;
+    restringirEntrada(document.getElementById('descripcion'), descRegex);
+    restringirEntrada(document.getElementById('edit-descripcion'), descRegex);
+
+    // Función de validación sincronizada
+    const validarFormularioEquipo = (datos) => {
+        const marca = datos.marca.trim();
+        const modelo = datos.modelo.trim();
+        const serie = datos.serie.trim();
+        const descripcion = datos.descripcion ? datos.descripcion.trim() : "";
+
+        if (!marca) return "La marca es obligatoria.";
+        if (marca.length > 80) return "La marca no puede tener más de 80 caracteres.";
+        const brandModelPattern = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ][a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-\.\+\/()"]*$/;
+        if (!brandModelPattern.test(marca)) return "La marca contiene caracteres no permitidos o no comienza con una letra o número.";
+        if (!/[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ]/.test(marca)) return "La marca debe contener al menos una letra o número.";
+
+        if (!modelo) return "El modelo es obligatorio.";
+        if (modelo.length > 80) return "El modelo no puede tener más de 80 caracteres.";
+        if (!brandModelPattern.test(modelo)) return "El modelo contiene caracteres no permitidos o no comienza con una letra o número.";
+        if (!/[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ]/.test(modelo)) return "El modelo debe contener al menos una letra o número.";
+
+        if (!serie) return "El número de serie es obligatorio.";
+        if (serie.length > 80) return "El número de serie no puede tener más de 80 caracteres.";
+        const serialPattern = /^[a-zA-Z0-9][a-zA-Z0-9\s\-\.\/_]*$/;
+        if (!serialPattern.test(serie)) return "El número de serie contiene caracteres no permitidos o no comienza con una letra o número.";
+        if (!/[a-zA-Z0-9]/.test(serie)) return "El número de serie debe contener al menos una letra o número.";
+
+        if (descripcion) {
+            if (descripcion.length > 500) return "La descripción no puede tener más de 500 caracteres.";
+            const descPattern = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s'",\.\-\+\/()#\?!:;*%=\$@&º°_]+$/;
+            if (!descPattern.test(descripcion)) return "La descripción contiene caracteres no permitidos.";
+        }
+
+        return null;
+    };
+
+    // Validar Formulario de Registro al enviar
+    const formCreacion = document.getElementById('form-registrar-equipo');
+    if (formCreacion) {
+        formCreacion.addEventListener('submit', function (e) {
+            const datos = {
+                marca: document.getElementById('marca').value,
+                modelo: document.getElementById('modelo').value,
+                serie: document.getElementById('numero_serie').value,
+                descripcion: document.getElementById('descripcion').value
+            };
+
+            const error = validarFormularioEquipo(datos);
+            if (error) {
+                e.preventDefault();
+                if (window.showToast) {
+                    window.showToast(error, 'error');
+                } else {
+                    alert(error);
+                }
+            }
+        });
+    }
+
+    // Validar Formulario de Edición al enviar
+    const formEdicion = document.getElementById('form-editar-equipo');
+    if (formEdicion) {
+        formEdicion.addEventListener('submit', function (e) {
+            const datos = {
+                marca: document.getElementById('edit-marca').value,
+                modelo: document.getElementById('edit-modelo').value,
+                serie: document.getElementById('edit-serie').value,
+                descripcion: document.getElementById('edit-descripcion').value
+            };
+
+            const error = validarFormularioEquipo(datos);
+            if (error) {
+                e.preventDefault();
+                if (window.showToast) {
+                    window.showToast(error, 'error');
+                } else {
+                    alert(error);
+                }
+            }
+        });
+    }
+
     // Listener seguro para ver órdenes de un equipo
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-ver-ordenes-equipo');

@@ -1,3 +1,4 @@
+import logging
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.EstadoOrden import EstadoOrden
 from backend.models.Repuesto import Repuesto
@@ -10,6 +11,8 @@ import asyncio
 from backend.utils.tasks import _ejecutar_scrapers
 
 import time
+
+logger = logging.getLogger(__name__)
 
 # Almacén de tareas de búsqueda en memoria para simular Celery localmente
 _tareas_busqueda = {}
@@ -75,11 +78,13 @@ class OrdenPresupuestoController:
             old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
             mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
 
-            # Buscar o crear Repuesto en el catálogo
+            # Buscar o crear Repuesto en el catálogo (Insensible a mayúsculas)
             titulo = result['titulo']
             precio = result['precio']
             tienda = result.get('tienda', 'Manual')
-            rep_db = Repuesto.query.filter_by(descripcion=titulo).first()
+            
+            # Optimización: Evita duplicados por diferencias de tipeo
+            rep_db = Repuesto.query.filter(Repuesto.descripcion.ilike(titulo)).first()
             if not rep_db:
                 # Generar código único para el catálogo
                 codigo = f"REP-{uuid.uuid4().hex[:12].upper()}"
@@ -235,7 +240,8 @@ class OrdenPresupuestoController:
                         _tareas_busqueda[task_id]['status'] = 'completed'
                         _tareas_busqueda[task_id]['results'] = results
             except Exception as e:
-                print(f"[Scraper Thread] Error al ejecutar búsqueda: {e}")
+                # INFRAESTRUCTURA: Uso de logger en hilos de fondo
+                logger.error(f"[Scraper Thread] Error al ejecutar búsqueda asíncrona: {e}")
                 with _tareas_lock:
                     if task_id in _tareas_busqueda:
                         _tareas_busqueda[task_id]['status'] = 'failed'

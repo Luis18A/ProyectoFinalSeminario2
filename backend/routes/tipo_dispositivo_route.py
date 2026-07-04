@@ -9,8 +9,11 @@ tipo_dispositivo_bp = Blueprint('tipo_dispositivo', __name__)
 @role_required('Administrador', 'Secretario')
 def crear_tipo_dispositivo():
     cliente_id = request.form.get('cliente_id')
-    success, message = tipo_dispositivo_controller.crear_tipo_dispositivo(request.form)
-    flash(message, 'success' if success else 'error')
+    success, result = tipo_dispositivo_controller.crear_tipo_dispositivo(request.form)
+    if success:
+        flash("Tipo de dispositivo creado exitosamente.", "success")
+    else:
+        flash(result, "error")
     
     destino = url_for('equipo.gestion_equipos', cliente_id=cliente_id) if cliente_id else url_for('clientes.gestion_cliente')
     return redirect(destino)

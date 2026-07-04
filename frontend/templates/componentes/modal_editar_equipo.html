@@ -1,0 +1,55 @@
+<!-- Modal Editar Equipo -->
+<div id="modal-editar-equipo"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div
+        class="bg-white w-full max-w-md bento-card p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="border-b border-border p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="font-headline-md text-primary tracking-tight">Editar Equipo</h2>
+            <button onclick="cerrarModal()" class="text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-editar-equipo" class="p-8 flex flex-col gap-6" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="edit-id" name="id">
+            {% if cliente %}
+            <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+            {% endif %}
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Tipo de Equipo</label>
+                <select id="edit-tipo" name="tipo_dispositivo_id" class="input-swiss appearance-none bg-transparent"
+                    required>
+                    <option disabled value="">Seleccionar tipo</option>
+                    {% for tipo in tipo_dispositivos %}
+                    <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Marca</label>
+                    <input id="edit-marca" name="marca" class="input-swiss" type="text" required />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Modelo</label>
+                    <input id="edit-modelo" name="modelo" class="input-swiss" type="text" required />
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Número de Serie
+                    (S/N)</label>
+                <input id="edit-serie" name="numero_serie" class="input-swiss font-label-mono uppercase" type="text"
+                    required />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-label-bold text-zinc-500 uppercase text-[10px] block mb-1.5">Descripción</label>
+                <textarea id="edit-descripcion" name="descripcion" class="input-swiss resize-none" rows="3"></textarea>
+            </div>
+            <div class="flex gap-4 mt-4">
+                <button type="button" onclick="cerrarModal()"
+                    class="btn-swiss btn-outline flex-1 justify-center">Cancelar</button>
+                <button type="submit" class="btn-swiss btn-primary flex-1 justify-center">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>

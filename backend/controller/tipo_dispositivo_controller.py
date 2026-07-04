@@ -34,29 +34,23 @@ class TipoDispositivoController:
             nuevo = TipoDispositivo(**result)
             db.session.add(nuevo)
             db.session.commit()
-            return True, "Tipo de dispositivo creado exitosamente."
+            
+            # RETORNO ARQUITECTÓNICO: Devolvemos la instancia, no un string.
+            return True, nuevo
         except Exception:
             db.session.rollback()
             return False, "Error al guardar el tipo de dispositivo."
 
     @staticmethod
     def crear_tipo_rapido(datos_formulario):
-        """Intenta crear y devuelve el objeto serializado en un solo viaje."""
-        success, result = TipoDispositivoController.procesar_datos(datos_formulario)
+        """Si lo usas para AJAX, simplemente envuelve al método principal."""
+        success, result = TipoDispositivoController.crear_tipo_dispositivo(datos_formulario)
+        
         if not success:
-            return False, result, None
-
-        if TipoDispositivo.get_por_descripcion_exacta(result['descripcion']):
-            return False, f"El tipo '{result['descripcion']}' ya está registrado.", None
-
-        try:
-            nuevo = TipoDispositivo(**result)
-            db.session.add(nuevo)
-            db.session.commit()
-            return True, "Tipo de dispositivo creado exitosamente.", {'id': nuevo.id, 'descripcion': nuevo.descripcion}
-        except Exception:
-            db.session.rollback()
-            return False, "Error al guardar el tipo de dispositivo.", None
+            return False, result, None # 'result' es el mensaje de error
+            
+        # 'result' es el objeto creado
+        return True, "Tipo de dispositivo creado exitosamente.", {'id': result.id, 'descripcion': result.descripcion}
 
     @staticmethod
     def actualizar_tipo_dispositivo(tipo_id, datos_formulario):

@@ -1,33 +1,36 @@
 from .EstadoOrden import EstadoOrden
 from .HistorialEstado import HistorialEstado
 from database import db
-from datetime import datetime
+from sqlalchemy.sql import func
 
 class OrdenServicio(db.Model):
     __tablename__ = 'orden_servicio'
 
     id                 = db.Column(db.Integer, primary_key=True)
-    usuario_id         = db.Column(db.ForeignKey('usuario.id'), nullable=False)
-    equipo_id          = db.Column(db.ForeignKey('equipo.id'), nullable=False)
+    usuario_id         = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False, index=True)
+    equipo_id          = db.Column(db.Integer, db.ForeignKey('equipo.id'), nullable=False, index=True)
     falla_reportada    = db.Column(db.String(500), nullable=False)
     accesorios         = db.Column(db.String(500), nullable=False)
     estado             = db.Column(db.Enum(EstadoOrden), nullable=False, default=EstadoOrden.PENDIENTE)
     estado_diagnostico = db.Column(db.String(255), nullable=True)
-    fecha_recepcion    = db.Column(db.DateTime, default=datetime.now)
-    fecha_entrega      = db.Column(db.DateTime, nullable=True)
+    fecha_recepcion    = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    fecha_entrega      = db.Column(db.DateTime(timezone=True), nullable=True)
     costo              = db.Column(db.Numeric(10, 2), nullable=True)
     observaciones      = db.Column(db.String(500), nullable=True)
 
+    # Relaciones
     orden_repuestos    = db.relationship('OrdenRepuesto', back_populates='orden', cascade='all, delete-orphan')
-
-    usuario   = db.relationship('Usuario', foreign_keys=[usuario_id])
-    equipo    = db.relationship('Equipo', foreign_keys=[equipo_id])
-    historial = db.relationship('HistorialEstado', backref='orden', lazy=True)
+    usuario            = db.relationship('Usuario', foreign_keys=[usuario_id])
+    equipo             = db.relationship('Equipo', back_populates='ordenes', foreign_keys=[equipo_id])
+    
+    # Añadimos cascade para que si se borra una orden, se borre su historial
+    historial          = db.relationship('HistorialEstado', backref='orden', lazy=True, cascade='all, delete-orphan')
 
     @property
     def repuestos(self):
         """
-        Retorna la lista de repuestos en formato JSON/dict compatible con el frontend existente.
+        NOTA ARQUITECTÓNICA: En el futuro, mover esta lógica de formateo a un 
+        serializador (ej. un esquema de Marshmallow) para no acoplar el modelo al frontend.
         """
         return [
             {
@@ -43,22 +46,24 @@ class OrdenServicio(db.Model):
             for orp in self.orden_repuestos
         ]
 
-    def __init__(self, usuario_id, equipo_id, falla_reportada, accesorios,
-                 fecha_recepcion=None, estado=EstadoOrden.PENDIENTE,
-                 estado_diagnostico=None, fecha_entrega=None,
-                 costo=None, observaciones=None, repuestos=None):
-        self.usuario_id         = usuario_id
-        self.equipo_id          = equipo_id
-        self.falla_reportada    = falla_reportada
-        self.accesorios         = accesorios
-        self.fecha_recepcion    = fecha_recepcion or datetime.now()
-        self.estado             = estado
-        self.estado_diagnostico = estado_diagnostico
-        self.fecha_entrega      = fecha_entrega
-        self.costo              = costo
-        self.observaciones      = observaciones
-        # repuestos se maneja ahora a través del modelo OrdenRepuesto
-
+    @property
+    def detalle_repuestos(self):
+        """
+        Retorna la estructura de datos pura. 
+        El formateo visual o enlaces falsos se delegan a la capa de presentación.
+        """
+        return [
+            {
+                'orden_repuesto_id': orp.id,
+                'repuesto_id': orp.repuesto_id,
+                'codigo': orp.repuesto.codigo,
+                'descripcion': orp.repuesto.descripcion,
+                'precio_unitario': float(orp.precio_unitario),
+                'cantidad': orp.cantidad,
+                'proveedor': orp.repuesto.proveedor
+            }
+            for orp in self.orden_repuestos
+        ]
 
     # ── Lógica de dominio ──────────────────────────────────────────
 
@@ -71,6 +76,8 @@ class OrdenServicio(db.Model):
         estado_anterior = self.estado.value
         self.estado = nuevo_estado
 
+        # Nota: Este método retorna el objeto HistorialEstado. Es responsabilidad 
+        # del controlador agregarlo a db.session y hacer el db.session.commit()
         nuevo_historial = HistorialEstado(
             orden_id=self.id,
             estado_anterior=estado_anterior,
@@ -83,7 +90,7 @@ class OrdenServicio(db.Model):
     def preparar_finalizacion(self, costo_final, observaciones, usuario_id):
         self.costo         = costo_final
         self.observaciones = observaciones
-        self.fecha_entrega = datetime.now()
+        self.fecha_entrega = func.now() # Consistencia con el uso de func
         
         return self.preparar_cambio_estado(
             EstadoOrden.ENTREGADO, usuario_id,
@@ -93,13 +100,11 @@ class OrdenServicio(db.Model):
     def actualizar_diagnostico(self, diagnostico):
         self.estado_diagnostico = diagnostico
 
+    # ── Métodos Active Record ──────────────────────────────────────
 
     @classmethod
     def get_all(cls):
-        return (cls.query
-                .order_by(cls.fecha_recepcion.desc(),
-                          cls.id.desc())
-                .all())
+        return cls.query.order_by(cls.fecha_recepcion.desc(), cls.id.desc()).all()
 
     @classmethod
     def get_by_id(cls, id):

@@ -65,4 +65,9 @@ def technician():
 @vistas_bp.route('/api/global-search')
 @login_required
 def global_search():
-    return jsonify(search_controller.buscar_global(request.args.get('q', '').strip()))
+    rol = session.get('rol_descripcion')
+    resultados = search_controller.buscar_global(request.args.get('q', '').strip())
+    if rol == 'Técnico':
+        resultados['clientes'] = []
+        resultados['equipos'] = []
+    return jsonify(resultados)

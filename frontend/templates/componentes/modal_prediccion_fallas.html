@@ -1,0 +1,62 @@
+<!-- Modal de Inteligencia de Fallas / Predicción de Fallos -->
+<div id="modal-prediccion-fallas"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="bg-white w-full max-w-lg border border-zinc-200 p-0 overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div class="border-b border-[#1A1A1A]/38 p-6 flex justify-between items-center bg-zinc-50">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">psychology</span>
+                Predicción de Fallas & Inteligencia
+            </h2>
+            <button onclick="cerrarModalPredicciones()" class="text-zinc-400 hover:text-zinc-950 transition-colors" type="button">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[60vh] space-y-4">
+            <p class="text-xs text-on-surface-variant font-label-mono mb-2">
+                Predicciones basadas en marcas, modelos y tipo de equipo similar en nuestro repositorio de servicio.
+            </p>
+            <div class="space-y-4">
+                {% for pf in predicted_failures %}
+                <div class="bg-white border border-[#1A1A1A]/38 p-4 relative group">
+                    <div class="flex justify-between items-start mb-2 gap-2">
+                        <span class="font-body-md font-bold text-on-surface">{{ pf.falla }}</span>
+                        <span class="px-1.5 py-0.5 bg-primary/10 text-primary font-mono text-[9px] font-bold uppercase whitespace-nowrap">
+                            Prob: {{ pf.probabilidad }}%
+                        </span>
+                    </div>
+                    <div class="space-y-2 mt-3">
+                        <!-- Frecuencia/Probabilidad bar -->
+                        <div>
+                            <div class="flex justify-between text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">
+                                <span>Probabilidad de Incidencia</span>
+                                <span>{{ pf.probabilidad }}%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-zinc-100 rounded-none overflow-hidden">
+                                <div class="h-full bg-primary" style="width: {{ pf.probabilidad }}%"></div>
+                            </div>
+                        </div>
+                        <!-- Success Rate bar -->
+                        <div>
+                            <div class="flex justify-between text-[8px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                                <span>Tasa de Éxito de Reparación</span>
+                                <span>{{ pf.tasa_exito }}%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-emerald-50 rounded-none overflow-hidden">
+                                <div class="h-full bg-emerald-500" style="width: {{ pf.tasa_exito }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="border border-dashed border-[#1A1A1A]/20 p-6 text-center bg-white">
+                    <span class="material-symbols-outlined text-zinc-400 text-3xl mb-2 block">info</span>
+                    <p class="text-xs font-label-bold text-zinc-500 uppercase tracking-wider">Aún no hay suficientes registros para realizar predicciones</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="p-4 bg-zinc-50 border-t border-[#1A1A1A]/10 flex justify-end">
+            <button onclick="cerrarModalPredicciones()" class="btn-swiss btn-outline text-[10px] font-bold uppercase" type="button">Cerrar</button>
+        </div>
+    </div>
+</div>
