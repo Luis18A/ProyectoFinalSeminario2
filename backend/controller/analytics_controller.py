@@ -34,16 +34,9 @@ class AnalyticsController:
 
         # ── 3. MTTR ───────────────────────────────────────────────────
         # Optimización: Cálculo directo en base de datos para evitar cargar todas las filas en memoria.
-        dialect_name = db.engine.dialect.name
-        if dialect_name == 'postgresql':
-            avg_seconds_query = db.session.query(
-                func.avg(func.extract('epoch', OrdenServicio.fecha_entrega - OrdenServicio.fecha_recepcion))
-            )
-        else:
-            # SQLite fallback: Cálculo mediante julianday
-            avg_seconds_query = db.session.query(
-                func.avg((func.julianday(OrdenServicio.fecha_entrega) - func.julianday(OrdenServicio.fecha_recepcion)) * 86400)
-            )
+        avg_seconds_query = db.session.query(
+            func.avg(func.extract('epoch', OrdenServicio.fecha_entrega - OrdenServicio.fecha_recepcion))
+        )
 
         avg_segundos = avg_seconds_query.filter(
             OrdenServicio.estado.in_([EstadoOrden.LISTO, EstadoOrden.ENTREGADO]),
@@ -78,13 +71,8 @@ class AnalyticsController:
         dias_semana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
         weekday_counts = [0] * 7
 
-        dialect_name = db.engine.dialect.name
-        if dialect_name == 'postgresql':
-            # dow: 0 para Domingo, 1 para Lunes, ..., 6 para Sábado
-            day_expr = func.extract('dow', OrdenServicio.fecha_recepcion)
-        else:
-            # SQLite: %w (0 para Domingo, 1 para Lunes, ..., 6 para Sábado)
-            day_expr = func.strftime('%w', OrdenServicio.fecha_recepcion)
+        # dow: 0 para Domingo, 1 para Lunes, ..., 6 para Sábado
+        day_expr = func.extract('dow', OrdenServicio.fecha_recepcion)
 
         counts_query = db.session.query(
             day_expr.label('day'),

@@ -38,12 +38,12 @@ graph TD
     end
 
     subgraph Persistence [Capa de Datos]
-        F --> J[(PostgreSQL / SQLite)]
+        F --> J[(PostgreSQL)]
     end
 ```
 
 * **Core Backend:** Flask 3.0.0 (Python).
-* **Persistencia y ORM:** SQLAlchemy, PostgreSQL (Producción), SQLite (Desarrollo y Testing rápido).
+* **Persistencia y ORM:** SQLAlchemy, PostgreSQL.
 * **Motor de Scraping:** `Scrapling` y `Playwright` con soporte para evasión de bloqueos (`curl_cffi`, `browserforge`).
 * **Procesamiento Asíncrono:** Celery (con Redis como Broker de Mensajería) y fallback integrado a hilos nativos (`threading`) para entornos de desarrollo sin infraestructura externa.
 * **Minería y Análisis de Datos:** `scikit-learn` (implementación de clústeres K-Means) y `numpy`.
@@ -137,7 +137,7 @@ ProyectoFinalSeminario2/
 
 ### 3.1. Requisitos del Sistema
 * **Python:** Versión 3.10 o superior (Recomendado Python 3.12+ debido al uso de firmas de tiempo compatibles con la versión actual).
-* **Base de datos:** SQLite (Por defecto para desarrollo) o PostgreSQL 14+ (Recomendado para entornos de producción).
+* **Base de datos:** PostgreSQL 14+ (Base de datos exclusiva para desarrollo y producción).
 * **Servicio de Mensajería:** Redis (Opcional, requerido solo si se decide levantar Celery de forma activa).
 * **Navegador Headless:** Requerido por Playwright para la extracción dinámica.
 

@@ -59,13 +59,17 @@ def _configure_app(app):
     app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-CAMBIAR-en-produccion')
 
     # ─── BASE DE DATOS ───────────────────────────────────────────────────
-    # Igual: la URI debe venir de variable de entorno en producción.
+    # Exclusivo para PostgreSQL. Si no se define DATABASE_URL, se asume un PostgreSQL local por defecto.
     db_uri = os.environ.get(
         'DATABASE_URL',
-        'sqlite:///techflow.db'  # fallback local / sqlite para demo
+        'postgresql://postgres:postgres@localhost:5432/techflow'
     )
     if db_uri and db_uri.startswith("postgres://"):
         db_uri = db_uri.replace("postgres://", "postgresql://", 1)
+    
+    if not db_uri or not db_uri.startswith("postgresql://"):
+        raise ValueError("DATABASE_URL inválida. TechFlow requiere PostgreSQL como base de datos (iniciar con 'postgresql://' o 'postgres://').")
+        
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
