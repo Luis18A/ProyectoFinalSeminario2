@@ -58,8 +58,32 @@ async def _ejecutar_scrapers(q):
         else:
             print(f"[Celery Scraper] Error en {name}: {response}")
             
-    combined_results.sort(key=lambda x: x.get('precio', 0))
-    return combined_results
+    # Filtrar resultados para asegurar relevancia con la búsqueda original
+    filtered_results = []
+    STOP_WORDS = {'con', 'del', 'para', 'por', 'que', 'una', 'uno', 'los', 'las', 'les', 'and', 'the', 'for', 'with', 'de', 'la', 'el', 'en', 'un', 'y', 'a', 'o'}
+    # Limpiar y tokenizar la consulta (ej. "Epson L3210" -> ['epson', 'l3210'])
+    query_tokens = [
+        token.strip(",.()[]{}-_").lower() 
+        for token in q.split() 
+        if token.strip(",.()[]{}-_").lower() not in STOP_WORDS
+    ]
+    
+    if query_tokens:
+        for item in combined_results:
+            title_lower = item.get('titulo', '').lower()
+            # Contar cuántos tokens significativos coinciden en el título
+            matches = sum(1 for token in query_tokens if token in title_lower)
+            # Para consultas cortas (1 o 2 tokens), exigimos al menos 1 coincidencia.
+            # Para consultas más largas (3+), exigimos al menos el 50% de las palabras clave o al menos 2.
+            required_matches = max(1, len(query_tokens) // 2) if len(query_tokens) > 2 else 1
+            
+            if matches >= required_matches:
+                filtered_results.append(item)
+    else:
+        filtered_results = combined_results
+
+    filtered_results.sort(key=lambda x: x.get('precio', 0))
+    return filtered_results
 
 @celery.task(name='tasks.buscar_repuestos_async')
 def buscar_repuestos_async(q):

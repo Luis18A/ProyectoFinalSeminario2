@@ -5,17 +5,10 @@ from backend.models.Repuesto import Repuesto
 from backend.models.OrdenRepuesto import OrdenRepuesto
 from database import db
 import uuid
-import threading
-import asyncio
-from backend.utils.tasks import _ejecutar_scrapers
-
-import time
+from backend.utils.tasks import celery, buscar_repuestos_async
+from celery.result import AsyncResult
 
 logger = logging.getLogger(__name__)
-
-# Almacén de tareas de búsqueda en memoria para simular Celery localmente
-_tareas_busqueda = {}
-_tareas_lock = threading.Lock()
 
 class OrdenPresupuestoController:
     @staticmethod
@@ -209,61 +202,36 @@ class OrdenPresupuestoController:
 
     @staticmethod
     def iniciar_busqueda_repuestos(q):
-        """Inicia la búsqueda en un hilo de fondo simulando Celery localmente con prevención de memory leaks."""
+        """Inicia la búsqueda de repuestos en segundo plano utilizando Celery."""
         q = (q or '').strip()
         if not q:
             return False, 'El término de búsqueda está vacío'
         
-        task_id = str(uuid.uuid4())
-        ahora = time.time()
-
-        with _tareas_lock:
-            # Purgar búsquedas de más de 15 minutos (900 segundos) para evitar memory leaks
-            for tid in list(_tareas_busqueda.keys()):
-                if ahora - _tareas_busqueda[tid].get('timestamp', 0) > 900:
-                    _tareas_busqueda.pop(tid, None)
-                    
-            _tareas_busqueda[task_id] = {
-                'status': 'running', 
-                'results': [],
-                'timestamp': ahora
-            }
-
-        # Ejecutamos la búsqueda en un hilo separado
-        def run_search():
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                results = loop.run_until_complete(_ejecutar_scrapers(q))
-                loop.close()
-                
-                with _tareas_lock:
-                    if task_id in _tareas_busqueda:
-                        _tareas_busqueda[task_id]['status'] = 'completed'
-                        _tareas_busqueda[task_id]['results'] = results
-            except Exception as e:
-                # INFRAESTRUCTURA: Uso de logger en hilos de fondo
-                logger.error(f"[Scraper Thread] Error al ejecutar búsqueda asíncrona: {e}")
-                with _tareas_lock:
-                    if task_id in _tareas_busqueda:
-                        _tareas_busqueda[task_id]['status'] = 'failed'
-                        _tareas_busqueda[task_id]['error'] = str(e)
-
-        threading.Thread(target=run_search, daemon=True).start()
-        return True, {'task_id': task_id, 'status': 'pending'}
+        try:
+            # Encolar la tarea en la cola de Celery
+            task = buscar_repuestos_async.delay(q)
+            return True, {'task_id': task.id, 'status': 'pending'}
+        except Exception as e:
+            logger.error(f"[Celery] Error al encolar la tarea de búsqueda: {e}")
+            return False, f"Error al encolar la tarea asíncrona: {str(e)}"
 
     @staticmethod
     def obtener_estado_busqueda_repuestos(task_id):
-        """Consulta el estado de la tarea en memoria de forma segura."""
-        with _tareas_lock:
-            task = _tareas_busqueda.get(task_id)
+        """Consulta el estado de la tarea de búsqueda asíncrona en Celery."""
+        try:
+            res = AsyncResult(task_id, app=celery)
+            status = res.status
             
-        if not task:
-            return False, 'Tarea no encontrada o expirada de memoria.'
-        
-        if task['status'] == 'completed':
-            return True, {'status': 'completed', 'results': task['results']}
-        elif task['status'] == 'failed':
-            return False, task.get('error', 'Error en la búsqueda del repuesto')
-        else:
-            return True, {'status': 'running'}
+            if status == 'SUCCESS':
+                results = res.result
+                return True, {'status': 'completed', 'results': results}
+            elif status == 'FAILURE':
+                err = str(res.result) if res.result else "Error en la búsqueda del repuesto"
+                return False, err
+            elif status in ('PENDING', 'RECEIVED', 'RETRY', 'STARTED'):
+                return True, {'status': 'running'}
+            else:
+                return True, {'status': 'running'}
+        except Exception as e:
+            logger.error(f"[Celery] Error al consultar el estado de la tarea {task_id}: {e}")
+            return False, f"Error al consultar el estado de la tarea: {str(e)}"

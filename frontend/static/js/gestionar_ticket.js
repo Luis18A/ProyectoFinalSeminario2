@@ -535,57 +535,93 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const scraperHost = window.location.hostname;
-            const resp = await fetch(`http://${scraperHost}:8000/search?q=${encodeURIComponent(query)}`);
-            if (!resp.ok) {
-                throw new Error('Servidor de Scraping no responde');
+            // 1. Iniciar la tarea en segundo plano en el servidor
+            const startResp = await fetch('/api/buscar-repuestos/iniciar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ q: query })
+            });
+
+            if (!startResp.ok) {
+                const errData = await startResp.json().catch(() => ({}));
+                throw new Error(errData.error || 'No se pudo iniciar la búsqueda');
             }
 
-            const data = await resp.json();
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-zinc-400">No se encontraron repuestos para tu búsqueda.</td></tr>`;
-            } else {
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-zinc-50 border-b border-zinc-100 transition-colors';
+            const { task_id } = await startResp.json();
 
-                    let tiendaHtml = '';
-                    if (item.tienda === 'MercadoLibre') {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 border border-yellow-200 text-[9px] font-bold uppercase rounded">ML</span>`;
-                    } else if (item.tienda === 'Megatone') {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-red-100 text-red-800 border border-red-200 text-[9px] font-bold uppercase rounded">Mega</span>`;
-                    } else if (item.tienda === 'Fravega') {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-purple-100 text-purple-800 border border-purple-200 text-[9px] font-bold uppercase rounded">Fravega</span>`;
-                    } else {
-                        tiendaHtml = `<span class="px-2 py-0.5 bg-gray-100 text-gray-800 border border-gray-200 text-[9px] font-bold uppercase rounded">${item.tienda}</span>`;
+            // 2. Función de sondeo (polling) para consultar el estado en Celery
+            const pollTask = async () => {
+                try {
+                    const statusResp = await fetch(`/api/buscar-repuestos/estado/${task_id}`);
+                    if (!statusResp.ok) {
+                        throw new Error('Error al consultar el estado de la búsqueda');
                     }
 
-                    const escTitulo = escapeHTML(item.titulo).replace(/'/g, "\\'");
+                    const statusData = await statusResp.json();
 
-                    tr.innerHTML = `
-                        <td class="p-2.5 text-center">${tiendaHtml}</td>
-                        <td class="p-2.5 max-w-[240px] truncate" title="${escapeHTML(item.titulo)}">
-                            <a href="${escapeHTML(item.link)}" target="_blank" class="text-primary hover:underline font-medium">
-                                ${escapeHTML(item.titulo)}
-                            </a>
-                        </td>
-                        <td class="p-2.5 text-right font-bold text-accent">$${item.precio.toLocaleString('es-AR')}</td>
-                        <td class="p-2.5 text-center">
-                            <button type="button" onclick="agregarRepuestoAlPresupuesto('${escTitulo}', ${item.precio}, '${escapeHTML(item.link)}', '${escapeHTML(item.tienda)}')"
-                                    class="px-2 py-1 bg-zinc-900 text-white font-bold uppercase text-[9px] hover:bg-primary transition-all">
-                                + Cotizar
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-            container.classList.remove('hidden');
+                    if (statusData.status === 'completed') {
+                        const data = statusData.results || [];
+                        tbody.innerHTML = ''; // Limpiar skeletons
+                        
+                        if (data.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-zinc-400">No se encontraron repuestos para tu búsqueda.</td></tr>`;
+                        } else {
+                            data.forEach(item => {
+                                const tr = document.createElement('tr');
+                                tr.className = 'hover:bg-zinc-50 border-b border-zinc-100 transition-colors';
+
+                                let tiendaHtml = '';
+                                if (item.tienda === 'MercadoLibre') {
+                                    tiendaHtml = `<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 border border-yellow-200 text-[9px] font-bold uppercase rounded">ML</span>`;
+                                } else if (item.tienda === 'Megatone') {
+                                    tiendaHtml = `<span class="px-2 py-0.5 bg-red-100 text-red-800 border border-red-200 text-[9px] font-bold uppercase rounded">Mega</span>`;
+                                } else if (item.tienda === 'Fravega') {
+                                    tiendaHtml = `<span class="px-2 py-0.5 bg-purple-100 text-purple-800 border border-purple-200 text-[9px] font-bold uppercase rounded">Fravega</span>`;
+                                } else {
+                                    tiendaHtml = `<span class="px-2 py-0.5 bg-gray-100 text-gray-800 border border-gray-200 text-[9px] font-bold uppercase rounded">${item.tienda}</span>`;
+                                }
+
+                                const escTitulo = escapeHTML(item.titulo).replace(/'/g, "\\'");
+
+                                tr.innerHTML = `
+                                    <td class="p-2.5 text-center">${tiendaHtml}</td>
+                                    <td class="p-2.5 max-w-[240px] truncate" title="${escapeHTML(item.titulo)}">
+                                        <a href="${escapeHTML(item.link)}" target="_blank" class="text-primary hover:underline font-medium">
+                                            ${escapeHTML(item.titulo)}
+                                        </a>
+                                    </td>
+                                    <td class="p-2.5 text-right font-bold text-accent">$${item.precio.toLocaleString('es-AR')}</td>
+                                    <td class="p-2.5 text-center">
+                                        <button type="button" onclick="agregarRepuestoAlPresupuesto('${escTitulo}', ${item.precio}, '${escapeHTML(item.link)}', '${escapeHTML(item.tienda)}')"
+                                                class="px-2 py-1 bg-zinc-900 text-white font-bold uppercase text-[9px] hover:bg-primary transition-all">
+                                            + Cotizar
+                                        </button>
+                                    </td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        }
+                    } else if (statusData.status === 'running') {
+                        // Reintentar en 1.5 segundos
+                        setTimeout(pollTask, 1500);
+                    } else {
+                        throw new Error(statusData.error || 'La búsqueda de repuestos falló.');
+                    }
+                } catch (pollErr) {
+                    console.error(pollErr);
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-semibold">El servicio de repuestos externo no se encuentra en línea. Detalles: ${pollErr.message}</td></tr>`;
+                }
+            };
+
+            // Iniciar sondeo inicial
+            setTimeout(pollTask, 500);
+
         } catch (err) {
             console.error(err);
-            if (loading) loading.classList.add('hidden');
             tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-semibold">El servicio de repuestos externo no se encuentra en línea. Detalles: ${err.message}</td></tr>`;
-            container.classList.remove('hidden');
         }
     }
 
