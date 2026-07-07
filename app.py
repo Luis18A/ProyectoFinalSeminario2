@@ -1,23 +1,12 @@
 import os
-import queue
-from flask import Flask, flash, redirect, url_for, session, Response
+from flask import Flask, flash, redirect, url_for, session
 from database import db
-from backend.utils.sse_service import sse_service
+from backend.utils.db_seeder import auto_seed_db
 
 # ─────────────────────────────────────────────
 # IMPORTS de modelos (necesarios para create_all)
 # ─────────────────────────────────────────────
-from backend.models.Usuario import Usuario
-from backend.models.Rol import Rol
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.Notificacion import Notificacion
-from backend.models.Repuesto import Repuesto
-from backend.models.OrdenRepuesto import OrdenRepuesto
-
-
+import backend.models
 
 # ─────────────────────────────────────────────
 # IMPORTS de Blueprints
@@ -55,7 +44,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        _auto_seed_db(app)
+        auto_seed_db()
 
     return app
 
@@ -125,6 +114,7 @@ def _register_context_processors(app):
 
     @app.context_processor
     def inject_notifications():
+        from backend.models import Notificacion
         usuario_id = session.get('usuario_id')
         if usuario_id:
             notificaciones = (
@@ -144,86 +134,10 @@ def _register_context_processors(app):
         return dict(global_notifications=[], global_unread_count=0)
 
 
-def _auto_seed_db(app):
-    """Siembre datos automáticamente para el portfolio (ej. en Render) si está vacío."""
-    from backend.models.Rol import Rol
-    from backend.models.Usuario import Usuario
-    from backend.models.TipoDispositivo import TipoDispositivo
-    
-    # Verificamos si ya existen roles
-    if Rol.query.count() == 0:
-        print("Base de datos vacía detectada. Inicializando roles y usuarios base...")
-        try:
-            ROLES = ["Administrador", "Técnico", "Secretario"]
-            roles_dict = {}
-            for r_desc in ROLES:
-                rol = Rol(descripcion=r_desc)
-                db.session.add(rol)
-                roles_dict[r_desc] = rol
-            db.session.commit()
-            
-            USUARIOS = [
-                {"username": "admin",      "password": "administrador",     "nombre": "administrador",  "apellido": "administrador", "rol": "Administrador"},
-                {"username": "tecnico",    "password": "tecnico",   "nombre": "tecnico",   "apellido": "tecnico",   "rol": "Técnico"},
-                {"username": "secretario", "password": "secretario","nombre": "secretario",    "apellido": "secretario","rol": "Secretario"},
-            ]
-            for u_data in USUARIOS:
-                usuario = Usuario(
-                    username=u_data['username'],
-                    password=Usuario.hashear_password(u_data['password']),
-                    nombre=u_data['nombre'],
-                    apellido=u_data['apellido'],
-                    rol_id=roles_dict[u_data['rol']].id,
-                    activo=True
-                )
-                db.session.add(usuario)
-            
-            TIPOS_DISPOSITIVO = ["Notebook", "PC Escritorio", "Impresora", "Servidor", "Consola"]
-            for t_desc in TIPOS_DISPOSITIVO:
-                db.session.add(TipoDispositivo(descripcion=t_desc))
-            db.session.commit()
-            
-            print("Sembrando datos de prueba realistas (clientes, equipos, órdenes, historial)...")
-            from datos_prueba import generar_datos
-            generar_datos()
-            print("Base de datos inicializada y sembrada correctamente para el portfolio!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error al sembrar datos de prueba automáticamente: {e}")
-
-
 # ─────────────────────────────────────────────
 # PUNTO DE ENTRADA
 # ─────────────────────────────────────────────
 app = create_app()
-
-@app.route('/notificaciones/stream')
-def stream_notificaciones():
-    def event_stream():
-        # Liberamos la sesión de la base de datos de este hilo para evitar
-        # ocupar conexiones del pool durante la conexión SSE persistente.
-        db.session.close()
-        
-        q = sse_service.listen()
-        # Enviar ping inicial de apertura de stream
-        yield "data: {\"type\": \"ping\"}\n\n"
-        try:
-            while True:
-                try:
-                    # Timeout de 3 segundos para responder y verificar rápidamente si
-                    # el cliente sigue conectado (evita acumulación de hilos zombis).
-                    msg = q.get(timeout=3.0)
-                    yield f"data: {msg}\n\n"
-                except queue.Empty:
-                    yield "data: {\"type\": \"ping\"}\n\n"
-        except GeneratorExit:
-            pass
-        finally:
-            # Limpieza garantizada del listener al desconectarse el cliente
-            sse_service.remove_listener(q)
-            db.session.close()
-                
-    return Response(event_stream(), mimetype="text/event-stream")
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, threaded=True)

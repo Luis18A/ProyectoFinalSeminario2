@@ -2,7 +2,6 @@
 
 import random
 from datetime import datetime, timedelta
-from app import app
 from database import db
 from backend.models.Usuario import Usuario
 from backend.models.Rol import Rol
@@ -399,6 +398,7 @@ def generar_datos():
     print("[OK] ¡Datos de prueba cargados correctamente en la base de datos!")
 
 if __name__ == "__main__":
+    from app import app
     with app.app_context():
         limpiar_tablas()
         generar_datos()

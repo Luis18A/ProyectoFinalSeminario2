@@ -95,3 +95,66 @@ def buscar_repuestos_async(q):
     except Exception as e:
         print(f"[Celery Task] Error ejecutando scrapers: {e}")
         return []
+
+
+# ──────────────────────────────────────────────────────────────────────
+# FALLBACK DE HILOS PARA DESARROLLO LOCAL SIN WORKER DE CELERY
+# ──────────────────────────────────────────────────────────────────────
+import uuid
+import threading
+
+# Caché en memoria para las tareas ejecutadas en hilos locales
+_hilos_tasks = {}
+_hilos_tasks_lock = threading.Lock()
+
+def _run_scraping_thread(task_id, q):
+    try:
+        # Ejecutar scrapers usando asyncio.
+        # En hilos secundarios de Flask, creamos un nuevo event loop.
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            results = loop.run_until_complete(_ejecutar_scrapers(q))
+        finally:
+            loop.close()
+            
+        with _hilos_tasks_lock:
+            _hilos_tasks[task_id] = {
+                'status': 'completed',
+                'results': results
+            }
+    except Exception as e:
+        print(f"[Thread Task] Error ejecutando scrapers: {e}")
+        with _hilos_tasks_lock:
+            _hilos_tasks[task_id] = {
+                'status': 'failed',
+                'error': str(e)
+            }
+
+def iniciar_busqueda_hilos(q):
+    """Lanza la búsqueda de repuestos en un hilo de fondo y devuelve un task_id local."""
+    task_id = f"thread-{uuid.uuid4()}"
+    with _hilos_tasks_lock:
+        _hilos_tasks[task_id] = {
+            'status': 'running'
+        }
+    
+    t = threading.Thread(target=_run_scraping_thread, args=(task_id, q))
+    t.daemon = True
+    t.start()
+    return task_id
+
+def obtener_estado_busqueda_hilos(task_id):
+    """Consulta el estado de una búsqueda local en hilos."""
+    with _hilos_tasks_lock:
+        task_info = _hilos_tasks.get(task_id)
+        
+    if not task_info:
+        return False, "Tarea local no encontrada"
+        
+    if task_info['status'] == 'completed':
+        return True, {'status': 'completed', 'results': task_info['results']}
+    elif task_info['status'] == 'failed':
+        return False, task_info.get('error', 'Error desconocido en la búsqueda')
+    else:
+        return True, {'status': 'running'}

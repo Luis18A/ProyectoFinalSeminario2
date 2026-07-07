@@ -1,4 +1,4 @@
-from scrapling.fetchers import StealthyFetcher
+from scrapling.fetchers import DynamicFetcher
 
 class MercadoLibreScraper:
     BASE_URL = "https://listado.mercadolibre.com.ar/"
@@ -8,8 +8,10 @@ class MercadoLibreScraper:
         formatted_query = query.replace(' ', '-')
         url = f"{self.BASE_URL}{formatted_query}"
 
-        # Usamos StealthyFetcher para evadir captchas y bloqueos mediante Camoufox con fingerprinting avanzado
-        page = StealthyFetcher.fetch(
+        # Usamos DynamicFetcher para cargar la página ejecutando JavaScript,
+        # lo cual es requerido por Mercado Libre para renderizar el listado
+        # y evitar el bloqueo por falta de JS.
+        page = DynamicFetcher.fetch(
             url,
             headless=True,
             network_idle=True,
