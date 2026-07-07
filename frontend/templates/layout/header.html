@@ -132,7 +132,7 @@
             </div>
             <div
                 class="h-8 w-8 rounded-full bg-zinc-950 flex items-center justify-center text-white text-[10px] font-bold uppercase border-2 border-zinc-100 shadow-sm">
-                {{ session.get('username', 'US')[:2] }}
+                {{ (session.get('username') or 'US')[:2] }}
             </div>
         </div>
     </div>

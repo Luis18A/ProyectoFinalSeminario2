@@ -292,5 +292,4 @@ class BackupService:
 
         except Exception:
             db.session.rollback()
-            # CORRECCIÓN: no exponer str(e) al usuario
             return False, "Error al restaurar la base de datos. Verificá que el archivo sea válido."

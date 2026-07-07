@@ -1,7 +1,6 @@
 from backend.models.Cliente import Cliente
 from backend.models.Equipo import Equipo
 from backend.models.OrdenServicio import OrdenServicio
-from database import db
 from flask import url_for
 from sqlalchemy.orm import joinedload
 
@@ -20,9 +19,7 @@ class SearchController:
 
     @staticmethod
     def _buscar_clientes(q):
-        resultados = Cliente.query.filter(
-            (Cliente.nombre.ilike(f"%{q}%")) | (Cliente.apellido.ilike(f"%{q}%")) | (Cliente.dni_cuil.ilike(f"%{q}%"))
-        ).limit(5).all()
+        resultados = Cliente.buscar(q, limite=5)
         return [{'id': c.id, 'nombre': f"{c.nombre} {c.apellido}", 'dni_cuil': c.dni_cuil, 'url': url_for('clientes.gestion_cliente', q=c.dni_cuil)} for c in resultados]
 
     @staticmethod

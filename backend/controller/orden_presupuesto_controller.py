@@ -4,7 +4,6 @@ from backend.models.EstadoOrden import EstadoOrden
 from backend.models.Repuesto import Repuesto
 from backend.models.OrdenRepuesto import OrdenRepuesto
 from database import db
-from sqlalchemy.orm.attributes import flag_modified
 import uuid
 import threading
 import asyncio
@@ -60,6 +59,12 @@ class OrdenPresupuestoController:
         orden.costo = max(0.0, mano_obra + total_repuestos)
 
     @staticmethod
+    def _obtener_mano_obra(orden):
+        """Calcula la mano de obra actual restando el costo total de los repuestos al costo global."""
+        old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
+        return max(0.0, float(orden.costo or 0.0) - old_sum)
+
+    @staticmethod
     def agregar_repuesto(orden_id, **datos_formulario):
         """Agrega un repuesto al presupuesto del ticket de forma asíncrona y recalcula costo."""
         try:
@@ -75,8 +80,7 @@ class OrdenPresupuestoController:
                 return False, result
 
             # Calcular mano de obra previa para preservarla
-            old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
-            mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
+            mano_obra = OrdenPresupuestoController._obtener_mano_obra(orden)
 
             # Buscar o crear Repuesto en el catálogo (Insensible a mayúsculas)
             titulo = result['titulo']
@@ -156,8 +160,7 @@ class OrdenPresupuestoController:
                 return False, "Relación de repuesto no encontrada."
 
             # Calcular mano de obra previa para preservarla
-            old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
-            mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
+            mano_obra = OrdenPresupuestoController._obtener_mano_obra(orden)
 
             # Actualizar
             orden_rep.precio_unitario = result['precio']
@@ -189,8 +192,7 @@ class OrdenPresupuestoController:
                 return False, "Relación de repuesto no encontrada."
 
             # Calcular mano de obra previa para preservarla
-            old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
-            mano_obra = max(0.0, float(orden.costo or 0.0) - old_sum)
+            mano_obra = OrdenPresupuestoController._obtener_mano_obra(orden)
 
             # Eliminar relacion
             db.session.delete(orden_rep)

@@ -18,20 +18,13 @@ class OrdenServicio(db.Model):
     costo              = db.Column(db.Numeric(10, 2), nullable=True)
     observaciones      = db.Column(db.String(500), nullable=True)
 
-    # Relaciones
     orden_repuestos    = db.relationship('OrdenRepuesto', back_populates='orden', cascade='all, delete-orphan')
     usuario            = db.relationship('Usuario', foreign_keys=[usuario_id])
     equipo             = db.relationship('Equipo', back_populates='ordenes', foreign_keys=[equipo_id])
-    
-    # Añadimos cascade para que si se borra una orden, se borre su historial
     historial          = db.relationship('HistorialEstado', backref='orden', lazy=True, cascade='all, delete-orphan')
 
     @property
     def repuestos(self):
-        """
-        NOTA ARQUITECTÓNICA: En el futuro, mover esta lógica de formateo a un 
-        serializador (ej. un esquema de Marshmallow) para no acoplar el modelo al frontend.
-        """
         return [
             {
                 'id': orp.id,
@@ -46,26 +39,6 @@ class OrdenServicio(db.Model):
             for orp in self.orden_repuestos
         ]
 
-    @property
-    def detalle_repuestos(self):
-        """
-        Retorna la estructura de datos pura. 
-        El formateo visual o enlaces falsos se delegan a la capa de presentación.
-        """
-        return [
-            {
-                'orden_repuesto_id': orp.id,
-                'repuesto_id': orp.repuesto_id,
-                'codigo': orp.repuesto.codigo,
-                'descripcion': orp.repuesto.descripcion,
-                'precio_unitario': float(orp.precio_unitario),
-                'cantidad': orp.cantidad,
-                'proveedor': orp.repuesto.proveedor
-            }
-            for orp in self.orden_repuestos
-        ]
-
-    # ── Lógica de dominio ──────────────────────────────────────────
 
     def preparar_cambio_estado(self, nuevo_estado, usuario_id, observacion=None):
         if not EstadoOrden.es_transicion_valida(self.estado, nuevo_estado):
@@ -76,8 +49,6 @@ class OrdenServicio(db.Model):
         estado_anterior = self.estado.value
         self.estado = nuevo_estado
 
-        # Nota: Este método retorna el objeto HistorialEstado. Es responsabilidad 
-        # del controlador agregarlo a db.session y hacer el db.session.commit()
         nuevo_historial = HistorialEstado(
             orden_id=self.id,
             estado_anterior=estado_anterior,
@@ -87,20 +58,6 @@ class OrdenServicio(db.Model):
         )
         return nuevo_historial
 
-    def preparar_finalizacion(self, costo_final, observaciones, usuario_id):
-        self.costo         = costo_final
-        self.observaciones = observaciones
-        self.fecha_entrega = func.now() # Consistencia con el uso de func
-        
-        return self.preparar_cambio_estado(
-            EstadoOrden.ENTREGADO, usuario_id,
-            "Orden finalizada y entregada al cliente."
-        )
-
-    def actualizar_diagnostico(self, diagnostico):
-        self.estado_diagnostico = diagnostico
-
-    # ── Métodos Active Record ──────────────────────────────────────
 
     @classmethod
     def get_all(cls):
@@ -114,9 +71,6 @@ class OrdenServicio(db.Model):
     def get_por_usuario(cls, usuario_id):
         return cls.query.filter_by(usuario_id=usuario_id).all()
 
-    @classmethod
-    def get_por_estado(cls, estado):
-        return cls.query.filter_by(estado=estado).all()
 
     def __repr__(self):
         return f"<OrdenServicio id={self.id} estado='{self.estado.value}'>"

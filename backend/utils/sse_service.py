@@ -15,12 +15,13 @@ class SSEService:
         for q in list(self.listeners):
             try:
                 q.put_nowait(message)
-            except queue.Full:
-                # Quitar cola si está saturada
-                self.listeners.remove(q)
             except Exception:
-                # Quitar cola ante fallos inesperados de conexión
-                if q in self.listeners:
-                    self.listeners.remove(q)
+                # Quitar cola de forma segura ante saturación o desconexión
+                self.remove_listener(q)
+
+    def remove_listener(self, q):
+        """Remueve de forma segura un suscriptor de la lista."""
+        if q in self.listeners:
+            self.listeners.remove(q)
 
 sse_service = SSEService()

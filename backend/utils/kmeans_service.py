@@ -15,12 +15,6 @@ class KMeansService:
     _last_update = None
 
     @classmethod
-    def invalidate_cache(cls):
-        """Invalida la caché del K-Means."""
-        cls._cached_result = None
-        cls._last_update = None
-
-    @classmethod
     def get_client_segments(cls):
         """
         Ejecuta minería de datos (K-Means) en pure Python para segmentar clientes.

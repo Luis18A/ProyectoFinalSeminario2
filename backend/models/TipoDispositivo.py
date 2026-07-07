@@ -9,8 +9,6 @@ class TipoDispositivo(db.Model):
     def __init__(self, descripcion: str):
         self.descripcion = descripcion
 
-    # ── Queries (Estandarizadas) ───────────────────────────────────
-
     @classmethod
     def get_all(cls):
         return cls.query.all()

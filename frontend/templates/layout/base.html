@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     <script>
-        window.USER_ID = {{ session.get('usuario_id', 0) }};
+        window.USER_ID = {{ session.get('usuario_id') or 0 }};
     </script>
     {% block extra_css %}{% endblock %}
 </head>

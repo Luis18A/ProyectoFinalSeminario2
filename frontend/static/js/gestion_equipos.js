@@ -56,7 +56,6 @@ function abrirEditar(id, tipo_id, marca, modelo, serie, descripcion) {
     form.action = `/equipo/editar/${id}`;
 
     // Cargar datos en los inputs
-    document.getElementById('edit-id').value = id;
     document.getElementById('edit-tipo').value = tipo_id;
     document.getElementById('edit-marca').value = marca;
     document.getElementById('edit-modelo').value = modelo;

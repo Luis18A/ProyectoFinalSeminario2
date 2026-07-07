@@ -55,17 +55,18 @@ class PredictorService:
         predictions = []
 
         if len(valid_orders) >= 2:
-            # CORRECCIÓN: usar el método de clase en lugar de la función suelta
-            falla_counts = Counter([
-                PredictorService._normalizar_falla(o.falla_reportada)
+            # Pre-calculamos las fallas normalizadas una sola vez para mejorar rendimiento
+            ordenes_normalizadas = [
+                (o, PredictorService._normalizar_falla(o.falla_reportada))
                 for o in valid_orders
-            ])
+            ]
+            falla_counts = Counter(norm for _, norm in ordenes_normalizadas)
             total_valid = len(valid_orders)
 
             for falla_txt, count in falla_counts.most_common(3):
                 falla_orders = [
-                    o for o in valid_orders
-                    if PredictorService._normalizar_falla(o.falla_reportada) == falla_txt
+                    o for o, norm in ordenes_normalizadas
+                    if norm == falla_txt
                 ]
                 exitosas = sum(
                     1 for o in falla_orders
@@ -78,7 +79,7 @@ class PredictorService:
                     "falla":        falla_txt,
                     "probabilidad": max(probabilidad, 10),
                     "tasa_exito":   max(tasa_exito, 50),
-                    "fuente":       "historico"  # ← nuevo campo para diferenciar en el template
+                    "fuente":       "historico"
                 })
 
         predictions.sort(key=lambda x: x["probabilidad"], reverse=True)

@@ -31,17 +31,6 @@ from backend.routes.orden_servicio_route import orden_servicio_bp
 from backend.routes.admin_route import admin_bp
 from backend.routes.notificacion_route import notificacion_bp
 
-# Configurar Flask para que busque en la carpeta frontend
-app = Flask(__name__, 
-            template_folder='frontend/templates', 
-            static_folder='frontend/static')
-
-
-# CONEXIÓN A LA BASE DE DATOS
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3536@localhost:5432/techflowdb'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'techflow_secret_key_123' # Necesario para sesiones y flash messages
-
 from flask_wtf.csrf import CSRFProtect
 
 csrf = CSRFProtect()
@@ -211,20 +200,30 @@ app = create_app()
 @app.route('/notificaciones/stream')
 def stream_notificaciones():
     def event_stream():
+        # Liberamos la sesión de la base de datos de este hilo para evitar
+        # ocupar conexiones del pool durante la conexión SSE persistente.
+        db.session.close()
+        
         q = sse_service.listen()
         # Enviar ping inicial de apertura de stream
         yield "data: {\"type\": \"ping\"}\n\n"
-        while True:
-            try:
-                # Timeout corto para detectar desconexión del cliente rápidamente y liberar el hilo
-                msg = q.get(timeout=0.1)
-                yield f"data: {msg}\n\n"
-            except queue.Empty:
-                yield "data: {\"type\": \"ping\"}\n\n"
-            except Exception:
-                break
+        try:
+            while True:
+                try:
+                    # Timeout de 3 segundos para responder y verificar rápidamente si
+                    # el cliente sigue conectado (evita acumulación de hilos zombis).
+                    msg = q.get(timeout=3.0)
+                    yield f"data: {msg}\n\n"
+                except queue.Empty:
+                    yield "data: {\"type\": \"ping\"}\n\n"
+        except GeneratorExit:
+            pass
+        finally:
+            # Limpieza garantizada del listener al desconectarse el cliente
+            sse_service.remove_listener(q)
+            db.session.close()
                 
     return Response(event_stream(), mimetype="text/event-stream")
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, threaded=True)

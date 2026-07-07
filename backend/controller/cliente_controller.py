@@ -165,25 +165,11 @@ class ClienteController:
         return Cliente.get_all()
 
     @staticmethod
-    def obtener_por_id(cliente_id):
-        if not cliente_id or cliente_id <= 0:
-            return None
-        return Cliente.get_by_id(cliente_id)
-
-    @staticmethod
-    def obtener_por_dni(dni):
-        return Cliente.get_por_dni(dni)
-
-    @staticmethod
     def buscar_clientes(termino):
         termino = (termino or '').strip()
         if not termino or len(termino) > 100:
             return []
-        return Cliente.query.filter(
-            (Cliente.nombre.ilike(f"%{termino}%")) | 
-            (Cliente.apellido.ilike(f"%{termino}%")) | 
-            (Cliente.dni_cuil.ilike(f"%{termino}%"))
-        ).order_by(Cliente.fecha_registro.desc()).limit(20).all()
+        return Cliente.buscar(termino)
 
     @staticmethod
     def buscar_clientes_json(termino):
@@ -221,20 +207,3 @@ class ClienteController:
         if q:
             return ClienteController.buscar_clientes(q)
         return ClienteController.obtener_todos()
-
-    @staticmethod
-    def eliminar_cliente(cliente_id):
-        cliente = Cliente.get_by_id(cliente_id)
-        if not cliente:
-            return False
-        try:
-            db.session.delete(cliente)
-            db.session.commit()
-            return True
-        except Exception:
-            db.session.rollback()
-            return False
-
-    @staticmethod
-    def obtener_equipos_cliente(cliente_id):
-        return Equipo.obtener_por_cliente(cliente_id)

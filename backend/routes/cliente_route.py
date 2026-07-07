@@ -12,12 +12,6 @@ def editar_cliente(id):
     flash(message, 'success' if success else 'error')
     return redirect(url_for('clientes.gestion_cliente'))
 
-@cliente_bp.get('/listar_clientes')
-@login_required
-@role_required('Administrador', 'Secretario')
-def listar_clientes():
-    return render_template('clientes.html')
-
 @cliente_bp.get('/clientes/buscar')
 @login_required
 @role_required('Administrador', 'Secretario')
@@ -37,16 +31,20 @@ def verificar_dni(dni):
 @login_required
 @role_required('Administrador', 'Secretario')
 def gestion_cliente():
+    form_data = {}
     if request.method == 'POST':
         success, result = cliente_controller.crear_cliente(request.form)
         if success:
             flash("Cliente creado exitosamente.", "success")
             return redirect(url_for('clientes.gestion_cliente'))
-        else:
-            flash(result, 'error')
-        clientes = cliente_controller.obtener_datos_gestion(request.args.get('q'))
-        return render_template('gestion_cliente.html', clientes=clientes, search_query=request.args.get('q', ''), form_data=request.form)
+        
+        flash(result, 'error')
+        form_data = request.form
 
-    # El controlador decide si busca filtrado o trae todos internamente
     clientes = cliente_controller.obtener_datos_gestion(request.args.get('q'))
-    return render_template('gestion_cliente.html', clientes=clientes, search_query=request.args.get('q', ''), form_data={})
+    return render_template(
+        'gestion_cliente.html',
+        clientes=clientes,
+        search_query=request.args.get('q', ''),
+        form_data=form_data
+    )

@@ -1,4 +1,3 @@
-from asyncio import exceptions
 from backend.models.OrdenServicio import OrdenServicio
 from backend.models.EstadoOrden import EstadoOrden
 from backend.models.HistorialEstado import HistorialEstado
@@ -78,35 +77,17 @@ class OrdenServicioController:
             return False, "Error al crear la orden. Intentá de nuevo."
 
     @staticmethod
-    def obtener_todos():
-        return OrdenServicio.get_all()
-
-    @staticmethod
-    def eliminar_orden_servicio(orden_id):
-        orden = OrdenServicio.get_by_id(orden_id)
-        if not orden:
-            return False
-        try:
-            db.session.delete(orden)
-            db.session.commit()
-            return True
-        except Exception:
-            db.session.rollback()
-            return False
-
-    @staticmethod
-    def obtener_historial_filtrado(ticket_id=None, cliente_query=None, equipo_query=None):
-        """Obtiene las órdenes de servicio filtradas según criterios de búsqueda."""
+    def _crear_query_filtrado(ticket_id=None, cliente_query=None, equipo_query=None):
+        """Construye la consulta base con los filtros aplicados (DNI/CUIL, DNI, marca, etc.)."""
         query = OrdenServicio.query.join(Equipo).join(Cliente)
         
         if ticket_id and ticket_id.strip():
-            # Soportar formatos como "TK-0005" o simplemente "5"
-            clean_id = ticket_id.upper().replace("TK-", "")
+            # Limpiamos prefijos comunes como #, TK- o TK para robustez
+            clean_id = ticket_id.upper().replace("TK-", "").replace("TK", "").replace("#", "").strip()
             try:
                 numeric_id = int(clean_id)
                 query = query.filter(OrdenServicio.id == numeric_id)
             except ValueError:
-                # Si no es un número válido, retornamos un query vacío para que no falle pero no traiga nada
                 query = query.filter(OrdenServicio.id == -1)
                 
         if cliente_query:
@@ -123,6 +104,12 @@ class OrdenServicioController:
                 (TipoDispositivo.descripcion.ilike(f"%{equipo_query}%"))
             )
             
+        return query
+
+    @staticmethod
+    def obtener_historial_filtrado(ticket_id=None, cliente_query=None, equipo_query=None):
+        """Obtiene las órdenes de servicio filtradas según criterios de búsqueda."""
+        query = OrdenServicioController._crear_query_filtrado(ticket_id, cliente_query, equipo_query)
         return query.order_by(OrdenServicio.fecha_recepcion.desc()).all()
 
     @staticmethod
@@ -130,43 +117,12 @@ class OrdenServicioController:
         return OrdenServicio.get_by_id(orden_id)
 
     @staticmethod
-    def obtener_historial(orden_id):
-        """Obtiene el historial cronológico de un ticket."""
-        return HistorialEstado.get_historial_orden(orden_id)
-
-    @staticmethod
-    def obtener_por_usuario(usuario_id):
-        return OrdenServicio.get_por_usuario(usuario_id)
-
-    @staticmethod
     def obtener_datos_lista_activas(ticket_id=None, cliente_query=None, equipo_query=None):
-        query = OrdenServicio.query.join(Equipo).join(Cliente)
+        query = OrdenServicioController._crear_query_filtrado(ticket_id, cliente_query, equipo_query)
         
         # Filtrar solo las activas
         query = query.filter(OrdenServicio.estado != EstadoOrden.ENTREGADO)
         
-        if ticket_id and ticket_id.strip():
-            clean_id = ticket_id.upper().replace("TK-", "")
-            try:
-                numeric_id = int(clean_id)
-                query = query.filter(OrdenServicio.id == numeric_id)
-            except ValueError:
-                query = query.filter(OrdenServicio.id == -1)
-                
-        if cliente_query:
-            query = query.filter(
-                (Cliente.nombre.ilike(f"%{cliente_query}%")) |
-                (Cliente.apellido.ilike(f"%{cliente_query}%")) |
-                (Cliente.telefono.ilike(f"%{cliente_query}%"))
-            )
-            
-        if equipo_query:
-            query = query.join(TipoDispositivo, Equipo.tipo_id == TipoDispositivo.id).filter(
-                (Equipo.marca.ilike(f"%{equipo_query}%")) |
-                (Equipo.modelo.ilike(f"%{equipo_query}%")) |
-                (TipoDispositivo.descripcion.ilike(f"%{equipo_query}%"))
-            )
-            
         ordenes = query.order_by(OrdenServicio.id.desc()).all()
         return {
             'ordenes':           ordenes,

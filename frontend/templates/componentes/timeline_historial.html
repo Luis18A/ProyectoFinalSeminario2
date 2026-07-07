@@ -1,3 +1,5 @@
+{% from 'layout/macros.html' import badge_estado %}
+
 <div class="bento-card shadow-sm border-zinc-200">
     <h3
         class="font-label-bold uppercase text-on-surface-variant mb-6 pb-4 border-b border-[#1A1A1A]/38 flex items-center justify-between">
@@ -12,7 +14,7 @@
             {% for entrada in historial %}
             <div class="relative">
                 <!-- Dot en la línea de tiempo -->
-                <div class="absolute -left-[29px] top-1 w-3 h-3 bg-white border-2
+                <div class="absolute -left-[22px] top-1 w-3 h-3 bg-white border-2
                     {% if loop.first %}border-emerald-500{% else %}border-[#1A1A1A]/20{% endif %}">
                 </div>
                 <div class="flex items-start justify-between mb-2 gap-2 flex-wrap">

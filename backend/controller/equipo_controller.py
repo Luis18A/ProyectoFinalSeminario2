@@ -120,56 +120,6 @@ class EquipoController:
             return False, "Error al actualizar el equipo. Intentá de nuevo."
 
     @staticmethod
-    def obtener_todos():
-        return Equipo.get_all()
-
-    @staticmethod
-    def toggle_estado(equipo_id):
-        equipo = Equipo.get_by_id(equipo_id)
-        if equipo:
-            equipo.activo = not equipo.activo # Cambia de True a False y viceversa
-            db.session.commit()
-            return True
-        return False
-
-    @staticmethod
-    def eliminar_equipo(equipo_id):
-        equipo = Equipo.get_by_id(equipo_id)
-        if not equipo:
-            return False
-        try:
-            db.session.delete(equipo)
-            db.session.commit()
-            return True
-        except Exception:
-            db.session.rollback()
-            return False
-
-    @staticmethod
-    def obtener_por_id(equipo_id):
-        return Equipo.get_by_id(equipo_id)
-
-    @staticmethod
-    def obtener_por_usuario(usuario_id):
-        return Equipo.obtener_por_usuario(usuario_id)
-
-    @staticmethod
-    def buscar_equipos(termino):
-        from database import remove_accents
-        from sqlalchemy import func
-        clean_term = remove_accents(termino)
-        search_pattern = f"%{clean_term}%"
-        return Equipo.query.filter(
-            (func.unaccent(Equipo.marca).ilike(func.unaccent(search_pattern))) | 
-            (func.unaccent(Equipo.modelo).ilike(func.unaccent(search_pattern))) | 
-            (func.unaccent(Equipo.numero_serie).ilike(func.unaccent(search_pattern)))
-        ).limit(50).all()
-
-    @staticmethod
-    def obtener_por_numero_serie(numero_serie):
-        return Equipo.get_por_numero_serie(numero_serie)
-
-    @staticmethod
     def obtener_equipos_cliente_json(cliente_id):
         """Obtiene equipos de un cliente en formato JSON (para AJAX)."""
         cliente = Cliente.get_by_id(cliente_id)

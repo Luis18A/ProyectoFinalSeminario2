@@ -23,9 +23,9 @@
     <!-- Actions Bar (Non-printing) -->
     <div
         class="no-print max-w-4xl mx-auto mb-4 bg-white border border-zinc-200 p-4 flex justify-between items-center shadow-sm">
-        <a href="{{ url_for('vistas.technician') }}" class="btn-swiss btn-outline">
+        <a href="{{ url_for('orden_servicio.gestionar_ticket', orden_id=orden.id) }}" class="btn-swiss btn-outline">
             <span class="material-symbols-outlined text-sm">arrow_back</span>
-            Volver al sistema
+            Volver al ticket
         </a>
         <div class="flex gap-2">
             <button onclick="window.print()" class="btn-swiss btn-outline">
@@ -163,9 +163,9 @@
                         </tr>
                         {% for r in orden.repuestos or [] %}
                         <tr>
-                            <td class="col-qty">1</td>
+                            <td class="col-qty">{{ r.cantidad }}</td>
                             <td class="col-desc">Repuesto: {{ r.titulo }} ({{ r.tienda }})</td>
-                            <td class="col-price">${{ "%.2f"|format(r.precio) }}</td>
+                            <td class="col-price">${{ "%.2f"|format(r.precio * r.cantidad) }}</td>
                         </tr>
                         {% else %}
                         <tr>

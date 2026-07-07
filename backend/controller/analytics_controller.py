@@ -4,15 +4,16 @@ from backend.models.Equipo import Equipo
 from backend.models.Usuario import Usuario
 from backend.models.HistorialEstado import HistorialEstado
 from backend.models.EstadoOrden import EstadoOrden
+from backend.models.Rol import Rol
+from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models.OrdenRepuesto import OrdenRepuesto
 from backend.utils.kmeans_service import KMeansService
+from sqlalchemy import func
 
 class AnalyticsController:
 
     @staticmethod
     def obtener_datos_analytics():
-        from backend.models.Rol import Rol
-        from backend.models.TipoDispositivo import TipoDispositivo
-        from backend.models.OrdenRepuesto import OrdenRepuesto
 
         # ── 1. Total & Critical Failures ──────────────────────────────
         total = OrdenServicio.query.count()
@@ -28,22 +29,30 @@ class AnalyticsController:
         # ── 2. Active Technicians ─────────────────────────────────────
         active_tecnicos_count = db.session.query(Usuario).join(Rol).filter(
             Usuario.activo == True,
-            Rol.descripcion.in_(['Técnico', 'tecnico', 'técnico', 'Tecnico'])
+            func.lower(Rol.descripcion).in_(['técnico', 'tecnico'])
         ).count()
 
         # ── 3. MTTR ───────────────────────────────────────────────────
-        fechas_mttr = db.session.query(OrdenServicio.fecha_recepcion, OrdenServicio.fecha_entrega).filter(
+        # Optimización: Cálculo directo en base de datos para evitar cargar todas las filas en memoria.
+        dialect_name = db.engine.dialect.name
+        if dialect_name == 'postgresql':
+            avg_seconds_query = db.session.query(
+                func.avg(func.extract('epoch', OrdenServicio.fecha_entrega - OrdenServicio.fecha_recepcion))
+            )
+        else:
+            # SQLite fallback: Cálculo mediante julianday
+            avg_seconds_query = db.session.query(
+                func.avg((func.julianday(OrdenServicio.fecha_entrega) - func.julianday(OrdenServicio.fecha_recepcion)) * 86400)
+            )
+
+        avg_segundos = avg_seconds_query.filter(
             OrdenServicio.estado.in_([EstadoOrden.LISTO, EstadoOrden.ENTREGADO]),
             OrdenServicio.fecha_entrega.isnot(None),
             OrdenServicio.fecha_recepcion.isnot(None)
-        ).all()
+        ).scalar()
 
-        if fechas_mttr:
-            avg_segundos = sum(
-                (f.fecha_entrega - f.fecha_recepcion).total_seconds()
-                for f in fechas_mttr
-            ) / len(fechas_mttr)
-            dias = avg_segundos / 86400
+        if avg_segundos is not None:
+            dias = float(avg_segundos) / 86400
             if round(dias, 1) == 1.0:
                 mttr = "1.0 día"
             else:
@@ -65,16 +74,31 @@ class AnalyticsController:
             system_integrity = "Sin datos aún"
 
         # ── 5. Incident Velocity (distribución por día de semana - Estilo Pareto) ─────
+        # Optimización: Agrupamiento directo en base de datos (GROUP BY) en lugar de en memoria.
         dias_semana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
         weekday_counts = [0] * 7
-        
-        fechas_recepcion = db.session.query(OrdenServicio.fecha_recepcion).filter(
+
+        dialect_name = db.engine.dialect.name
+        if dialect_name == 'postgresql':
+            # dow: 0 para Domingo, 1 para Lunes, ..., 6 para Sábado
+            day_expr = func.extract('dow', OrdenServicio.fecha_recepcion)
+        else:
+            # SQLite: %w (0 para Domingo, 1 para Lunes, ..., 6 para Sábado)
+            day_expr = func.strftime('%w', OrdenServicio.fecha_recepcion)
+
+        counts_query = db.session.query(
+            day_expr.label('day'),
+            func.count(OrdenServicio.id)
+        ).filter(
             OrdenServicio.fecha_recepcion.isnot(None)
-        ).all()
-        
-        for (fecha,) in fechas_recepcion:
-            if fecha:
-                weekday_counts[fecha.weekday()] += 1
+        ).group_by(day_expr).all()
+
+        for day, count in counts_query:
+            if day is not None:
+                day_int = int(day)
+                # Mapear Domingo (0) al índice 6 y Lunes (1) al índice 0, etc.
+                idx = (day_int - 1) % 7
+                weekday_counts[idx] = count
 
         total_incidentes = sum(weekday_counts)
         pareto_data = []

@@ -117,19 +117,6 @@ class UsuarioController:
             return False, "Error al actualizar el usuario. Intentá de nuevo."
 
     @staticmethod
-    def obtener_todos():
-        return Usuario.get_all()
-
-    @staticmethod
-    def toggle_estado(usuario_id):
-        usuario = Usuario.get_by_id(usuario_id)
-        if not usuario:
-            return False
-        usuario.activo = not usuario.activo
-        db.session.commit()
-        return True
-
-    @staticmethod
     def eliminar_usuario(usuario_id, usuario_actual_id):
         if usuario_id == usuario_actual_id:
             return False, "No puedes eliminar tu propia cuenta."
@@ -168,5 +155,5 @@ class UsuarioController:
             'cant_activos': sum(1 for u in usuarios_lista if u.activo),
             'cant_roles': len(roles_lista),
             'tiempo_auditoria': tiempo_auditoria,
-            'cant_usuarios': Usuario.query.count()
+            'cant_usuarios': len(usuarios_lista)
         }

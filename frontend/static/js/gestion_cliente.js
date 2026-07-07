@@ -17,6 +17,19 @@ function escapeHTML(str) {
 function abrirModalRegistrar() {
     const modal = document.getElementById('modal-registrar');
     if (modal) {
+        // Limpiar el formulario y restaurar estados al abrir de nuevo
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+
+        const warningMsg = document.getElementById('dni-warning-msg');
+        if (warningMsg) {
+            warningMsg.innerHTML = '';
+            warningMsg.classList.add('hidden');
+        }
+
+        const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+        if (submitBtn) submitBtn.disabled = false;
+
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -345,6 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (submitBtn) submitBtn.disabled = true;
                     
                     document.getElementById('btn-autofill-edit').addEventListener('click', function() {
+                        cerrarModalRegistrar();
                         abrirEditar(c.id, c.dni_cuil, c.nombre, c.apellido, c.telefono, c.email, c.domicilio, c.localidad);
                     });
                 } else {

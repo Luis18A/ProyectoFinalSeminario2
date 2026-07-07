@@ -6,7 +6,7 @@ from backend.utils.decorators import login_required, role_required
 
 admin_bp = Blueprint('admin', __name__)
 
-@admin_bp.route('/admin/backup/download')
+@admin_bp.get('/admin/backup/download')
 @login_required
 @role_required('Administrador')
 def download_backup():
@@ -62,5 +62,5 @@ def cambiar_rol():
             flash(f"Simulando entorno como {session_name}.", "success")
             return redirect(url_for(route))
     
-    flash(rol_normalizado if not success and isinstance(rol_normalizado, str) else "No tienes permisos o el rol es inválido.", "error")
+    flash(rol_normalizado if isinstance(rol_normalizado, str) else "No tienes permisos o el rol es inválido.", "error")
     return redirect(url_for('vistas.dashboard'))

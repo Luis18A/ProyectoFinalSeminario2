@@ -25,7 +25,6 @@
                 <span class="material-symbols-outlined text-on-surface-variant">search</span>
                 <input id="search-input" class="input-swiss flex-1" placeholder="Buscar por nombre, apellido o DNI..."
                     type="text" value="{{ search_query or '' }}" />
-                <button class="btn-swiss text-accent hover:underline uppercase tracking-widest p-0">Buscar</button>
             </div>
         </div>
 
@@ -61,7 +60,7 @@
                         </td>
                         <td>
                             <div class="font-medium text-zinc-800">{{ c.telefono }}</div>
-                            <div class="text-zinc-500 text-xs">{{ c.email }}</div>
+                            <div class="text-zinc-500 text-xs">{{ c.email or '' }}</div>
                         </td>
                         <td class="font-label-mono text-zinc-600 text-xs">{{ c.dni_cuil }}</td>
                         <td class="text-right">

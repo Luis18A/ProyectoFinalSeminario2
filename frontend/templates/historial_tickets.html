@@ -1,7 +1,6 @@
 {% extends 'layout/base.html' %}
 {% block title %}Historial de Tickets | TechFlow{% endblock %}
 {% block content %}
-{% from 'layout/macros.html' import badge_estado %}
 
 
 <!-- Main Content -->
@@ -23,7 +22,7 @@
                     <span
                         class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
                     <input name="ticket_id" value="{{ request.args.get('ticket_id', '') }}" class="input-swiss pl-8"
-                        placeholder="Ej. TK-8942" type="text" />
+                        placeholder="Ej. #012" type="text" />
                 </div>
             </div>
             <div class="flex-1 w-full relative">
@@ -71,7 +70,7 @@
     
     <div class="space-y-2">
         <p class="font-semibold text-zinc-700">• Buscador y Filtros:</p>
-        <p class="pl-3 text-zinc-500">Filtrá los registros ingresando parte del <strong>ID de Ticket (ej. TK-0025)</strong>, nombre/teléfono del cliente, o tipo/marca del equipo. Luego presioná "Filtrar".</p>
+        <p class="pl-3 text-zinc-500">Filtrá los registros ingresando el <strong>ID de Ticket (ej. 25 o #0025)</strong>, nombre/teléfono del cliente, o tipo/marca del equipo. Luego presioná "Filtrar".</p>
     </div>
     
     <div class="space-y-2">

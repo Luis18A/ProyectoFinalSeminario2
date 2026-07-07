@@ -13,7 +13,6 @@ class Equipo(db.Model):
 
     cliente          = db.relationship('Cliente', back_populates='equipos')
     tipo             = db.relationship('TipoDispositivo')
-
     ordenes          = db.relationship('OrdenServicio', back_populates='equipo', lazy='dynamic', cascade="all, delete-orphan")
 
     @property

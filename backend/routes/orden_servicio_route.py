@@ -20,7 +20,6 @@ def crear_ordenServicio():
 @login_required
 @role_required('Administrador', 'Secretario', 'Técnico')
 def editar_ordenServicio(id):
-    # La ruta entrega los datos, el controlador aplica las reglas de negocio
     success, message = orden_flujo_controller.actualizar_ordenServicio(id, request.form, session.get('rol_descripcion', ''))
     flash(message, 'success' if success else 'error')
     
@@ -93,12 +92,6 @@ def exportar_csv():
     return Response(csv_data, mimetype="text/csv", headers={"Content-disposition": "attachment; filename=historial.csv"})
 
 
-@orden_servicio_bp.get('/ordenServicio/historial/<int:orden_id>')
-@login_required
-@role_required('Administrador', 'Secretario', 'Técnico')
-def historial_ordenServicio(orden_id):
-    return redirect(url_for('orden_servicio.gestionar_ticket', orden_id=orden_id, readonly='true'))
-
 
 @orden_servicio_bp.get('/historial')
 @login_required
@@ -121,7 +114,7 @@ def comprobante(orden_id):
         flash("Orden de servicio no encontrada.", "error")
         return redirect(url_for('vistas.technician') if session.get('rol_descripcion') == 'Técnico' else url_for('vistas.secretary'))
     
-    total_repuestos = sum(float(r.precio or 0.0) for r in (orden.repuestos or []))
+    total_repuestos = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
     costo_total = float(orden.costo or 0.0) if orden.costo is not None else 0.0
     mano_obra = max(0.0, costo_total - total_repuestos)
     

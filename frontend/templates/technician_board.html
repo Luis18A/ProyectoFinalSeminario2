@@ -1,7 +1,7 @@
 {% extends 'layout/base.html' %}
 {% block title %}Tablero del Técnico | TechFlow{% endblock %}
 {% block content %}
-{% from 'layout/macros.html' import badge_estado, kanban_card %}
+{% from 'layout/macros.html' import kanban_card %}
 
 
 <!-- Main Workspace -->
@@ -155,9 +155,12 @@
     <div class="space-y-2">
         <p class="font-semibold text-zinc-700">• Columnas del Tablero:</p>
         <p class="pl-3 text-zinc-500">
-            - <strong>Ingresado/Diagnóstico:</strong> Tickets recién asignados listos para ser evaluados.
-            <br>- <strong>En Reparación:</strong> Equipos cuyos presupuestos ya fueron aprobados y están en proceso de arreglo.
-            <br>- <strong>Entregados (Historial):</strong> Lista rápida de equipos finalizados y retirados por el cliente.
+            - <strong>Pendiente:</strong> Tickets recién asignados en espera de revisión.
+            <br>- <strong>Diagnóstico:</strong> Órdenes en evaluación para detectar fallas.
+            <br>- <strong>Presupuestado:</strong> En espera de aprobación por parte de secretaría/cliente.
+            <br>- <strong>Reparación:</strong> Trabajos aprobados en proceso de arreglo.
+            <br>- <strong>Listo:</strong> Intervención completada, listo para retirar.
+            <br>- <strong>Entregado:</strong> Equipos retirados por el cliente (historial archivado).
         </p>
     </div>
     

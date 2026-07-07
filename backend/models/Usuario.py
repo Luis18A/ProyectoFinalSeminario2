@@ -82,21 +82,5 @@ class Usuario(db.Model):
         termino_busqueda = username.strip().lower()
         return cls.query.filter(cls.username == termino_busqueda).first()
 
-    @classmethod
-    def get_por_nombre(cls, nombre):
-        return cls.query.filter(cls.nombre.ilike(f"%{nombre}%")).all()
-
-    @classmethod
-    def get_por_apellido(cls, apellido):
-        return cls.query.filter(cls.apellido.ilike(f"%{apellido}%")).all()
-
-    @classmethod
-    def get_por_rol(cls, rol_id):
-        return cls.query.filter_by(rol_id=rol_id).all()
-
-    @classmethod
-    def get_por_activo(cls, activo):
-        return cls.query.filter_by(activo=activo).all()
-
     def __repr__(self):
         return f"<Usuario id={self.id} username='{self.username}' rol_id={self.rol_id}>"

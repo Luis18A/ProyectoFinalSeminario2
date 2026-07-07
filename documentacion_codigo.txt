@@ -1,0 +1,176 @@
+================================================================================
+          TECHFLOW - DOCUMENTACIÓN COMPLETA DE CÓDIGO FUENTE (NOTEPAD)
+================================================================================
+Este documento contiene la descripción y documentación técnica detallada de todos
+los módulos, clases, métodos, flujos e integraciones de TechFlow.
+
+Organizado para lectura rápida en cualquier editor de texto o Bloc de Notas.
+
+--------------------------------------------------------------------------------
+1. MODELOS DE DATOS Y PERSISTENCIA (Capa: backend/models)
+--------------------------------------------------------------------------------
+
+A) Cliente.py (Modelo: Cliente)
+   * Representa a los clientes del taller.
+   * Atributos:
+     - id (Integer, Primary Key)
+     - dni_cuil (String 20, único, no nulo): Documento o identificación tributaria.
+     - nombre (String 50, no nulo)
+     - apellido (String 50, no nulo)
+     - telefono (String 20, no nulo)
+     - email (String 254, único, nulo permitido)
+     - domicilio (String 150, no nulo)
+     - localidad (String 100, no nulo)
+     - fecha_registro (DateTime, default actual)
+   * Relaciones:
+     - equipos: Relación uno-a-muchos con la tabla Equipo.
+   * Métodos:
+     - get_por_dni(dni): Consulta rápida filtrando por DNI/CUIL limpio.
+     - serialize(): Retorna diccionario DTO listo para JSON.
+
+B) Equipo.py (Modelo: Equipo)
+   * Representa los dispositivos de hardware ingresados.
+   * Atributos:
+     - id (Integer, Primary Key)
+     - marca (String 50, no nulo)
+     - modelo (String 50, no nulo)
+     - nro_serie (String 50, único, no nulo)
+     - tipo_dispositivo_id (Integer, Foreign Key -> tipo_dispositivo.id)
+     - cliente_id (Integer, Foreign Key -> cliente.id)
+   * Relaciones:
+     - cliente: Relación inversa con el Cliente propietario.
+     - tipo_dispositivo: Categoría del equipo.
+     - ordenes: Órdenes de servicio vinculadas.
+   * Métodos:
+     - get_por_serie(nro_serie): Consulta rápida filtrando por número de serie.
+
+C) EstadoOrden.py (Enum: EstadoOrden)
+   * Define la máquina de estados finitos del flujo de trabajo del taller.
+   * Estados:
+     - PENDIENTE: Recién ingresado, en espera de revisión.
+     - DIAGNOSTICO: El técnico está revisando la falla física.
+     - PRESUPUESTADO: Costo total y repuestos calculados, esperando aprobación.
+     - REPARACION: El cliente aceptó y se está realizando la reparación.
+     - LISTO: Reparación finalizada con éxito, en espera de retiro.
+     - ENTREGADO: Retirado por el cliente, ciclo finalizado.
+   * Métodos:
+     - list(): Retorna los strings correspondientes del Enum.
+     - transiciones_permitidas(estado_actual): Lista a qué estados puede pasar.
+     - es_transicion_valida(desde, hacia): Verifica si el cambio es legal.
+
+D) HistorialEstado.py (Modelo: HistorialEstado)
+   * Auditoría y métricas de transición de estados de las órdenes.
+   * Atributos:
+     - id (Integer, Primary Key)
+     - orden_id (Integer, Foreign Key -> orden_servicio.id)
+     - estado_anterior (String 50)
+     - estado_nuevo (String 50)
+     - fecha_cambio (DateTime, default actual)
+     - usuario_id (Integer, Foreign Key -> usuario.id)
+     - observaciones (Text, nulo permitido)
+   * Relaciones:
+     - usuario: Operador que autorizó la transición.
+
+E) Notificacion.py (Modelo: Notificacion)
+   * Sistema de alertas persistentes y de tiempo real.
+   * Atributos:
+     - id (Integer, Primary Key)
+     - usuario_id (Integer, Foreign Key -> usuario.id)
+     - orden_id (Integer, Foreign Key -> orden_servicio.id, nulo permitido)
+     - titulo (String 100)
+     - mensaje (Text)
+     - leido (Boolean, default False)
+     - fecha_creacion (DateTime, default actual)
+
+F) Repuesto.py / OrdenRepuesto.py (Modelos)
+   * Catálogo de componentes físicos e insumos asociados a cada ticket.
+   * Repuesto:
+     - id (Integer, PK)
+     - descripcion (String 150, único)
+     - precio (Numeric 10,2)
+   * OrdenRepuesto:
+     - orden_id (Integer, PK/FK)
+     - repuesto_id (Integer, PK/FK)
+     - cantidad (Integer)
+     - precio (Numeric 10,2): Precio congelado al momento del presupuesto.
+
+G) Usuario.py / Rol.py (Modelos)
+   * Seguridad, credenciales e integridad del acceso del sistema.
+   * Usuario:
+     - id, username, password (hash), nombre, apellido, rol_id, activo, intentos_fallidos.
+     - hashear_password(raw_pass): Criptografía segura.
+     - verificar_password(raw_pass): Comparación segura contra ataques de timing.
+     - registrar_intento_fallido(), resetear_intentos().
+
+--------------------------------------------------------------------------------
+2. LÓGICA DE NEGOCIO Y CONTROLADORES (Capa: backend/controller)
+--------------------------------------------------------------------------------
+
+A) auth_controller.py (Clase: AuthController)
+   * `validar_login(username, password)`: Valida credenciales, comprueba bloqueos y mitiga ataques de sincronización (timing attacks).
+   * `validar_login_completo(username, password)`: Entrega datos seguros para sesión.
+
+B) cliente_controller.py (Clase: ClienteController)
+   * `procesar_datos(form, is_edit, id)`: Validación unificada de nombres, expresiones regulares en teléfonos, CUIL/CUIT argentinos (con algoritmo módulo 11), domicilio y correos electrónicos.
+   * `crear_cliente(form)`: Inserta cliente en la base de datos tras validar.
+   * `editar_cliente(id, form)`: Actualiza datos del cliente.
+   * `buscar_clientes_json(query)`: Búsqueda dinámica para AJAX.
+
+C) orden_flujo_controller.py (Clase: OrdenFlujoController)
+   * `actualizar_estado(orden_id, nuevo_estado, usuario_id, observaciones)`: Cambia el estado de un ticket validando la máquina de transiciones permitidas. Registra auditoría, inserta notificaciones y las emite mediante el canal persistente de SSE.
+
+D) analytics_controller.py (Clase: AnalyticsController)
+   * `obtener_datos_analytics()`: Calcula métricas en base de datos directo (optimizado). Determina el MTTR (Tiempo de Resolución) usando diferencias temporales según el dialecto (PostgreSQL vs SQLite) y procesa la distribución de incidentes diarios para graficar la curva de Pareto de telemetría.
+
+E) search_controller.py (Clase: SearchController)
+   * `buscar_global(query)`: Motor de consulta concurrente en un solo paso para clientes, equipos y órdenes de servicio.
+
+--------------------------------------------------------------------------------
+3. RUTAS Y BLUEPRINTS (Capa: backend/routes)
+--------------------------------------------------------------------------------
+
+A) vistas_route.py (Blueprint: vistas)
+   * Maneja el renderizado de vistas HTML principales (`/`, `/login`, `/dashboard`, `/technician`).
+
+B) orden_servicio_route.py (Blueprint: orden_servicio)
+   * `/ordenes`: Gestión y listado general de órdenes.
+   * `/ordenServicio/crear`: Generación de nuevas órdenes en el taller.
+   * `/tablero-tickets/<id>`: Consola interactiva del ticket.
+   * `/ordenServicio/<id>/actualizar-estado-flujo`: Transición de estado vía POST.
+
+C) notificacion_route.py (Blueprint: notificaciones)
+   * Lectura individual o global de notificaciones.
+
+D) cliente_route.py / equipo_route.py / usuario_route.py
+   * CRUDs, búsquedas asíncronas e integraciones dinámicas de AJAX.
+
+--------------------------------------------------------------------------------
+4. INFRAESTRUCTURA Y SERVICIOS (Capa: backend/utils)
+--------------------------------------------------------------------------------
+
+A) decorators.py
+   * `@login_required`: Restringe el acceso a usuarios sin sesión activa.
+   * `@role_required(*roles)`: Restringe vistas de acuerdo a la jerarquía de roles de seguridad (Administrador, Técnico, Secretario).
+
+B) sse_service.py (Clase: SSEService)
+   * Servidor de Server-Sent Events (SSE). Mantiene una cola abierta por cada navegador conectado para empujar alertas visuales "Toasts" instantáneas en la pantalla de los operarios al registrarse novedades, limpiando conexiones inactivas.
+
+C) backup_service.py (Clase: BackupService)
+   * Automatización de backups en archivos comprimidos ZIP conteniendo archivos JSON con volcados completos de todas las tablas de base de datos.
+
+D) predictor_service.py (Clase: PredictorService)
+   * Inteligencia predictiva del taller. Analiza el historial de fallas y normaliza cadenas de texto para autodiagnosticar repuestos recomendados de forma inteligente.
+
+E) kmeans_service.py (Clase: KMeansService)
+   * Agrupamiento de tickets utilizando el algoritmo de Machine Learning K-Means. Agrupa por costo de repuesto y horas de mano de obra para clasificar el tipo de ticket (Fácil, Intermedio, Complejo).
+
+--------------------------------------------------------------------------------
+5. ARRANQUE GENERAL DEL SISTEMA (Archivo: app.py)
+--------------------------------------------------------------------------------
+* Inicializa la aplicación Flask bajo el patrón de diseño "Application Factory" (`create_app()`).
+* Centraliza el middleware CSRFProtect para evitar falsificación de peticiones en formularios.
+* Registra los manejadores centralizados de errores HTTP (404 / 403).
+* Inyecta variables dinámicas a las plantillas Jinja mediante un procesador de contexto (`inject_notifications()`).
+* Ejecuta el sembrado automático de base de datos (`_auto_seed_db()`) si está vacía.
+* Expone el canal persistente de comunicación asíncrona SSE `/notificaciones/stream`.
+================================================================================

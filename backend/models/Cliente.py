@@ -30,15 +30,12 @@ class Cliente(db.Model):
         return cls.query.filter_by(dni_cuil=dni).first()
 
     @classmethod
-    def get_por_email(cls, email):
-        return cls.query.filter_by(email=email).first()
-
-    @classmethod
-    def get_por_nombre_apellido(cls, termino):
+    def buscar(cls, termino, limite=20):
         return cls.query.filter(
             (cls.nombre.ilike(f"%{termino}%")) |
-            (cls.apellido.ilike(f"%{termino}%"))
-        ).all()
+            (cls.apellido.ilike(f"%{termino}%")) |
+            (cls.dni_cuil.ilike(f"%{termino}%"))
+        ).order_by(cls.fecha_registro.desc()).limit(limite).all()
 
     def __repr__(self):
         return f"<Cliente id={self.id} dni='{self.dni_cuil}' nombre='{self.nombre} {self.apellido}'>"

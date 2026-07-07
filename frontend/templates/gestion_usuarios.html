@@ -118,7 +118,7 @@
             <p class="font-label-bold text-zinc-400 text-[10px] uppercase mb-1">Usuarios Activos</p>
             <h4 class="font-headline-md text-primary">{{ cant_activos }} / {{cant_usuarios}}</h4>
             <div class="w-full bg-zinc-200 h-1 mt-4">
-                <div class="bg-secondary h-1" style="width: {{ (cant_activos / cant_usuarios*100) | round }}%;"></div>
+                <div class="bg-secondary h-1" style="width: {{ ((cant_activos / cant_usuarios * 100) | round) if cant_usuarios > 0 else 0 }}%;"></div>
             </div>
         </div>
         <div class="bg-zinc-50 border border-[#1A1A1A]/38 p-6">
