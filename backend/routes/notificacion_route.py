@@ -1,5 +1,5 @@
 import queue
-from flask import Blueprint, jsonify, session, Response
+from flask import Blueprint, jsonify, session, Response, current_app
 from database import db
 from backend.controller import notificacion_controller
 from backend.utils.decorators import login_required
@@ -21,10 +21,14 @@ def leer_todas_notificaciones():
 
 @notificacion_bp.route('/notificaciones/stream')
 def stream_notificaciones():
+    # Capturamos la instancia real de la app para usar su contexto en el generador SSE
+    app = current_app._get_current_object()
+    
     def event_stream():
         # Liberamos la sesión de la base de datos de este hilo para evitar
         # ocupar conexiones del pool durante la conexión SSE persistente.
-        db.session.close()
+        with app.app_context():
+            db.session.close()
         
         q = sse_service.listen()
         # Enviar ping inicial de apertura de stream
@@ -43,7 +47,8 @@ def stream_notificaciones():
         finally:
             # Limpieza garantizada del listener al desconectarse el cliente
             sse_service.remove_listener(q)
-            db.session.close()
+            with app.app_context():
+                db.session.close()
                 
     return Response(event_stream(), mimetype="text/event-stream")
 
