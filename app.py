@@ -62,7 +62,7 @@ def _configure_app(app):
     # Exclusivo para PostgreSQL. Si no se define DATABASE_URL, se asume un PostgreSQL local por defecto.
     db_uri = os.environ.get(
         'DATABASE_URL',
-        'postgresql://postgres:postgres@localhost:5432/techflow'
+        'postgresql://postgres:3536@localhost:5432/techflow'
     )
     if db_uri and db_uri.startswith("postgres://"):
         db_uri = db_uri.replace("postgres://", "postgresql://", 1)
