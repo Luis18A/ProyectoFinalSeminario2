@@ -1,8 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
-from backend.controller import auth_controller
-from backend.controller import analytics_controller
-from backend.controller import orden_servicio_controller
-from backend.controller import search_controller
+from backend.controller import auth_controller, analytics_controller, orden_servicio_controller, search_controller
 from backend.utils.decorators import login_required, role_required, _redirect_por_rol
 
 vistas_bp = Blueprint('vistas', __name__)

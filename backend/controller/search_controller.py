@@ -1,8 +1,6 @@
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.OrdenServicio import OrdenServicio
-from flask import url_for
+from backend.models import Cliente, Equipo, OrdenServicio
 from sqlalchemy.orm import joinedload
+from flask import url_for
 
 class SearchController:
     @staticmethod

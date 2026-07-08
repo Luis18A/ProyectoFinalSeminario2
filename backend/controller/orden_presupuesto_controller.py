@@ -1,10 +1,7 @@
 import logging
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.Repuesto import Repuesto
-from backend.models.OrdenRepuesto import OrdenRepuesto
-from database import db
 import uuid
+from database import db
+from backend.models import OrdenServicio, EstadoOrden, Repuesto, OrdenRepuesto
 
 logger = logging.getLogger(__name__)
 
@@ -46,14 +43,12 @@ class OrdenPresupuestoController:
     @staticmethod
     def _recalcular_costo(orden, mano_obra):
         """Calcula el costo total sumando todos los repuestos y la mano de obra para evitar errores de redondeo."""
-        total_repuestos = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
-        orden.costo = max(0.0, mano_obra + total_repuestos)
+        orden.costo = max(0.0, mano_obra + orden.total_repuestos)
 
     @staticmethod
     def _obtener_mano_obra(orden):
         """Calcula la mano de obra actual restando el costo total de los repuestos al costo global."""
-        old_sum = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
-        return max(0.0, float(orden.costo or 0.0) - old_sum)
+        return orden.mano_obra
 
     @staticmethod
     def agregar_repuesto(orden_id, **datos_formulario):

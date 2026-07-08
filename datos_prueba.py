@@ -1,23 +1,8 @@
-# datos_prueba.py — script para generar datos de prueba realistas sin crear nuevos usuarios
-
 import random
 from datetime import datetime, timedelta
 from database import db
-from backend.models.Usuario import Usuario
-from backend.models.Rol import Rol
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.Notificacion import Notificacion
-from backend.models.Repuesto import Repuesto
-from backend.models.OrdenRepuesto import OrdenRepuesto
+from backend.models import Usuario, Rol, Cliente, Equipo, TipoDispositivo, OrdenServicio, EstadoOrden, HistorialEstado, Notificacion, Repuesto, OrdenRepuesto
 
-
-
-# Datos semilla de ejemplo
 NOMBRES = ["Juan", "María", "Carlos", "Ana", "Luis", "Sofía", "Diego", "Lucía", "Javier", "Elena", 
            "Andrés", "Laura", "Mateo", "Camila", "Nicolás", "Valentina", "Facundo", "Martina", "Santiago", "Florencia"]
 

@@ -20,9 +20,9 @@ class AdminController:
                 logger.warning(f"[ALERTA DE SEGURIDAD] Intento no autorizado de backup por usuario ID: {usuario_id} (Rol: {usuario.rol.descripcion if usuario.rol else 'Ninguno'})")
                 return False, "Permisos insuficientes para realizar esta acción."
 
-            backup_dict = BackupService.generate_backup_dict()
-            logger.info(f"[AUDITORIA] Usuario ID: {usuario_id} ({usuario.username}) ha generado y descargado un backup completo.")
-            return True, backup_dict
+            filepath = BackupService.generate_backup_dump()
+            logger.info(f"[AUDITORIA] Usuario ID: {usuario_id} ({usuario.username}) ha generado y descargado un backup completo de base de datos.")
+            return True, filepath
 
         except Exception as e:
             logger.error(f"[ERROR CRITICO BACKUP] Fallo al generar backup solicitado por usuario {usuario_id}: {str(e)}", exc_info=True)
@@ -45,7 +45,6 @@ class AdminController:
 
         roles_permitidos = {
             'administrador': 'administrador',
-            'técnico': 'tecnico',
             'tecnico': 'tecnico',
             'secretario': 'secretario'
         }

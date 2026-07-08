@@ -505,7 +505,7 @@ A continuación se detallan de forma exhaustiva todos los endpoints expuestos en
 
 | Método | Ruta | Parámetros Requeridos | Respuestas | Acceso / Roles |
 | :--- | :--- | :--- | :--- | :--- |
-| **GET** | `/admin/backup/download` | Ninguno | Genera un archivo estructurado `.json` de resguardo | `Administrador` |
+| **GET** | `/admin/backup/download` | Ninguno | Genera un archivo binario nativo (`.dump` comprimido) de resguardo | `Administrador` |
 | **GET** | `/admin/cambiar-rol` | `rol` (Query string con nuevo rol a simular) | Modifica temporalmente el rol del administrador | `Administrador` |
 
 ---
@@ -516,14 +516,12 @@ El sistema cuenta con un motor de respaldo completo e independiente de base de d
 
 ### 9.1. Exportación (Backup)
 * **Acción:** El administrador presiona "Descargar Backup".
-* **Proceso:** La aplicación ejecuta `BackupService.generate_backup_dict()` que realiza consultas eficientes por lotes (`yield_per(100)`) a las tablas críticas (`Usuario`, `Cliente`, `Equipo`, `OrdenServicio`, `HistorialEstado`).
-* **Seguridad:** Los hashes de contraseñas de usuarios **no se incluyen en el volcado** para mitigar la fuga de credenciales.
-* **Salida:** Se descarga un archivo plano estructurado JSON con nombre `techflow_backup_YYYYMMDD_HHMMSS.json`.
+* **Proceso:** La aplicación ejecuta `BackupService.generate_backup_dump()`, que autodetecta la ubicación de la herramienta cliente `pg_dump` de PostgreSQL (en el PATH del sistema o en rutas estándar de Windows como `C:\Program Files\PostgreSQL\18\bin`) y ejecuta un subproceso de volcado comprimido del catálogo completo de base de datos de forma atómica y segura (utilizando variables de entorno del proceso para la contraseña para evitar fugas).
+* **Salida:** Se descarga un archivo binario comprimido de base de datos en formato personalizado de PostgreSQL con extensión `.dump` y nombre estructurado `techflow_backup_YYYYMMDD_HHMMSS.dump`.
 
 ### 9.2. Importación y Restauración (Restore)
-* **Acción:** Inyección programática de datos a través de `BackupService.restore_backup(json_data)`.
+* **Acción:** Ejecución programática o restauración directa usando `BackupService.restore_backup_dump(filepath)`.
 * **Proceso Atómico:**
-  1. Se suspende la integridad referencial temporalmente y se ejecutan borrados masivos (`.delete()`) en orden inverso de llaves foráneas para evitar violaciones de restricciones.
-  2. Se reconstruyen los registros del JSON en la base de datos asignando contraseñas seguras por defecto a los operadores (`TechFlow2024!`), las cuales deben ser reemplazadas en su primer inicio de sesión.
-  3. Los repuestos cargados históricamente en las órdenes de servicio que no existan en el catálogo local son autocreados de forma transparente y vinculados mediante `OrdenRepuesto`.
-  4. **PostgreSQL Secuencia Sync (Crítico):** Si la restauración se realiza sobre un motor PostgreSQL, el servicio ejecuta de forma dinámica una consulta al catálogo de secuencias del motor relacional (`pg_class`) para resincronizar los índices secuenciales serializados y evitar conflictos de duplicación de llaves primarias en futuras inserciones.
+  1. Se ejecuta `pg_restore` apuntando a la base de datos objetivo con el modificador `--clean` y `--if-exists`.
+  2. Esto elimina de forma segura los objetos del esquema actual en el orden inverso correcto y los recrea a partir del archivo binario de respaldo sin violar restricciones de integridad referencial.
+  3. El proceso es administrado directamente a nivel de base de datos relacional de PostgreSQL, lo cual optimiza al máximo el tiempo de ejecución y la consistencia transaccional.

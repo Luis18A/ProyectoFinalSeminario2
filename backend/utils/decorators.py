@@ -9,7 +9,8 @@ def _redirect_por_rol(rol):
         'secretario':    'vistas.secretary',
         'administrador': 'vistas.dashboard',
     }
-    destino = destinos.get(rol.strip().lower(), 'vistas.login')
+    rol_limpio = str(rol or '').strip().lower()
+    destino = destinos.get(rol_limpio, 'vistas.login')
     return redirect(url_for(destino))
 
 

@@ -31,4 +31,8 @@ PROYECTO SEMINARIO 2.pdf
 instance/
 *.db
 *.sqlite
+
+# Backups y volcados de base de datos
+*.dump
+
 

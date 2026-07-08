@@ -1,16 +1,7 @@
 import os
 from flask import Flask, flash, redirect, url_for, session
-from database import db
-from backend.utils.db_seeder import auto_seed_db
-
-# ─────────────────────────────────────────────
-# IMPORTS de modelos (necesarios para create_all)
-# ─────────────────────────────────────────────
-import backend.models
-
-# ─────────────────────────────────────────────
-# IMPORTS de Blueprints
-# ─────────────────────────────────────────────
+from database import db, FALLBACK_DATABASE_URL
+from backend.models import Notificacion
 from backend.routes.vistas_route import vistas_bp
 from backend.routes.usuario_route import usuarios_bp
 from backend.routes.cliente_route import cliente_bp
@@ -19,16 +10,15 @@ from backend.routes.equipo_route import equipo_bp
 from backend.routes.orden_servicio_route import orden_servicio_bp
 from backend.routes.admin_route import admin_bp
 from backend.routes.notificacion_route import notificacion_bp
-
 from flask_wtf.csrf import CSRFProtect
 
 csrf = CSRFProtect()
 
-
 def create_app():
     """
     Application Factory Pattern.
-    Permite crear múltiples instancias (producción, testing, etc.)
+    Crea, configura e inicializa de forma rápida la aplicación Flask,
+    eliminando comprobaciones redundantes de base de datos en cada arranque.
     """
     app = Flask(
         __name__,
@@ -36,56 +26,26 @@ def create_app():
         static_folder='frontend/static'
     )
 
-    _configure_app(app)
-    _init_extensions(app)
-    _register_blueprints(app)
-    _register_error_handlers(app)
-    _register_context_processors(app)
-
-    with app.app_context():
-        db.create_all()
-        auto_seed_db()
-
-    return app
-
-
-def _configure_app(app):
-    """Centraliza toda la configuración. En producción, cargar desde .env"""
-
-    # ─── SEGURIDAD CRÍTICA ───────────────────────────────────────────────
-    # SECRET_KEY debe venir de variable de entorno, nunca hardcodeada.
-    # En desarrollo podés dejar el fallback, pero documentá que en producción
-    # DEBE estar definida como variable de entorno.
+    # 1. Configuración de Seguridad y Base de Datos
     app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-CAMBIAR-en-produccion')
-
-    # ─── BASE DE DATOS ───────────────────────────────────────────────────
-    # Exclusivo para PostgreSQL. Si no se define DATABASE_URL, se asume un PostgreSQL local por defecto.
-    db_uri = os.environ.get(
-        'DATABASE_URL',
-        'postgresql://postgres:3536@localhost:5432/techflow'
-    )
+    
+    db_uri = os.environ.get('DATABASE_URL', FALLBACK_DATABASE_URL)
     if db_uri and db_uri.startswith("postgres://"):
         db_uri = db_uri.replace("postgres://", "postgresql://", 1)
-    
+        
     if not db_uri or not db_uri.startswith("postgresql://"):
-        raise ValueError("DATABASE_URL inválida. TechFlow requiere PostgreSQL como base de datos (iniciar con 'postgresql://' o 'postgres://').")
+        raise ValueError("DATABASE_URL inválida. TechFlow requiere PostgreSQL como base de datos.")
         
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-    # ─── SEGURIDAD ADICIONAL ─────────────────────────────────────────────
-    app.config['SESSION_COOKIE_HTTPONLY'] = True   # JS no puede leer la cookie
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Protección extra contra CSRF
-
-
-def _init_extensions(app):
-    """Inicializa las extensiones de Flask."""
+    # 2. Inicialización de Extensiones
     db.init_app(app)
     csrf.init_app(app)
 
-
-def _register_blueprints(app):
-    """Registra todos los Blueprints."""
+    # 3. Registro de Blueprints
     app.register_blueprint(vistas_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(cliente_bp)
@@ -95,13 +55,9 @@ def _register_blueprints(app):
     app.register_blueprint(admin_bp)
     app.register_blueprint(notificacion_bp)
 
-
-def _register_error_handlers(app):
-    """Manejo centralizado de errores HTTP."""
-
+    # 4. Manejo de Errores HTTP Centralizado
     @app.errorhandler(404)
     def pagina_no_encontrada(e):
-        # Si no hay sesión activa, mandarlo a login, no al dashboard
         if not session.get('usuario_id'):
             return redirect(url_for('vistas.login'))
         flash("La dirección ingresada no existe o no está permitida.", "error")
@@ -112,13 +68,9 @@ def _register_error_handlers(app):
         flash("No tenés permisos para acceder a esta sección.", "error")
         return redirect(url_for('vistas.dashboard'))
 
-
-def _register_context_processors(app):
-    """Variables globales inyectadas en todos los templates."""
-
+    # 5. Inyección de Notificaciones en las Plantillas
     @app.context_processor
     def inject_notifications():
-        from backend.models import Notificacion
         usuario_id = session.get('usuario_id')
         if usuario_id:
             notificaciones = (
@@ -137,10 +89,9 @@ def _register_context_processors(app):
             )
         return dict(global_notifications=[], global_unread_count=0)
 
+    return app
 
-# ─────────────────────────────────────────────
-# PUNTO DE ENTRADA
-# ─────────────────────────────────────────────
+# Instancia global para WSGI
 app = create_app()
 
 if __name__ == '__main__':

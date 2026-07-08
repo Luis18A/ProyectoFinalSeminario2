@@ -1,5 +1,5 @@
 from database import db
-from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models import TipoDispositivo
 import re
 
 class TipoDispositivoController:

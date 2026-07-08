@@ -1,4 +1,4 @@
-from backend.models.Usuario import Usuario
+from backend.models import Usuario
 from database import db
 
 class AuthController:

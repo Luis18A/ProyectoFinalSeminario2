@@ -18,6 +18,13 @@ class OrdenRepuesto(db.Model):
     orden    = db.relationship('OrdenServicio', back_populates='orden_repuestos')
     repuesto = db.relationship('Repuesto')
 
+
+    def __init__(self, orden_id, repuesto_id, precio_unitario, cantidad=1):
+        self.orden_id        = orden_id
+        self.repuesto_id     = repuesto_id
+        self.precio_unitario = precio_unitario
+        self.cantidad        = cantidad
+
     def __repr__(self):
         return f"<OrdenRepuesto id={self.id} orden={self.orden_id} repuesto={self.repuesto_id} cant={self.cantidad}>"
 

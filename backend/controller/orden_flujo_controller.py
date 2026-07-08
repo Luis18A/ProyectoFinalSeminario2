@@ -1,30 +1,16 @@
 import logging
 from sqlalchemy.sql import func
+from backend.models import OrdenServicio, EstadoOrden, HistorialEstado, Notificacion, Usuario, Rol
+from backend.utils.sse_service import sse_service
 from backend.utils.predictor_service import PredictorService
-from backend.models.OrdenServicio import OrdenServicio
 from database import db
-from datetime import datetime
 import json
 from flask import url_for
-from backend.utils.sse_service import sse_service
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.Notificacion import Notificacion
-from backend.models.Usuario import Usuario
-from backend.models.Rol import Rol
 
 logger = logging.getLogger(__name__)
 
 class OrdenFlujoController:
-    # Constante de clase con el orden secuencial de los estados
-    ESTADOS_ORDENADOS = [
-        EstadoOrden.PENDIENTE,
-        EstadoOrden.DIAGNOSTICO,
-        EstadoOrden.PRESUPUESTADO,
-        EstadoOrden.REPARACION,
-        EstadoOrden.LISTO,
-        EstadoOrden.ENTREGADO
-    ]
+
 
     @staticmethod
     def _validar_transicion(orden, nuevo_estado, rol_actual, observacion=None):
@@ -389,14 +375,14 @@ class OrdenFlujoController:
             opciones_estado = [e for e in opciones_estado if e != EstadoOrden.ENTREGADO]
         
         try:
-            idx_actual = OrdenFlujoController.ESTADOS_ORDENADOS.index(orden.estado)
+            idx_actual = list(EstadoOrden).index(orden.estado)
         except ValueError:
             idx_actual = -1
             
         opciones_estado_detalladas = []
         for e in opciones_estado:
             try:
-                idx_opcion = OrdenFlujoController.ESTADOS_ORDENADOS.index(e)
+                idx_opcion = list(EstadoOrden).index(e)
             except ValueError:
                 idx_opcion = -1
                 

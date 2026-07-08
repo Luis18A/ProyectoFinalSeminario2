@@ -23,6 +23,19 @@ class OrdenServicio(db.Model):
     equipo             = db.relationship('Equipo', back_populates='ordenes', foreign_keys=[equipo_id])
     historial          = db.relationship('HistorialEstado', backref='orden', lazy=True, cascade='all, delete-orphan')
 
+    def __init__(self, usuario_id, equipo_id, falla_reportada, accesorios, estado=EstadoOrden.PENDIENTE, estado_diagnostico=None, fecha_recepcion=None, fecha_entrega=None, costo=None, observaciones=None):
+        self.usuario_id = usuario_id
+        self.equipo_id = equipo_id
+        self.falla_reportada = falla_reportada
+        self.accesorios = accesorios
+        self.estado = estado
+        self.estado_diagnostico = estado_diagnostico
+        if fecha_recepcion:
+            self.fecha_recepcion = fecha_recepcion
+        self.fecha_entrega = fecha_entrega
+        self.costo = costo
+        self.observaciones = observaciones
+            
     @property
     def repuestos(self):
         return [
@@ -38,6 +51,15 @@ class OrdenServicio(db.Model):
             }
             for orp in self.orden_repuestos
         ]
+
+    @property
+    def total_repuestos(self) -> float:
+        return sum(float(orp.precio_unitario) * orp.cantidad for orp in self.orden_repuestos)
+
+    @property
+    def mano_obra(self) -> float:
+        costo_total = float(self.costo or 0.0)
+        return max(0.0, costo_total - self.total_repuestos)
 
 
     def preparar_cambio_estado(self, nuevo_estado, usuario_id, observacion=None):

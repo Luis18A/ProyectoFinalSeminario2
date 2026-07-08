@@ -1,7 +1,5 @@
 from flask import Blueprint, request, render_template, url_for, flash, redirect, jsonify, session, Response
-from backend.controller import orden_presupuesto_controller
-from backend.controller import orden_flujo_controller
-from backend.controller import orden_servicio_controller
+from backend.controller import orden_presupuesto_controller, orden_servicio_controller, orden_flujo_controller
 from backend.utils.decorators import login_required, role_required
 
 orden_servicio_bp = Blueprint('orden_servicio', __name__)
@@ -114,9 +112,8 @@ def comprobante(orden_id):
         flash("Orden de servicio no encontrada.", "error")
         return redirect(url_for('vistas.technician') if session.get('rol_descripcion') == 'Técnico' else url_for('vistas.secretary'))
     
-    total_repuestos = sum(float(orp.precio_unitario) * orp.cantidad for orp in orden.orden_repuestos)
-    costo_total = float(orden.costo or 0.0) if orden.costo is not None else 0.0
-    mano_obra = max(0.0, costo_total - total_repuestos)
+    total_repuestos = orden.total_repuestos
+    mano_obra = orden.mano_obra
     
     return render_template(
         'comprobante.html', 

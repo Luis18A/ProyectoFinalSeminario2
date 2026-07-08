@@ -1,6 +1,4 @@
-from backend.models.Equipo import Equipo
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
+from backend.models import Equipo, OrdenServicio, EstadoOrden
 from collections import Counter
 
 class PredictorService:

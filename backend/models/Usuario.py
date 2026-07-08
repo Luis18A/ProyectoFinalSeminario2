@@ -16,6 +16,18 @@ class Usuario(db.Model):
 
     MAX_INTENTOS_FALLIDOS = 5
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+    def __init__(self, codigo, descripcion, categoria=None, precio_promedio=None, proveedor=None, activo=True):
+        self.codigo          = codigo
+        self.descripcion     = descripcion
+        self.categoria       = categoria
+        self.precio_promedio = precio_promedio
+        self.proveedor       = proveedor
+        self.activo          = activo
+
     # ── Validaciones de Atributos (ORM Level) ──────────────────────
 
     @validates('username')

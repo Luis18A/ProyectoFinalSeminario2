@@ -15,6 +15,14 @@ class Equipo(db.Model):
     tipo             = db.relationship('TipoDispositivo')
     ordenes          = db.relationship('OrdenServicio', back_populates='equipo', lazy='dynamic', cascade="all, delete-orphan")
 
+    def __init__(self, cliente_id, marca, modelo, numero_serie, tipo_id, descripcion=None):
+        self.cliente_id      = cliente_id
+        self.marca           = marca
+        self.modelo          = modelo
+        self.numero_serie    = numero_serie
+        self.tipo_id         = tipo_id
+        self.descripcion     = descripcion
+
     @property
     def estado_actual(self):
         from backend.models.OrdenServicio import OrdenServicio

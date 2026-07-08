@@ -1,6 +1,6 @@
-import json
+import os
 from datetime import datetime
-from flask import Blueprint, Response, request, redirect, url_for, flash, session
+from flask import Blueprint, request, redirect, url_for, flash, session, send_file, after_this_request
 from backend.controller import admin_controller
 from backend.utils.decorators import login_required, role_required
 
@@ -18,14 +18,23 @@ def download_backup():
         return redirect(url_for('vistas.dashboard'))
 
     try:
-        json_str = json.dumps(result, indent=4, ensure_ascii=False)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"techflow_backup_{timestamp}.json"
+        @after_this_request
+        def remove_file(response):
+            try:
+                if os.path.exists(result):
+                    os.remove(result)
+            except Exception:
+                pass
+            return response
 
-        return Response(
-            json_str,
-            mimetype="application/json",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"techflow_backup_{timestamp}.dump"
+
+        return send_file(
+            result,
+            mimetype="application/octet-stream",
+            as_attachment=True,
+            download_name=filename
         )
     except Exception:
         flash("Error al procesar el archivo de backup.", "error")

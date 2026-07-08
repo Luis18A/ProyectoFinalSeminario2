@@ -1,7 +1,6 @@
 import re
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
 from database import db
+from backend.models import Cliente
 
 class ClienteController:
     @staticmethod

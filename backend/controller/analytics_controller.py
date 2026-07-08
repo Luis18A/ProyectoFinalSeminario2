@@ -1,13 +1,6 @@
 from database import db
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.Equipo import Equipo
-from backend.models.Usuario import Usuario
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.Rol import Rol
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.OrdenRepuesto import OrdenRepuesto
 from backend.utils.kmeans_service import KMeansService
+from backend.models import OrdenServicio, Equipo, Usuario, HistorialEstado, EstadoOrden, Rol, TipoDispositivo, OrdenRepuesto
 from sqlalchemy import func
 
 class AnalyticsController:

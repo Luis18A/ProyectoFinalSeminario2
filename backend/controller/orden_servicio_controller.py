@@ -1,11 +1,5 @@
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.Usuario import Usuario
-from backend.controller.tipo_dispositivo_controller import TipoDispositivoController
+from backend.models import OrdenServicio, EstadoOrden, HistorialEstado, Cliente, Equipo, TipoDispositivo, Usuario
+from backend.controller import tipo_dispositivo_controller
 from database import db
 import csv, io
            
@@ -127,7 +121,7 @@ class OrdenServicioController:
         return {
             'ordenes':           ordenes,
             'clientes':          Cliente.query.all(),
-            'tipo_dispositivos': TipoDispositivoController.obtener_todos(),
+            'tipo_dispositivos': tipo_dispositivo_controller.obtener_todos(),
         }
     
     @staticmethod
@@ -135,15 +129,13 @@ class OrdenServicioController:
         """Ahora recibe el usuario_id, desacoplado de flask.session"""
         ordenes = OrdenServicio.query.order_by(OrdenServicio.fecha_recepcion.desc()).all()
         
-        return {
-            'pendiente':      [o for o in ordenes if o.estado == EstadoOrden.PENDIENTE],
-            'diagnostico':    [o for o in ordenes if o.estado == EstadoOrden.DIAGNOSTICO],
-            'presupuestado':  [o for o in ordenes if o.estado == EstadoOrden.PRESUPUESTADO],
-            'reparacion':     [o for o in ordenes if o.estado == EstadoOrden.REPARACION],
-            'listo':          [o for o in ordenes if o.estado == EstadoOrden.LISTO],
-            'entregado':      [o for o in ordenes if o.estado == EstadoOrden.ENTREGADO],
-            'usuario_id':     usuario_id,
-        }
+        # Agrupar órdenes por estado de forma dinámica en una sola pasada O(N)
+        resultado = {estado.name.lower(): [] for estado in EstadoOrden}
+        for o in ordenes:
+            resultado[o.estado.name.lower()].append(o)
+            
+        resultado['usuario_id'] = usuario_id
+        return resultado
     
     @staticmethod
     def generar_csv_historial(args):

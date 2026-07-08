@@ -15,6 +15,13 @@ class Notificacion(db.Model):
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id])
     orden   = db.relationship('OrdenServicio', foreign_keys=[orden_id])
 
+    def __init__(self, usuario_id, titulo, mensaje, orden_id=None, leido=False):
+        self.usuario_id      = usuario_id
+        self.titulo          = titulo
+        self.mensaje         = mensaje
+        self.orden_id        = orden_id
+        self.leido           = leido 
+
     def marcar_como_leida(self):
         self.leido = True
 

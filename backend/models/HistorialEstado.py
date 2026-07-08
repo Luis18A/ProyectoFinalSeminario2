@@ -14,15 +14,14 @@ class HistorialEstado(db.Model):
 
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id])
 
-    def __init__(self, orden_id, estado_anterior, estado_nuevo, usuario_id, observacion_tecnica=None, **kwargs):
-        super().__init__(
-            orden_id=orden_id,
-            estado_anterior=estado_anterior,
-            estado_nuevo=estado_nuevo,
-            usuario_id=usuario_id,
-            observacion_tecnica=observacion_tecnica,
-            **kwargs
-        )
+    def __init__(self, orden_id, estado_anterior, estado_nuevo, usuario_id, observacion_tecnica=None, fecha_cambio=None):
+        self.orden_id = orden_id
+        self.estado_anterior = estado_anterior
+        self.estado_nuevo = estado_nuevo
+        self.usuario_id = usuario_id
+        self.observacion_tecnica = observacion_tecnica
+        if fecha_cambio:
+            self.fecha_cambio = fecha_cambio
 
     @classmethod
     def get_historial_orden(cls, orden_id):

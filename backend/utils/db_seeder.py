@@ -1,7 +1,5 @@
 from database import db
-from backend.models.Rol import Rol
-from backend.models.Usuario import Usuario
-from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models import Rol, Usuario, TipoDispositivo
 
 def auto_seed_db():
     """Siembre datos automáticamente para el portfolio (ej. en Render) si está vacío."""
@@ -28,7 +26,7 @@ def auto_seed_db():
                     password=Usuario.hashear_password(u_data['password']),
                     nombre=u_data['nombre'],
                     apellido=u_data['apellido'],
-                    rol_id=roles_dict[u_data['rol']].id,
+                    rol=roles_dict[u_data['rol']],
                     activo=True
                 )
                 db.session.add(usuario)

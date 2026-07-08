@@ -8,6 +8,9 @@ class Rol(db.Model):
 
     usuarios = db.relationship('Usuario', backref='rol', lazy=True)
 
+    def __init__(self, descripcion):
+        self.descripcion = descripcion
+
     @classmethod
     def get_all(cls):
         return cls.query.order_by(cls.id.asc()).all()
