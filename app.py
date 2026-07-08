@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, flash, redirect, url_for, session
 from database import db, FALLBACK_DATABASE_URL
 from backend.models import Notificacion
@@ -33,8 +36,8 @@ def create_app():
     if db_uri and db_uri.startswith("postgres://"):
         db_uri = db_uri.replace("postgres://", "postgresql://", 1)
         
-    if not db_uri or not db_uri.startswith("postgresql://"):
-        raise ValueError("DATABASE_URL inválida. TechFlow requiere PostgreSQL como base de datos.")
+    if not db_uri or not (db_uri.startswith("postgresql://") or db_uri.startswith("sqlite://")):
+        raise ValueError("DATABASE_URL inválida. TechFlow requiere PostgreSQL o SQLite como base de datos.")
         
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

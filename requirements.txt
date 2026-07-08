@@ -10,3 +10,4 @@ flask-wtf
 gunicorn
 scikit-learn
 msgspec
+python-dotenv
