@@ -5,8 +5,6 @@ from backend.models.Repuesto import Repuesto
 from backend.models.OrdenRepuesto import OrdenRepuesto
 from database import db
 import uuid
-from backend.utils.tasks import celery, buscar_repuestos_async
-from celery.result import AsyncResult
 
 logger = logging.getLogger(__name__)
 
@@ -202,51 +200,19 @@ class OrdenPresupuestoController:
 
     @staticmethod
     def iniciar_busqueda_repuestos(q):
-        """Inicia la búsqueda de repuestos en segundo plano utilizando Celery o Hilos locales."""
+        """Inicia la búsqueda de repuestos en segundo plano utilizando Hilos locales."""
         q = (q or '').strip()
         if not q:
             return False, 'El término de búsqueda está vacío'
         
-        import os
-        # Usar Celery solo si se especifica una URL de Redis.
-        # Esto evita colgar el sistema local cuando no corre el worker de Celery.
-        use_celery = bool(os.environ.get('REDIS_URL'))
-        
-        if use_celery:
-            try:
-                # Encolar la tarea en la cola de Celery
-                task = buscar_repuestos_async.delay(q)
-                return True, {'task_id': task.id, 'status': 'pending'}
-            except Exception as e:
-                logger.error(f"[Celery] Error al encolar la tarea de búsqueda: {e}. Usando fallback de hilos.")
-                use_celery = False
-                
-        if not use_celery:
-            from backend.utils.tasks import iniciar_busqueda_hilos
-            task_id = iniciar_busqueda_hilos(q)
-            return True, {'task_id': task_id, 'status': 'pending'}
+        from backend.utils.tasks import iniciar_busqueda_hilos
+        task_id = iniciar_busqueda_hilos(q)
+        return True, {'task_id': task_id, 'status': 'pending'}
 
     @staticmethod
     def obtener_estado_busqueda_repuestos(task_id):
-        """Consulta el estado de la tarea de búsqueda asíncrona en Celery u Hilos locales."""
+        """Consulta el estado de la tarea de búsqueda asíncrona en Hilos locales."""
         if str(task_id).startswith('thread-'):
             from backend.utils.tasks import obtener_estado_busqueda_hilos
             return obtener_estado_busqueda_hilos(task_id)
-
-        try:
-            res = AsyncResult(task_id, app=celery)
-            status = res.status
-            
-            if status == 'SUCCESS':
-                results = res.result
-                return True, {'status': 'completed', 'results': results}
-            elif status == 'FAILURE':
-                err = str(res.result) if res.result else "Error en la búsqueda del repuesto"
-                return False, err
-            elif status in ('PENDING', 'RECEIVED', 'RETRY', 'STARTED'):
-                return True, {'status': 'running'}
-            else:
-                return True, {'status': 'running'}
-        except Exception as e:
-            logger.error(f"[Celery] Error al consultar el estado de la tarea {task_id}: {e}")
-            return False, f"Error al consultar el estado de la tarea: {str(e)}"
+        return False, "ID de tarea inválido para hilos locales"

@@ -34,7 +34,7 @@ graph TD
         E --> F[SQLAlchemy ORM]
         E --> G[Scraping Engine: Scrapling + Playwright]
         E --> H[SSE Service]
-        E --> I[Celery Tasks / Thread Pool Fallback]
+        E --> I[Thread Pool (Background Tasks)]
     end
 
     subgraph Persistence [Capa de Datos]
@@ -45,7 +45,7 @@ graph TD
 * **Core Backend:** Flask 3.0.0 (Python).
 * **Persistencia y ORM:** SQLAlchemy, PostgreSQL.
 * **Motor de Scraping:** `Scrapling` y `Playwright` con soporte para evasión de bloqueos (`curl_cffi`, `browserforge`).
-* **Procesamiento Asíncrono:** Celery (con Redis como Broker de Mensajería) y fallback integrado a hilos nativos (`threading`) para entornos de desarrollo sin infraestructura externa.
+* **Procesamiento Asíncrono:** Hilos nativos (`threading`) y programación asíncrona (`asyncio`) para la ejecución concurrente de scrapers en segundo plano.
 * **Minería y Análisis de Datos:** `scikit-learn` (implementación de clústeres K-Means) y `numpy`.
 * **Notificaciones Push:** Server-Sent Events (SSE) nativo sobre protocolos de streaming HTTP de Flask.
 * **Frontend:** Plantillas dinámicas Jinja2, CSS3 con Tailwind (vía configuración de cliente estática) y Vanilla JavaScript para la interactividad asíncrona (Fetch API).
@@ -138,7 +138,6 @@ ProyectoFinalSeminario2/
 ### 3.1. Requisitos del Sistema
 * **Python:** Versión 3.10 o superior (Recomendado Python 3.12+ debido al uso de firmas de tiempo compatibles con la versión actual).
 * **Base de datos:** PostgreSQL 14+ (Base de datos exclusiva para desarrollo y producción).
-* **Servicio de Mensajería:** Redis (Opcional, requerido solo si se decide levantar Celery de forma activa).
 * **Navegador Headless:** Requerido por Playwright para la extracción dinámica.
 
 ### 3.2. Proceso de Instalación Paso a Paso
@@ -191,16 +190,7 @@ ProyectoFinalSeminario2/
    ```
    La aplicación estará disponible en `http://127.0.0.1:5000/`.
 
-8. **(Opcional) Ejecución de Celery:**
-   Si se cuenta con un servidor Redis activo y se definió `REDIS_URL` en el archivo `.env`, se puede iniciar el gestor de colas asíncronas para el web scraping:
-   * **En Windows (Requiere `eventlet`):**
-     ```bash
-     celery -A backend.utils.tasks.celery worker --loglevel=info -P eventlet
-     ```
-   * **En Linux/macOS:**
-     ```bash
-     celery -A backend.utils.tasks.celery worker --loglevel=info
-     ```
+
 
 ---
 
@@ -405,12 +395,11 @@ El sistema incorpora protecciones avanzadas contra vectores de ataque de segurid
 ## 7. Componentes Clave y Lógica del Sistema
 
 ### 7.1. Módulo de Scraping y Abastecimiento (Scrapling + Playwright)
-La lógica de scraping se ejecuta asíncronamente en segundo plano. Al buscar un insumo para presupuestar una orden:
-1. El controlador `orden_presupuesto_controller.iniciar_busqueda_repuestos` verifica si existe una infraestructura Redis configurada.
-2. Si `REDIS_URL` está presente, encola una tarea asíncrona mediante Celery (`buscar_repuestos_async.delay`). Si no, lanza de forma nativa un hilo daemon (`threading.Thread`) que ejecuta un event loop aislado de `asyncio` sin bloquear el servidor web.
-3. Se ejecutan simultáneamente en hilos concurrentes (`asyncio.gather` con `asyncio.to_thread`) los scrapers de proveedores: **MercadoLibre**, **Megatone**, **Fravega**, **InfoPartes**, y **Fullstore**.
-4. Cada extractor utiliza `DynamicFetcher` de la librería `scrapling`, que levanta navegadores headless e inyecta parámetros del framework `browserforge` para evadir firewalls comerciales o bloqueos antibot.
-5. Los resultados consolidados se filtran mediante similitud semántica de palabras clave (excluyendo preposiciones y conectores gramaticales con un filtro `STOP_WORDS`) para garantizar la relevancia del repuesto con el modelo consultado.
+La lógica de scraping se ejecuta asíncronamente en segundo plano de la siguiente manera:
+1. El controlador `orden_presupuesto_controller.iniciar_busqueda_repuestos` lanza de forma nativa un hilo daemon (`threading.Thread`) que ejecuta un event loop aislado de `asyncio` sin bloquear el hilo principal de atención web del servidor Flask.
+2. Dentro de este hilo secundario, se ejecutan de manera concurrente y paralela (`asyncio.gather` con `asyncio.to_thread`) los scrapers de los distintos proveedores: **MercadoLibre**, **Megatone**, **Fravega**, **InfoPartes**, y **Fullstore**.
+3. Cada extractor utiliza `DynamicFetcher` de la librería `scrapling` para levantar navegadores virtuales sin cabecera (headless) e inyectar huellas y agentes de usuario provistos por `browserforge` para evitar bloqueos antibot.
+4. Los resultados son consolidados, filtrados por coincidencia semántica de tokens (excluyendo preposiciones del filtro `STOP_WORDS`) para asegurar la relevancia, y ordenados de menor a mayor precio.
 
 ### 7.2. Módulo de Analytics y K-Means (`kmeans_service.py`)
 El servicio `KMeansService` procesa de forma nativa la información histórica del negocio usando `scikit-learn` para segmentar a los clientes:
