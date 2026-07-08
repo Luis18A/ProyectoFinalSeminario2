@@ -32,12 +32,10 @@ def create_app():
     # 1. Configuración de Seguridad y Base de Datos
     app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-CAMBIAR-en-produccion')
     
-    db_uri = os.environ.get('DATABASE_URL', FALLBACK_DATABASE_URL)
+    # Toma la variable de entorno de Render, y si no existe (localmente), usa SQLite
+    db_uri = os.getenv("DATABASE_URL", "sqlite:///local.db")
     if db_uri and db_uri.startswith("postgres://"):
         db_uri = db_uri.replace("postgres://", "postgresql://", 1)
-        
-    if not db_uri or not (db_uri.startswith("postgresql://") or db_uri.startswith("sqlite://")):
-        raise ValueError("DATABASE_URL inválida. TechFlow requiere PostgreSQL o SQLite como base de datos.")
         
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
