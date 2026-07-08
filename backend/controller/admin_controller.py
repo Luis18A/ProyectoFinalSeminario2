@@ -46,6 +46,7 @@ class AdminController:
         roles_permitidos = {
             'administrador': 'administrador',
             'tecnico': 'tecnico',
+            'técnico': 'tecnico',
             'secretario': 'secretario'
         }
 

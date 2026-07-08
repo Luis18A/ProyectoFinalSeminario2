@@ -1,5 +1,5 @@
 from backend.models import OrdenServicio, EstadoOrden, HistorialEstado, Cliente, Equipo, TipoDispositivo, Usuario
-from backend.controller import tipo_dispositivo_controller
+from backend.controller.tipo_dispositivo_controller import TipoDispositivoController
 from database import db
 import csv, io
            
@@ -121,7 +121,7 @@ class OrdenServicioController:
         return {
             'ordenes':           ordenes,
             'clientes':          Cliente.query.all(),
-            'tipo_dispositivos': tipo_dispositivo_controller.obtener_todos(),
+            'tipo_dispositivos': TipoDispositivoController.obtener_todos(),
         }
     
     @staticmethod
