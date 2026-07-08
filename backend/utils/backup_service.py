@@ -3,14 +3,7 @@ import uuid
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash
 
-from backend.models.Usuario import Usuario
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.Repuesto import Repuesto
-from backend.models.OrdenRepuesto import OrdenRepuesto
+from backend.models import Usuario, Cliente, Equipo, OrdenServicio, HistorialEstado, EstadoOrden, Repuesto, OrdenRepuesto
 from database import db
 from sqlalchemy import text
 

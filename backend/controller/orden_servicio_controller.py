@@ -1,10 +1,4 @@
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.Usuario import Usuario
+from backend.models import OrdenServicio, EstadoOrden, HistorialEstado, Cliente, Equipo, TipoDispositivo, Usuario
 from backend.controller.tipo_dispositivo_controller import TipoDispositivoController
 from database import db
 import csv, io

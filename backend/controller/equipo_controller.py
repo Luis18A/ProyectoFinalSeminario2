@@ -1,7 +1,5 @@
 from database import db
-from backend.models.Equipo import Equipo
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.Cliente import Cliente
+from backend.models import Equipo, TipoDispositivo, Cliente
 
 class EquipoController:
     @staticmethod

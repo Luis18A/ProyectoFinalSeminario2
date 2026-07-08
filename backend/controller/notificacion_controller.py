@@ -1,5 +1,5 @@
 import logging
-from backend.models.Notificacion import Notificacion
+from backend.models import Notificacion
 from database import db
 
 logger = logging.getLogger(__name__)

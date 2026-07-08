@@ -1,7 +1,7 @@
 import logging
 from database import db
 from backend.utils.backup_service import BackupService
-from backend.models.Usuario import Usuario
+from backend.models import Usuario
 
 # Configuración básica del logger para el módulo
 logger = logging.getLogger(__name__)

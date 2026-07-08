@@ -1,17 +1,12 @@
 import logging
 from sqlalchemy.sql import func
 from backend.utils.predictor_service import PredictorService
-from backend.models.OrdenServicio import OrdenServicio
 from database import db
 from datetime import datetime
 import json
 from flask import url_for
 from backend.utils.sse_service import sse_service
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.Notificacion import Notificacion
-from backend.models.Usuario import Usuario
-from backend.models.Rol import Rol
+from backend.models import OrdenServicio, EstadoOrden, HistorialEstado, Notificacion, Usuario, Rol
 
 logger = logging.getLogger(__name__)
 

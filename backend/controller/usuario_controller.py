@@ -1,9 +1,7 @@
 from datetime import datetime, timezone
 from database import db
-from backend.models.Usuario import Usuario
 import re
-from backend.models.Rol import Rol
-from backend.models.HistorialEstado import HistorialEstado
+from backend.models import Usuario, Rol, HistorialEstado
 
 class UsuarioController:
 

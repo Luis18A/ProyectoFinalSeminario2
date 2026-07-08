@@ -3,17 +3,10 @@
 import random
 from datetime import datetime, timedelta
 from database import db
-from backend.models.Usuario import Usuario
-from backend.models.Rol import Rol
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
-from backend.models.TipoDispositivo import TipoDispositivo
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.HistorialEstado import HistorialEstado
-from backend.models.Notificacion import Notificacion
-from backend.models.Repuesto import Repuesto
-from backend.models.OrdenRepuesto import OrdenRepuesto
+from backend.models import (
+    Usuario, Rol, Cliente, Equipo, TipoDispositivo, OrdenServicio,
+    EstadoOrden, HistorialEstado, Notificacion, Repuesto, OrdenRepuesto
+)
 
 
 

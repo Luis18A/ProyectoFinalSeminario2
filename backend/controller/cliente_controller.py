@@ -1,6 +1,5 @@
 import re
-from backend.models.Cliente import Cliente
-from backend.models.Equipo import Equipo
+from backend.models import Cliente, Equipo
 from database import db
 
 class ClienteController:

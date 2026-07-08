@@ -2,10 +2,7 @@ import numpy as np
 from datetime import datetime, timedelta, timezone
 from sklearn.cluster import KMeans
 
-from backend.models.Cliente import Cliente
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.Equipo import Equipo
+from backend.models import Cliente, OrdenServicio, EstadoOrden, Equipo
 from database import db
 from sqlalchemy import func
 

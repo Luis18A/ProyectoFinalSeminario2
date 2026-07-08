@@ -1,4 +1,5 @@
 from database import db
+from backend.models import OrdenServicio
 
 class Equipo(db.Model):
     __tablename__ = 'equipo'
@@ -17,7 +18,6 @@ class Equipo(db.Model):
 
     @property
     def estado_actual(self):
-        from backend.models.OrdenServicio import OrdenServicio
         ultima_orden = self.ordenes.order_by(OrdenServicio.id.desc()).first()
         return ultima_orden.estado.value if ultima_orden else "Disponible"
 

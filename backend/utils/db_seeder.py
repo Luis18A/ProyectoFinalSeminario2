@@ -1,7 +1,5 @@
 from database import db
-from backend.models.Rol import Rol
-from backend.models.Usuario import Usuario
-from backend.models.TipoDispositivo import TipoDispositivo
+from backend.models import Rol, Usuario, TipoDispositivo
 
 def auto_seed_db():
     """Siembre datos automáticamente para el portfolio (ej. en Render) si está vacío."""

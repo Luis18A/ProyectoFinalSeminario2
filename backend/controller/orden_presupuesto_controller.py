@@ -1,10 +1,6 @@
 import logging
-from backend.models.OrdenServicio import OrdenServicio
-from backend.models.EstadoOrden import EstadoOrden
-from backend.models.Repuesto import Repuesto
-from backend.models.OrdenRepuesto import OrdenRepuesto
+from backend.models import OrdenServicio, EstadoOrden, Repuesto, OrdenRepuesto
 from database import db
-import uuid
 
 logger = logging.getLogger(__name__)
 
