@@ -45,6 +45,12 @@ def create_app():
     db.init_app(app)
     csrf.init_app(app)
 
+    # Inicializar esquema de base de datos y usuarios/roles base
+    with app.app_context():
+        db.create_all()
+        from backend.utils.db_seeder import auto_seed_db
+        auto_seed_db()
+
     # 3. Registro de Blueprints
     app.register_blueprint(vistas_bp)
     app.register_blueprint(usuarios_bp)
